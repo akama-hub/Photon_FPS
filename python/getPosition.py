@@ -13,8 +13,7 @@ from sklearn.linear_model import LinearRegression #LinearRegression
 # log_dir = f'/mnt/HDD/akama/Unity/movement_data/accel/zigzag'
 # os.makedirs(log_dir, exist_ok=True)
 
-def main():
-    print("hi")
+if __name__ == '__main__' :
     # ctrl-Cがなかなか反応しないのを直す
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     M_SIZE = 1024
@@ -28,17 +27,16 @@ def main():
     cli_sock.bind(serv)
     unity_sock = socket.socket(socket.AF_INET, type=socket.SOCK_DGRAM)
 
-    print("hello")
-
     pos_x = np.array([0])
     pos_y = np.array([0])
     vel_x = np.array([0])
     vel_y = np.array([0])
     t = np.array([0])
 
+    print("connecting")
+
     while True:
         try:
-            print("connecting")
             cli_data, cli_addr = cli_sock.recvfrom(M_SIZE)
             # clidata = time00000000x00000000y00000000z00000000
             #　負の値を取るとーも一文字になるので注意
@@ -51,8 +49,8 @@ def main():
             velocity_y = ""
             velocity_z = ""
             flag = "first"
-            
-            print(cli_data)
+
+            print("recieving data: ", cli_data)
             for data in cli_str_data:
                 if data == "t" and flag == "first":
                     flag = "time"

@@ -13,5 +13,7 @@ Photon Networkを使って、実験用のオンラインFPSゲームをUnity上�
 ## Build前に
  + オブジェクトのひも付けが解除されているから修正
  + googleDrive からAssetのダウンロード
+   + Animatorはmixamoからもダウンロードできる
+   + 地形のtextureはtexture Heaven　からダウンロードできる\url{https://polyhaven.com/textures}
     + gitignoreの末尾のフォルダ
     

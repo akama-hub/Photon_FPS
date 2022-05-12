@@ -63,12 +63,11 @@ crashlytics-build.properties
 # shooting/Library/il2cpp_cache/linkresult_1CB7F31F9EE030438F999BA3F548D817/build.bc
 # shooting/Library/Il2cppBuildCache/WebGL/Native/build.bc
 
-googleDriveShare/
-
 
 #####
 shooting/Assets/DelthorGames/
 shooting/Assets/Model1/
 # shooting/Assets/Photon/
-shooting/Assets/StandardAseets/
+shooting/Assets/StandardAssets/
 shooting/Assets/Tree_textures/
+shooting/Assets/Textures/
