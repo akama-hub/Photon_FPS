@@ -24,12 +24,12 @@ public class ProposedGameManager : MonoBehaviour
 
             var players = PhotonNetwork.PlayerListOthers;
         
-            // if(players.Length > 0){
-            if(players.Length == 0){
+            if(players.Length > 0){
+            // if(players.Length == 0){
                 cpuFlag = 1;
                 Debug.Log("You are CPU!!");
                 PhotonNetwork.Instantiate("Observer", CPURespawn, Quaternion.identity); //y座標のみ0の下でプレハブを生成
-                // PhotonNetwork.Instantiate("EstimatedPlayer", CPURespawn, Quaternion.identity);
+                PhotonNetwork.Instantiate("EstimatedCPU", CPURespawn, Quaternion.identity);
                 Cpu = GameObject.FindWithTag("Observer");
 
                 FPSCamera = Camera.main.gameObject; // Main Camera(Game Object) の取得

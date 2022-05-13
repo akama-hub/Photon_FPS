@@ -13,6 +13,67 @@ from sklearn.linear_model import LinearRegression #LinearRegression
 # log_dir = f'/mnt/HDD/akama/Unity/movement_data/accel/zigzag'
 # os.makedirs(log_dir, exist_ok=True)
 
+def linear_regression(pos_x, pos_y, t, delay):
+    lr = LinearRegression()
+
+    T = t.reshape(-1,1)
+    X = pos_x.reshape(-1,1)
+    Y = pos_y.reshape(-1,1)
+
+    lr.fit(T, X)
+    p_x = lr.coef_[0] * (t[3] + delay * (t[3] - t[2])) + lr.intercept_
+    lr.fit(T, Y)
+    p_y = lr.coef_[0] * (t[3] + delay * (t[3] - t[2])) + lr.intercept_
+
+    return p_x, p_y
+
+def nonlinear_regression(pos_x, pos_y, t, delay):
+    T = t.reshape(-1,1).squeeze()
+    X = pos_x.reshape(-1,1).squeeze()
+    Y = pos_y.reshape(-1,1).squeeze()
+
+    p_x = np.poly1d(np.polyfit(T, X, 2))(t[3] + delay * (t[3] - t[2]))
+    p_y = np.poly1d(np.polyfit(T, Y, 2))(t[3] + delay * (t[3] - t[2]))
+
+    return p_x, p_y
+
+def DR(pos_x, pos_y, vel_x, vel_y, delay):
+    predict_x = pos_x[3] + vel_x[3] * delay
+    predict_y = pos_y[3] + vel_y[3] * delay
+    
+    return predict_x, predict_y
+
+def MAADR(pos_x, pos_y, vel_x, vel_y, delay):
+    predict_x = 0
+    predict_y = 0
+
+    accel_x = [vel_x[2] - vel_x[1], vel_x[3] - vel_x[2]]
+    accel_y = [vel_y[2] - vel_y[1], vel_y[3] - vel_y[2]]
+
+    if accel_x[1] == 0 and accel_y[1] == 0:
+        predict_x = pos_x[3] + vel_x[3] * delay
+        predict_y = pos_y[3] + vel_y[3] * delay
+    elif accel_x[1] == accel_x[0] and accel_y[1] == accel_y[0]:
+        predict_x = pos_x[3] + vel_x[3] * delay + accel_x[1] * (delay ** 2) / 2
+        predict_y = pos_y[3] + vel_y[3] * delay + accel_y[1] * (delay ** 2) / 2
+    else:
+        np_velocity = np.array([vel_x[3], vel_y[3]])
+        np_accelelation = np.array([accel_x[1], accel_y[1]])
+
+        k = np.linalg.norm(np.cross(np_velocity, np_accelelation)) / (np.linalg.norm(np_velocity)**3)
+        
+        if k == 0:
+            predict_x = pos_x[3] + vel_x[3] * delay + accel_x[1] * (delay ** 2) / 2
+            predict_y = pos_y[3] + vel_y[3] * delay + accel_y[1] * (delay ** 2) / 2
+        else:
+            accel_x = k * (np.linalg.norm(np_velocity) ** 2) * (np_velocity[0] / np.linalg.norm(np_velocity))
+            accel_y = k * (np.linalg.norm(np_velocity) ** 2) * (np_velocity[1] / np.linalg.norm(np_velocity))
+
+            predict_x = pos_x[3] + vel_x[3] * delay + accel_x[1] * (delay ** 2) / 2
+            predict_y = pos_y[3] + vel_y[3] * delay + accel_y[1] * (delay ** 2) / 2
+
+    return predict_x, predict_y
+
 if __name__ == '__main__' :
     # ctrl-Cがなかなか反応しないのを直す
     signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -27,11 +88,14 @@ if __name__ == '__main__' :
     cli_sock.bind(serv)
     unity_sock = socket.socket(socket.AF_INET, type=socket.SOCK_DGRAM)
 
-    pos_x = np.array([0])
-    pos_y = np.array([0])
-    vel_x = np.array([0])
-    vel_y = np.array([0])
-    t = np.array([0])
+    pos_x = np.array([])
+    pos_y = np.array([])
+    vel_x = np.array([])
+    vel_y = np.array([])
+    t = np.array([])
+
+    frame_delay = 1
+    delay = frame_delay * 0.02
 
     print("connecting")
 
@@ -55,25 +119,25 @@ if __name__ == '__main__' :
                 if data == "t" and flag == "first":
                     flag = "time"
                     continue
-                if data == "x":
+                elif data == "x":
                     if flag == "time":
                         flag = "position_x"
-                    if flag == "velocity":
+                    elif flag == "velocity":
                         flag = "velocity_x"
                     continue
-                if data == "y":
+                elif data == "y":
                     if flag == "position_x":
                         flag = "position_y"
-                    if flag == "velocity":
+                    elif flag == "velocity":
                         flag = "velocity_y"
                     continue
-                if data == "z":
+                elif data == "z":
                     if flag == "position_y":
                         flag = "position_z"
-                    if flag == "velocity":
+                    elif flag == "velocity":
                         flag = "velocity_z"
                     continue
-                if data == "v":
+                elif data == "v":
                     flag = "velocity"
                     continue
                 if flag == "time":
@@ -93,22 +157,17 @@ if __name__ == '__main__' :
             # with open(f'{log_dir}/zigzag.csv', 'a') as f:
             #     writer = csv.writer(f, lineterminator='\n')
             #     writer.writerow([time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z])
-            # print(time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z)
+            print(time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z)
             # position_x = "00000020"
 
-            if len(pos_x) == 1:
-                pos_x[0] = float(position_x)
-                pos_y[0] = float(position_y)
-                vel_x[0] = float(velocity_x)
-                vel_y[0] = float(velocity_y)
-                t[0] = float(time)
+            print(len(pos_x))
             
-            elif pos_x < 4:
-                pos_x = np.apppend(pos_x, float(position_x))
-                np.apppend(pos_y, float(position_y))
-                np.apppend(vel_x, float(velocity_x))
-                np.apppend(vel_y, float(velocity_y))
-                np.apppend(t, float(time))
+            if len(pos_x) < 4:
+                pos_x = np.append(pos_x, float(position_x))
+                pos_y = np.append(pos_y, float(position_y))
+                vel_x = np.append(vel_x, float(velocity_x))
+                vel_y = np.append(vel_y, float(velocity_y))
+                t = np.append(t, float(time))
 
             else:
                 pos_x[0] = float(position_x)
@@ -123,12 +182,15 @@ if __name__ == '__main__' :
                 vel_y = np.roll(vel_y, -1)
                 t = np.roll(t, -1)
 
-                # p_x, p_y = linear_regression(pos_x, pos_y, vel_x, vel_y, t)
-                p_x, p_y = DR(pos_x, pos_y, vel_x, vel_y, t)
+                # p_x, p_y = linear_regression(pos_x, pos_y, t, delay)
+                p_x, p_y = DR(pos_x, pos_y, vel_x, vel_y, delay)
 
-                data =  p_x + p_y
+                data = str(p_x) + "," + str(p_y) + "," + position_z
+                print("send message: ", data)
+
                 predict_data = data.encode("utf-8")
-                # print("Unity client", cli_data, data, predict_data)
+                print(predict_data)
+                # print("Unity client", cli_data, data)
                 print("Unity client", cli_data)
                 unity_sock.sendto(predict_data, unity_addr)
     
@@ -136,64 +198,3 @@ if __name__ == '__main__' :
             print ('\n . . .\n')
             cli_sock.close()
             unity_sock.close()
-
-def linear_regression(pos_x, pos_y, t, delay):
-    lr = LinearRegression()
-
-    T = t.reshape(-1,1)
-    X = pos_x.reshape(-1,1)
-    Y = pos_y.reshape(-1,1)
-
-    lr.fit(T, X)
-    p_x = lr.coef_[0] * (t[4] + delay * (t[4] - t[3])) + lr.intercept_
-    lr.fit(T, Y)
-    p_y = lr.coef_[0] * (t[4] + delay * (t[4] - t[3])) + lr.intercept_
-
-    return p_x, p_y
-
-def nonlinear_regression(pos_x, pos_y, t, delay):
-    T = t.reshape(-1,1).squeeze()
-    X = pos_x.reshape(-1,1).squeeze()
-    Y = pos_y.reshape(-1,1).squeeze()
-
-    p_x = np.poly1d(np.polyfit(T, X, 2))(t[4] + delay * (t[4] - t[3]))
-    p_y = np.poly1d(np.polyfit(T, Y, 2))(t[4] + delay * (t[4] - t[3]))
-
-    return p_x, p_y
-
-def DR(pos_x, pos_y, vel_x, vel_y, delay):
-    predict_x = pos_x[4] + vel_x[4] * delay
-    predict_y = pos_y[4] + vel_y[4] * delay
-    
-    return predict_x, predict_y
-
-def MAADR(pos_x, pos_y, vel_x, vel_y, delay):
-    predict_x = 0
-    predict_y = 0
-
-    accel_x = [vel_x[3] - vel_x[2], vel_x[4] - vel_x[3]]
-    accel_y = [vel_y[3] - vel_y[2], vel_y[4] - vel_y[3]]
-
-    if accel_x[1] == 0 and accel_y[1] == 0:
-        predict_x = pos_x[4] + vel_x[4] * delay
-        predict_y = pos_y[4] + vel_y[4] * delay
-    elif accel_x[1] == accel_x[0] and accel_y[1] == accel_y[0]:
-        predict_x = pos_x[4] + vel_x[4] * delay + accel_x[1] * (delay ** 2) / 2
-        predict_y = pos_y[4] + vel_y[4] * delay + accel_y[1] * (delay ** 2) / 2
-    else:
-        np_velocity = np.array([vel_x[4], vel_y[4]])
-        np_accelelation = np.array([accel_x[1], accel_y[1]])
-
-        k = np.linalg.norm(np.cross(np_velocity, np_accelelation)) / (np.linalg.norm(np_velocity)**3)
-        
-        if k == 0:
-            predict_x = pos_x[4] + vel_x[4] * delay + accel_x[1] * (delay ** 2) / 2
-            predict_y = pos_y[4] + vel_y[4] * delay + accel_y[1] * (delay ** 2) / 2
-        else:
-            accelelation_x = k * (np.linalg.norm(np_velocity) ** 2) * (np_velocity[0] / np.linalg.norm(np_velocity))
-            accelelation_y = k * (np.linalg.norm(np_velocity) ** 2) * (np_velocity[1] / np.linalg.norm(np_velocity))
-
-            predict_x = pos_x[4] + vel_x[4] * delay + accel_x[1] * (delay ** 2) / 2
-            predict_y = pos_y[4] + vel_y[4] * delay + accel_y[1] * (delay ** 2) / 2
-
-    return predict_x, predict_y

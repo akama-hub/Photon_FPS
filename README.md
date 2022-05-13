@@ -16,4 +16,7 @@ Photon Networkを使って、実験用のオンラインFPSゲームをUnity上�
    + Animatorはmixamoからもダウンロードできる
    + 地形のtextureはtexture Heaven　からダウンロードできる\url{https://polyhaven.com/textures}
     + gitignoreの末尾のフォルダ
+
+## UbuntuでBuildする際
+ +  sudo apt install libtinfo5
     

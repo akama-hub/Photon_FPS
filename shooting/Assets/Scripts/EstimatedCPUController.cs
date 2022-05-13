@@ -30,17 +30,27 @@ public class EstimatedCPUController : MonoBehaviourPunCallbacks
     // Update is called once per frame
     void Update()
     {
-        string position = commUDP.rcvMsg;
-        int pos_x = int.Parse(position.Substring(0, positionLength));
-        int pos_y = int.Parse(position.Substring(positionLength, positionLength));
-        
-        Transform myTransform = this.transform;
-        
-        Vector3 pos = myTransform.position;
-        pos.x = pos_x;
-        pos.y = pos_y;
+        string[] position = commUDP.rcvMsg.Split(',');
+        Debug.Log(commUDP.rcvMsg);
 
-        myTransform.position = pos;
+        // int pos_x = int.Parse(position.Substring(0, positionLength));
+        // int pos_y = int.Parse(position.Substring(positionLength, positionLength));
+
+        if(position[1] == null){
+            int pos_x = int.Parse(position[0]);
+            int pos_y = int.Parse(position[1]);
+            int pos_z = int.Parse(position[2]);
+            
+            Transform myTransform = this.transform;
+            
+            Vector3 pos = myTransform.position;
+            pos.x = pos_x;
+            pos.y = pos_y;
+            pos.z = pos_z;
+
+            myTransform.position = pos;
+        }
+        
     }
 
 }

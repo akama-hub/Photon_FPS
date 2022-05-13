@@ -522,14 +522,14 @@ public class ProposedCPUController : MonoBehaviourPunCallbacks
 
         string position_x = transform.position.x.ToString("00.000000");
         string position_y = transform.position.y.ToString("00.000000");
-        // string position_z = transform.position.z.ToString("00.000000");
+        string position_z = transform.position.z.ToString("00.000000");
         string time = Time.time.ToString("0000.0000");
         string velocity_x = rigidbody.velocity.x.ToString("00.000000");
         string velocity_y = rigidbody.velocity.y.ToString("00.000000");
         // string velocity_z = rigidbody.velocity.z.ToString("00.000000");
         // Debug.Log(Time.time);
         // string data = "t" + time + "x" + position_x + "y" + position_y + "z" + position_z + "vx" + velocity_x + "vy" + velocity_y + "vz" + velocity_z;
-        string data = "t" + time + "x" + position_x + "y" + position_y + "vx" + velocity_x + "vy" + velocity_y;
+        string data = "t" + time + "x" + position_x + "y" + position_y + "z" + position_z + "vx" + velocity_x + "vy" + velocity_y;
         commUDP.send(data);
         
         // Debug.Log(rigidbody.velocity.magnitude);
