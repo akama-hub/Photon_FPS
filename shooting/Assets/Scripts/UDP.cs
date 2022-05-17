@@ -18,7 +18,7 @@ using System.Text;
 using System.Threading;
 namespace forudp
 {
-    public class UDP : MonoBehaviour
+    public class UDP
     {   
         private UdpClient udpForSend; //送信用クライアント
         private string remoteHost = "localhost";//送信先のIPアドレス

@@ -30,6 +30,11 @@ public class EstimatedCPUController : MonoBehaviourPunCallbacks
     // Update is called once per frame
     void Update()
     {
+        if(!photonView.IsMine){
+            // Debug.Log("This player is not made by me");
+            return;
+        }
+        
         string[] position = commUDP.rcvMsg.Split(',');
         Debug.Log(commUDP.rcvMsg);
 

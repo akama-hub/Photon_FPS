@@ -13,6 +13,11 @@ public class ProposedPlayerController : MonoBehaviourPunCallbacks
     float pastPosition;
     float gap;
     float positionX;
+
+    private forudp.UDP commUDP = new forudp.UDP();
+    [SerializeField] GameObject CPUPrefab;
+    [SerializeField] Rigidbody _rigidbody;
+
  
     // Start is called before the first frame update
     private void Start()
@@ -21,6 +26,10 @@ public class ProposedPlayerController : MonoBehaviourPunCallbacks
             mainCamera = Camera.main.gameObject;// Main Camera(Game Object) の取得
         }
         GameState.canShoot = true;
+
+        commUDP.init(50002, 50000, 50001);
+        //UDP受信開始
+        commUDP.start_receive();
     }
  
     // Update is called once per frame
@@ -32,6 +41,19 @@ public class ProposedPlayerController : MonoBehaviourPunCallbacks
         }   
 
         UpdateCursorLock();
+
+        string position_x = CPUPrefab.transform.position.x.ToString("00.000000");
+        string position_y = CPUPrefab.transform.position.y.ToString("00.000000");
+        string position_z = CPUPrefab.transform.position.z.ToString("00.000000");
+        string time = Time.time.ToString("0000.0000");
+        string velocity_x = _rigidbody.velocity.x.ToString("00.000000");
+        string velocity_y = _rigidbody.velocity.y.ToString("00.000000");
+        // string velocity_z = rigidbody.velocity.z.ToString("00.000000");
+        // Debug.Log(Time.time);
+        // string data = "t" + time + "x" + position_x + "y" + position_y + "z" + position_z + "vx" + velocity_x + "vy" + velocity_y + "vz" + velocity_z;
+        string data = "t" + time + "x" + position_x + "y" + position_y + "z" + position_z + "vx" + velocity_x + "vy" + velocity_y;
+        commUDP.send(data);
+
         var players = PhotonNetwork.PlayerListOthers;
 
         if(players.Length >= 1){ //CPUが存在しているとき

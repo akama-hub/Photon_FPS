@@ -4,6 +4,7 @@ using Photon.Pun; //Photonサーバーの情報を使用するため
 public class ProposedGameManager : MonoBehaviour
 {
     [SerializeField] GameObject playerPrefab; //Inspectorで紐づけ
+    [SerializeField] GameObject EstimatedPlayerPrefab;
     public GameObject Cpu;
     GameObject FPSCamera;
     private Vector3 CameraPosition;
@@ -29,7 +30,8 @@ public class ProposedGameManager : MonoBehaviour
                 cpuFlag = 1;
                 Debug.Log("You are CPU!!");
                 PhotonNetwork.Instantiate("Observer", CPURespawn, Quaternion.identity); //y座標のみ0の下でプレハブを生成
-                PhotonNetwork.Instantiate("EstimatedCPU", CPURespawn, Quaternion.identity);
+                // PhotonNetwork.Instantiate("EstimatedCPU", CPURespawn, Quaternion.identity);
+                
                 Cpu = GameObject.FindWithTag("Observer");
 
                 FPSCamera = Camera.main.gameObject; // Main Camera(Game Object) の取得
@@ -44,6 +46,7 @@ public class ProposedGameManager : MonoBehaviour
                 if(playerPrefab!=null) //生成するモノが紐づけられているか確認
                 {
                     PhotonNetwork.Instantiate(playerPrefab.name, respawn, Quaternion.identity); //y座標のみ0の下でプレハブを生成
+                    Instantiate(EstimatedPlayerPrefab, CPURespawn, Quaternion.identity);
                 }
                 else{
                     Debug.Log("player prefab is Null");

@@ -10460,7 +10460,7 @@ GameObject:
   - component: {fileID: 7964932956573291842}
   - component: {fileID: 7964932956573291843}
   - component: {fileID: 470792959112239893}
-  - component: {fileID: 1594578684231017699}
+  - component: {fileID: 8672012837334399032}
   m_Layer: 0
   m_Name: ProposedAutoPlayer
   m_TagString: Player
@@ -10669,7 +10669,7 @@ MonoBehaviour:
     height: 100
   WindowId: 101
   Visible: 1
---- !u!114 &1594578684231017699
+--- !u!114 &8672012837334399032
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -10678,9 +10678,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 7964932956573291844}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 275184c9114eeff41be84b6813c65cb2, type: 3}
+  m_Script: {fileID: 11500000, guid: a5581fae6e648ad4db5ebec529b4b59b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  CPUPrefab: {fileID: 9052330830578195375, guid: 6123b735162cd5c469ec6b30b7b8d098, type: 3}
+  _rigidbody: {fileID: 9052330830578195366, guid: 6123b735162cd5c469ec6b30b7b8d098, type: 3}
 --- !u!1 &7964932956605082371
 GameObject:
   m_ObjectHideFlags: 0
