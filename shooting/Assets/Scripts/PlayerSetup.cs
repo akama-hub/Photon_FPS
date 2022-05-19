@@ -35,7 +35,6 @@ public class PlayerSetup : MonoBehaviourPunCallbacks
             MakeBullet.transform.parent = FPSCamera.transform;
             // Debug.Log(MakeBullet.transform.position);
             // MakeBullet.transform.position = new Vector3(0.0f, 0f, 0f);
-            Debug.Log(MakeBullet.transform.position);
             MakeBullet.transform.rotation = FPSCamera.transform.rotation * Quaternion.Euler(-3,0,0);
             // SubCameraPosition = new Vector3 (Weapon.transform.position.x + 0f, Weapon.transform.position.y - 0.03f, Weapon.transform.position.z + 0.03f);
             // SubCamera.transform.parent = Weapon.transform;

@@ -5,16 +5,13 @@ public class ProposedGameManager : MonoBehaviour
 {
     [SerializeField] GameObject playerPrefab; //Inspectorで紐づけ
     [SerializeField] GameObject EstimatedPlayerPrefab;
-    public GameObject Cpu;
+    GameObject Cpu;
     GameObject FPSCamera;
     private Vector3 CameraPosition;
 
     //プレイヤのリスポーン位置の設定
     Vector3 respawn = new Vector3(2.2f, -12, 3f);
     Vector3 CPURespawn = new Vector3(0f, -12, 10f);
-    public static int cpuFlag = 0;
-    // player が cpu として参加しているとき -> 1
-    // それ以外 -> 0
 
     // Start is called before the first frame update
     void Start()
@@ -26,13 +23,11 @@ public class ProposedGameManager : MonoBehaviour
             var players = PhotonNetwork.PlayerListOthers;
         
             if(players.Length > 0){
-            // if(players.Length == 0){
-                cpuFlag = 1;
                 Debug.Log("You are CPU!!");
-                PhotonNetwork.Instantiate("Observer", CPURespawn, Quaternion.identity); //y座標のみ0の下でプレハブを生成
+                GameObject Cpu = PhotonNetwork.Instantiate("Observer", CPURespawn, Quaternion.identity) as GameObject; //y座標のみ0の下でプレハブを生成
                 // PhotonNetwork.Instantiate("EstimatedCPU", CPURespawn, Quaternion.identity);
                 
-                Cpu = GameObject.FindWithTag("Observer");
+                // Cpu = GameObject.FindWithTag("Observer");
 
                 FPSCamera = Camera.main.gameObject; // Main Camera(Game Object) の取得
 
@@ -46,7 +41,6 @@ public class ProposedGameManager : MonoBehaviour
                 if(playerPrefab!=null) //生成するモノが紐づけられているか確認
                 {
                     PhotonNetwork.Instantiate(playerPrefab.name, respawn, Quaternion.identity); //y座標のみ0の下でプレハブを生成
-                    Instantiate(EstimatedPlayerPrefab, CPURespawn, Quaternion.identity);
                 }
                 else{
                     Debug.Log("player prefab is Null");
@@ -63,13 +57,10 @@ public class ProposedGameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(!Cpu && cpuFlag == 1){
-            Cpu = GameObject.FindWithTag("Observer");
-            if(Cpu){
-                FPSCamera.transform.parent = Cpu.transform;
-                FPSCamera.transform.position = CameraPosition;
-                FPSCamera.transform.rotation = Quaternion.Euler(0.0f, 180f, 0.0f);
-            }
+        if(Cpu){
+            FPSCamera.transform.parent = Cpu.transform;
+            FPSCamera.transform.position = CameraPosition;
+            FPSCamera.transform.rotation = Quaternion.Euler(0.0f, 180f, 0.0f);
         }
     }
 }

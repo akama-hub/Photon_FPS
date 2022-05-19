@@ -9,7 +9,7 @@ public class GameManager : MonoBehaviourPunCallbacks //Photon viewやPunを使�
     [SerializeField] GameObject playerPrefab; //Inspectorで紐づけ
 
     //プレイヤのリスポーン位置の設定
-    Vector3 respawn = new Vector3(3,-12,-1);
+    Vector3 respawn = new Vector3(2.2f, -12, 3f);
  
     // Start is called before the first frame update
     void Start()

@@ -1,51 +1,37 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Photon.Pun;
 
-using System.Net;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading;
-
-using forudp;
-
-
-public class EstimatedCPUController : MonoBehaviourPunCallbacks
+public class EstimatedCPUController : MonoBehaviour
 {
-    public static int positionLength = 8;
     private forudp.UDP commUDP = new forudp.UDP();
-
-    private Rigidbody rigidbody;
     
     // Start is called before the first frame update
     void Start()
     {
-        commUDP.init(50002, 50000, 50001);
+        // commUDP.init(int型の送信用ポート番号, int型の送信先ポート番号, int型の受信用ポート番号);
+        commUDP.init(50002, 50003, 50001);
         //UDP受信開始
         commUDP.start_receive();
-        rigidbody = this.GetComponent<Rigidbody> ();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(!photonView.IsMine){
-            // Debug.Log("This player is not made by me");
-            return;
-        }
-        
         string[] position = commUDP.rcvMsg.Split(',');
-        Debug.Log(commUDP.rcvMsg);
+        // Debug.Log(commUDP.rcvMsg);
 
-        // int pos_x = int.Parse(position.Substring(0, positionLength));
-        // int pos_y = int.Parse(position.Substring(positionLength, positionLength));
+        if(commUDP.rcvMsg != "ini"){
+            // Debug.Log("Estimating");
 
-        if(position[1] == null){
-            int pos_x = int.Parse(position[0]);
-            int pos_y = int.Parse(position[1]);
-            int pos_z = int.Parse(position[2]);
+            float pos_x = float.Parse(position[0]);
+            float pos_y = float.Parse(position[1]);
+            float pos_z = float.Parse(position[2]);
             
+            // Debug.Log(pos_x);
+            // Debug.Log(pos_y);
+            // Debug.Log(pos_z);
+
             Transform myTransform = this.transform;
             
             Vector3 pos = myTransform.position;

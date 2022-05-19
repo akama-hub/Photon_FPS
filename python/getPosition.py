@@ -1,11 +1,12 @@
 import socket
 import signal
-import os
-from datetime import datetime
-import csv
+# import os
+# from datetime import datetime
+# import csv
 from turtle import pos
 import numpy as np
 from sklearn.linear_model import LinearRegression #LinearRegression
+import time 
 
 
 # log_date = datetime.now().strftime("%Y%m%d-%H:%M:%S")
@@ -94,18 +95,23 @@ if __name__ == '__main__' :
     vel_y = np.array([])
     t = np.array([])
 
-    frame_delay = 1
-    delay = frame_delay * 0.02
+    # frame_delay = 1
+    # delay = frame_delay * 0.02
+    delay = 0.1
 
     print("connecting")
 
     while True:
         try:
+            # start = time.time() #単位は秒
+
+            # unity_sock.sendto("hi".encode("utf-8"), unity_addr)
+
             cli_data, cli_addr = cli_sock.recvfrom(M_SIZE)
             # clidata = time00000000x00000000y00000000z00000000
             #　負の値を取るとーも一文字になるので注意
             cli_str_data = cli_data.decode("utf-8")
-            time = ""
+            send_time = ""
             position_x = ""
             position_y = ""
             position_z = ""
@@ -141,7 +147,7 @@ if __name__ == '__main__' :
                     flag = "velocity"
                     continue
                 if flag == "time":
-                    time += data
+                    send_time += data
                 if flag == "position_x":
                     position_x += data
                 if flag == "position_y":
@@ -156,25 +162,23 @@ if __name__ == '__main__' :
                     velocity_z += data
             # with open(f'{log_dir}/zigzag.csv', 'a') as f:
             #     writer = csv.writer(f, lineterminator='\n')
-            #     writer.writerow([time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z])
-            print(time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z)
+            #     writer.writerow([send_time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z])
+            print(send_time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z)
             # position_x = "00000020"
-
-            print(len(pos_x))
             
             if len(pos_x) < 4:
                 pos_x = np.append(pos_x, float(position_x))
                 pos_y = np.append(pos_y, float(position_y))
                 vel_x = np.append(vel_x, float(velocity_x))
                 vel_y = np.append(vel_y, float(velocity_y))
-                t = np.append(t, float(time))
+                t = np.append(t, float(send_time))
 
             else:
                 pos_x[0] = float(position_x)
                 pos_y[0] = float(position_y)
                 vel_x[0] = float(velocity_x)
                 vel_y[0] = float(velocity_y)
-                t[0] = float(time)
+                t[0] = float(send_time)
 
                 pos_x = np.roll(pos_x, -1)
                 pos_y = np.roll(pos_y, -1)
@@ -193,6 +197,10 @@ if __name__ == '__main__' :
                 # print("Unity client", cli_data, data)
                 print("Unity client", cli_data)
                 unity_sock.sendto(predict_data, unity_addr)
+
+                # end = time.time()
+                # exe_time = end - start
+                # print(start, end, exe_time) #0.003
     
         except KeyboardInterrupt:
             print ('\n . . .\n')

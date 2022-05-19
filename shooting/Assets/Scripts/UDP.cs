@@ -9,9 +9,6 @@
     ・UDP受信した文字列の取得　commmUDP.rcvMsg
     ・終了処理　commUDP.end()
 ****/
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;

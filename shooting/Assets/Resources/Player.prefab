@@ -8206,7 +8206,7 @@ CapsuleCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
-  m_Radius: 0.4
+  m_Radius: 0.5
   m_Height: 1.8
   m_Direction: 1
   m_Center: {x: 0, y: -0.1, z: 0}
@@ -8246,6 +8246,7 @@ MonoBehaviour:
   observableSearch: 2
   ObservedComponents:
   - {fileID: 8418887320900205197}
+  - {fileID: 4435422091895737397}
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
@@ -11403,6 +11404,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9b199636593b5e4899fd627db352053, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bulletPrefab: {fileID: 153685746339513387, guid: a9e9625d6af4ab740aefeca3f8bc8d37, type: 3}
   shotSpeed: 3000
   muzzleFlashParticle: {fileID: 5178785617083926167}
