@@ -5,7 +5,6 @@ import signal
 import os
 from datetime import datetime
 import csv
-from turtle import pos
 import numpy as np
 from sklearn.linear_model import LinearRegression #LinearRegression
 import time 
@@ -20,12 +19,14 @@ if __name__ == '__main__' :
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-sp", "--sendport")
-    parser.add_argument("-rp", "--recieveport")
-    parser.add_argument("-l", "--latency")
+    parser.add_argument("-sp", "--servport", type=int)
+    parser.add_argument("-up", "--unityport", type=int)
+    parser.add_argument("-l", "--latency", type=int)
     args = parser.parse_args()    # 4. 引数を解析
 
-    log_date = datetime.now().strftime("%m%d-%H:%M")
+    # log_date = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+    # windowsでは:をファイル名につけてはいけない？？
+    log_date = datetime.now().strftime("%m%d_%H%M")
     # # log_dir = f'/mnt/HDD/akama/Unity/movement_data/accel/ohuku'
     # log_dir = f'/mnt/HDD/akama/Unity/movement_data/accel/zigzag'
 
@@ -36,13 +37,19 @@ if __name__ == '__main__' :
     # unity_port = 50011
     # serv_port = 50000
     # unity_port = 50001
-    serv_port = args.recieveport
-    unity_port = args.sendport
+    serv_port = args.servport
+    unity_port = args.unityport
     serv = (host, serv_port)
     unity_addr = (host, unity_port)
     cli_sock = socket.socket(socket.AF_INET, type=socket.SOCK_DGRAM)
     cli_sock.bind(serv)
     unity_sock = socket.socket(socket.AF_INET, type=socket.SOCK_DGRAM)
+
+    turminal = ""
+    if unity_port == 50001:
+        turminal = "Host"
+    elif unity_port == 50011:
+        turminal = "participant"
 
     pos_x = np.array([])
     pos_y = np.array([])
@@ -50,17 +57,10 @@ if __name__ == '__main__' :
     vel_y = np.array([])
     t = np.array([])
 
-    # frame_delay = 1
-    # delay = frame_delay * 0.02
-    delay = 0.1
-
     print("connecting")
 
     while True:
         try:
-            # start = time.time() #単位は秒
-
-            # unity_sock.sendto("hi".encode("utf-8"), unity_addr)
 
             cli_data, cli_addr = cli_sock.recvfrom(M_SIZE)
             # clidata = time00000000x00000000y00000000z00000000
@@ -116,14 +116,10 @@ if __name__ == '__main__' :
                 if flag == "velocity_z":
                     velocity_z += data
 
-            with open(f'{log_dir}/{args.latency}_{log_date}.csv', 'a') as f:
+            # with open(f"{log_dir}/{turminal}_0_{log_date}" + ".csv", 'a') as f:
+            with open(f"{log_dir}/{turminal}_Lag{args.latency}_{log_date}.csv", 'a') as f:
                 writer = csv.writer(f, lineterminator='\n')
                 writer.writerow([send_time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z])
-            print(send_time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z)
-
-                # end = time.time()
-                # exe_time = end - start
-                # print(start, end, exe_time) #0.003
     
         except KeyboardInterrupt:
             print ('\n . . .\n')

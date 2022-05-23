@@ -6,18 +6,21 @@ using Photon.Pun;
 public class ProposedPlayerController : MonoBehaviourPunCallbacks
 { 
     GameObject mainCamera; 
-    bool cursorLock = true;
-    int count = 0;
-    float pastPosition;
-    float gap;
-    float positionX;
+    private bool cursorLock = true;
+    private float pastPosition;
+    private float gap;
+    private float positionX;
+    private float pastTime;
+    private float nowTime;
+    // 絶対にとらない値を初期値に与えて判定に使用
+    private float pastPosX = -100, pastPosY, pastPosZ;
+    private float pos_x, pos_y, pos_z;
 
     private forudp.UDP commUDP = new forudp.UDP();
     [SerializeField] GameObject EstimatedPlayerPrefab;
     // [SerializeField] GameObject CPUPrefab;
     GameObject CPUPrefab;
     GameObject estimate;
-    Rigidbody _rigidbody;
     Vector3 CPURespawn = new Vector3(0f, -12, 10f);
     private int firstTime = 0;
  
@@ -50,9 +53,12 @@ public class ProposedPlayerController : MonoBehaviourPunCallbacks
             if(players.Length > 0){
                 // Debug.Log("Finding");
                 CPUPrefab = GameObject.FindGameObjectWithTag("Observer");
-                // Debug.Log(CPUPrefab.name);
-                _rigidbody = CPUPrefab.GetComponent<Rigidbody>();
-                firstTime = 1;
+                if(CPUPrefab){
+                    firstTime = 1;
+                }
+                else{
+                    // Debug.Log("Retrying to find");
+                }
             }
         }
         
@@ -60,24 +66,40 @@ public class ProposedPlayerController : MonoBehaviourPunCallbacks
         UpdateCursorLock();
 
         if(CPUPrefab){
-            Debug.Log("CPU is found");
-            string position_x = CPUPrefab.transform.position.x.ToString("00.000000");
-            string position_y = CPUPrefab.transform.position.y.ToString("00.000000");
-            string position_z = CPUPrefab.transform.position.z.ToString("00.000000");
-            string time = Time.time.ToString("0000.0000");
-            string velocity_x = _rigidbody.velocity.x.ToString("00.000000");
-            string velocity_y = _rigidbody.velocity.y.ToString("00.000000");
-            // string velocity_z = rigidbody.velocity.z.ToString("00.000000");
-            // Debug.Log(Time.time);
-            // string data = "t" + time + "x" + position_x + "y" + position_y + "z" + position_z + "vx" + velocity_x + "vy" + velocity_y + "vz" + velocity_z;
-            string data = "t" + time + "x" + position_x + "y" + position_y + "z" + position_z + "vx" + velocity_x + "vy" + velocity_y;
-            commUDP.send(data);
-            // Debug.Log("send Data: " + data);
+            // Debug.Log("CPU is found");
+            nowTime = Time.time;
+            pos_x  = CPUPrefab.transform.position.x;
+            pos_y  = CPUPrefab.transform.position.y;
+            pos_z  = CPUPrefab.transform.position.z;
+            // Debug.Log(pastPosX);
+            if(pastPosX == -100){
+
+            }
+            else{
+                float deltaT = nowTime - pastTime;
+                float vel_x = (pos_x - pastPosX) / deltaT;
+                float vel_y = (pos_y - pastPosY) / deltaT;
+                float vel_z = (pos_z - pastPosZ) / deltaT;
+
+                string position_x = pos_x.ToString("00.000000");
+                string position_y = pos_y.ToString("00.000000");
+                string position_z = pos_z.ToString("00.000000");
+                string time = nowTime.ToString("0000.0000");
+
+                string velocity_x = vel_x.ToString("00.000000");
+                string velocity_y = vel_y.ToString("00.000000");
+                string velocity_z = vel_z.ToString("00.000000");
+                // Debug.Log(Time.time);
+                string data = "t" + time + "x" + position_x + "y" + position_y + "z" + position_z + "vx" + velocity_x + "vy" + velocity_y + "vz" + velocity_z;
+                // string data = "t" + time + "x" + position_x + "y" + position_y + "z" + position_z + "vx" + velocity_x + "vy" + velocity_y;
+                commUDP.send(data);
+                // Debug.Log("send Data: " + data);
+            }
 
             if(estimate){
                 gap = estimate.transform.position.x - pastPosition;
                 positionX = estimate.transform.position.x;
-                Debug.Log(gap);
+                // Debug.Log(gap);
                 if(gap > 0){
                     if(0.62 < positionX && positionX < 0.65 && GameState.canShoot){
                         Shoot.instance.Shot();
@@ -96,9 +118,15 @@ public class ProposedPlayerController : MonoBehaviourPunCallbacks
                 }
                 pastPosition = positionX;
             }
+
+            pastTime = nowTime;
+            pastPosX = pos_x;
+            pastPosY = pos_y;
+            pastPosZ = pos_z;
+
         }
         else{
-            Debug.Log("CPU is not found");
+            // Debug.Log("CPU is not found");
         }
     }
  

@@ -30,6 +30,11 @@ public class ProposedCPUController : MonoBehaviourPunCallbacks
     // Start is called before the first frame update
     void Start()
     {
+        if(!photonView.IsMine){
+            // Debug.Log("This player is not made by me");
+            return;
+        }
+        
         // commUDP.init(int型の送信用ポート番号, int型の送信先ポート番号, int型の受信用ポート番号);
         commUDP.init(50012, 50010, 50013);
         //UDP受信開始
