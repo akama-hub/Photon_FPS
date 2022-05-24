@@ -69,17 +69,22 @@ namespace Photon.Pun.UtilityScripts
         {
             GUILayout.Label(string.Format("Rtt:{0,4} +/-{1,3}", this.Peer.RoundTripTime, this.Peer.RoundTripTimeVariance));
 
-            bool simEnabled = this.Peer.IsSimulationEnabled;
-            bool newSimEnabled = GUILayout.Toggle(simEnabled, "Simulate");
-            if (newSimEnabled != simEnabled)
-            {
-                this.Peer.IsSimulationEnabled = newSimEnabled;
-            }
+            // 画面上のクリックで有効化できる
+            // bool simEnabled = this.Peer.IsSimulationEnabled;
+            // bool newSimEnabled = GUILayout.Toggle(simEnabled, "Simulate");
+            // if (newSimEnabled != simEnabled)
+            // {
+            //     this.Peer.IsSimulationEnabled = newSimEnabled;
+            // }
+
+            //  シミュレーションの有効化
+            this.Peer.IsSimulationEnabled = true;
 
             // 初期状態、スライダーで操作できる
             // float inOutLag = this.Peer.NetworkSimulationSettings.IncomingLag;
             // ラグの大きさをここで設定できる
             float inOutLag = 0;
+            // float inOutLag = 200;
             GUILayout.Label("Lag " + inOutLag);
             inOutLag = GUILayout.HorizontalSlider(inOutLag, 0, 500);
 

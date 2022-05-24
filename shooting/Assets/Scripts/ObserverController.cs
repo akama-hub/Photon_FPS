@@ -4,7 +4,7 @@ using UnityEngine;
 using Photon.Pun;
 using System;
 
-public class ProposedCPUController : MonoBehaviourPunCallbacks
+public class ObserverController : MonoBehaviourPunCallbacks
 {
     float x = 0;
     float z = 0;
@@ -22,11 +22,6 @@ public class ProposedCPUController : MonoBehaviourPunCallbacks
 
     bool noX = false;
     bool noZ = true;
-    private DateTime dt;
-    private float nowTime;
-    private float milSec;
-
-    private forudp.UDP commUDP = new forudp.UDP();
 
     private Rigidbody rigidbody;
     
@@ -37,11 +32,6 @@ public class ProposedCPUController : MonoBehaviourPunCallbacks
             // Debug.Log("This player is not made by me");
             return;
         }
-        
-        // commUDP.init(int型の送信用ポート番号, int型の送信先ポート番号, int型の受信用ポート番号);
-        commUDP.init(50012, 50010, 50013);
-        //UDP受信開始
-        // commUDP.start_receive();
         rigidbody = this.GetComponent<Rigidbody> ();
     }
 
@@ -525,28 +515,8 @@ public class ProposedCPUController : MonoBehaviourPunCallbacks
         // Debug.Log(NonLinearSpeed);
         this.rigidbody.velocity = new Vector3(x, 0, z);
 
-        dt = DateTime.Now;
-
-        milSec = dt.Millisecond / 1000f;
-        nowTime = (dt.Minute * 60) + dt.Second + milSec;
-
-        string position_x = transform.position.x.ToString("00.000000");
-        string position_y = transform.position.y.ToString("00.000000");
-        string position_z = transform.position.z.ToString("00.000000");
-        // string time = Time.time.ToString("0000.0000");
-        string time = nowTime.ToString("F3");
-
-        string velocity_x = rigidbody.velocity.x.ToString("00.000000");
-        string velocity_y = rigidbody.velocity.y.ToString("00.000000");
-        string velocity_z = rigidbody.velocity.z.ToString("00.000000");
-        // Debug.Log(Time.time);
-        string data = "t" + time + "x" + position_x + "y" + position_y + "z" + position_z + "vx" + velocity_x + "vy" + velocity_y + "vz" + velocity_z;
-        // string data = "t" + time + "x" + position_x + "y" + position_y + "z" + position_z + "vx" + velocity_x + "vy" + velocity_y;
-        commUDP.send(data);
-        
         // Debug.Log(rigidbody.velocity.magnitude);
         // Debug.Log(rigidbody.velocity);
-        // Debug.Log(commUDP.rcvMsg)
 
     }
 }

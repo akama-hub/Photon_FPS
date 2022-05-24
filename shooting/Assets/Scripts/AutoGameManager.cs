@@ -29,8 +29,8 @@ public class AutoGameManager : MonoBehaviourPunCallbacks
             if(players.Length > 0){
                 cpuFlag = 1;
                 Debug.Log("You are CPU!!");
-                PhotonNetwork.Instantiate("CPUObserver", CPURespawn, Quaternion.identity); //y座標のみ0の下でプレハブを生成
-                Cpu = GameObject.FindWithTag("CPU");
+                PhotonNetwork.Instantiate("Observer", CPURespawn, Quaternion.identity); //y座標のみ0の下でプレハブを生成
+                Cpu = GameObject.FindWithTag("Observer");
 
                 FPSCamera = Camera.main.gameObject; // Main Camera(Game Object) の取得
 
@@ -59,7 +59,7 @@ public class AutoGameManager : MonoBehaviourPunCallbacks
 
     void Update(){
         if(!Cpu && cpuFlag == 1){
-            Cpu = GameObject.FindWithTag("CPU");
+            Cpu = GameObject.FindWithTag("Observer");
             if(Cpu){
                 FPSCamera.transform.parent = Cpu.transform;
                 FPSCamera.transform.position = CameraPosition;

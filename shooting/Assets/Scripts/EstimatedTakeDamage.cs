@@ -9,7 +9,7 @@ public class EstimatedTakeDamage : MonoBehaviour
     int maxCPUHP = 100;
     public int CPUHP;
     public Slider selfHPBer;
-    int damage = 10;
+    int damage = 1;
 
     [SerializeField] ParticleSystem bulletHitEffectPrefab;
 

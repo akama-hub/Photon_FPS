@@ -16,7 +16,8 @@ public class CPUTakeDamageObserver : MonoBehaviourPunCallbacks
     [SerializeField] GameObject CameraParent;
 
     Vector3 respawn = new Vector3(0,-12f,10f);
-    int damage = 10;
+    private int damage = 1;
+    private int HitCount = 0;
 
     [SerializeField] ParticleSystem bulletHitEffectPrefab;
 
@@ -36,6 +37,7 @@ public class CPUTakeDamageObserver : MonoBehaviourPunCallbacks
 
     void OnTriggerEnter(Collider other){
         Debug.Log("Hit");
+        HitCount += 1;
         if(other.CompareTag("Bullet")){
             Debug.Log("Take Damage");
             CPUHP -= damage;

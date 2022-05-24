@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
+using System;
  
 public class ProposedPlayerController : MonoBehaviourPunCallbacks
 { 
@@ -11,10 +12,12 @@ public class ProposedPlayerController : MonoBehaviourPunCallbacks
     private float gap;
     private float positionX;
     private float pastTime;
-    private float nowTime;
+    private float nowTime = 0.1f;
+    private float milSec;
     // 絶対にとらない値を初期値に与えて判定に使用
     private float pastPosX = -100, pastPosY, pastPosZ;
     private float pos_x, pos_y, pos_z;
+    private DateTime dt;
 
     private forudp.UDP commUDP = new forudp.UDP();
     [SerializeField] GameObject EstimatedPlayerPrefab;
@@ -67,16 +70,23 @@ public class ProposedPlayerController : MonoBehaviourPunCallbacks
 
         if(CPUPrefab){
             // Debug.Log("CPU is found");
-            nowTime = Time.time;
+            // nowTime = Time.time;
+            dt = DateTime.Now;
+            milSec = dt.Millisecond / 1000f;
+            nowTime = (dt.Minute * 60) + dt.Second + milSec;
+            // Debug.Log(milSec);
+
             pos_x  = CPUPrefab.transform.position.x;
             pos_y  = CPUPrefab.transform.position.y;
             pos_z  = CPUPrefab.transform.position.z;
             // Debug.Log(pastPosX);
             if(pastPosX == -100){
-
+                Debug.Log("Initiate");
             }
             else{
                 float deltaT = nowTime - pastTime;
+                // Debug.Log(deltaT);
+
                 float vel_x = (pos_x - pastPosX) / deltaT;
                 float vel_y = (pos_y - pastPosY) / deltaT;
                 float vel_z = (pos_z - pastPosZ) / deltaT;
@@ -84,7 +94,11 @@ public class ProposedPlayerController : MonoBehaviourPunCallbacks
                 string position_x = pos_x.ToString("00.000000");
                 string position_y = pos_y.ToString("00.000000");
                 string position_z = pos_z.ToString("00.000000");
-                string time = nowTime.ToString("0000.0000");
+                // string time = nowTime.ToString("0000.0000");
+                string time = nowTime.ToString("F3");
+                
+                // Debug.Log(nowTime);
+                // Debug.Log(time);
 
                 string velocity_x = vel_x.ToString("00.000000");
                 string velocity_y = vel_y.ToString("00.000000");

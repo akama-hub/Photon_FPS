@@ -9847,9 +9847,9 @@ GameObject:
   - component: {fileID: 9052330830578195365}
   - component: {fileID: 9052330830578195364}
   - component: {fileID: 1059975163492561329}
-  - component: {fileID: 8363532404718450508}
+  - component: {fileID: 204038334944581969}
   m_Layer: 8
-  m_Name: Observer
+  m_Name: ProposedObserver
   m_TagString: Observer
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -10010,7 +10010,7 @@ MonoBehaviour:
   CameraParent: {fileID: 9052330830578195375}
   bulletHitEffectPrefab: {fileID: 4461511964038029802}
   CPUUI: {fileID: 671663066264709495}
---- !u!114 &8363532404718450508
+--- !u!114 &204038334944581969
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -10019,7 +10019,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 9052330830578195375}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 113e7a12dce626af7ad8d9e45e87d15f, type: 3}
+  m_Script: {fileID: 11500000, guid: 441cc43cd546488468941a3d22498c9f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &9052330830624708241

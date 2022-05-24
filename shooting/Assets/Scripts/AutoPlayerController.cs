@@ -36,7 +36,7 @@ public class AutoPlayerController : MonoBehaviourPunCallbacks
 
         if(players.Length >= 1){ //CPUが存在しているとき
             if(!Target){
-                Target = GameObject.FindWithTag("CPU");
+                Target = GameObject.FindWithTag("Observer");
             }
             else{
                 gap = Target.transform.position.x - pastPosition;

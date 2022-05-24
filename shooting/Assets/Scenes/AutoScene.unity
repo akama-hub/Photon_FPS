@@ -835,7 +835,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerPrefab: {fileID: 8418887320900205190, guid: 60f7c0c47d29f244b822d12a24b0e525, type: 3}
-  Cpu: {fileID: 3882192837579148043, guid: c883f91fd7580cf43b1620c9109d3065, type: 3}
+  Cpu: {fileID: 9052330830578195375, guid: 1247827733451960cb72e34bd986b879, type: 3}
 --- !u!43 &1825550154
 Mesh:
   m_ObjectHideFlags: 0
