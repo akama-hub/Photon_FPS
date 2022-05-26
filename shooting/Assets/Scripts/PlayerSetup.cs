@@ -31,7 +31,7 @@ public class PlayerSetup : MonoBehaviourPunCallbacks
             FPSCamera.transform.position = Player.transform.position;
             FPSCamera.transform.rotation = Quaternion.Euler(3, 0, 0);
 
-            MakeBullet.transform.position = new Vector3 (FPSCamera.transform.position.x, FPSCamera.transform.position.y - 0.15f, FPSCamera.transform.position.z + 0.7f);
+            MakeBullet.transform.position = new Vector3 (FPSCamera.transform.position.x + 0.065f, FPSCamera.transform.position.y - 0.2f, FPSCamera.transform.position.z + 0.7f);
             MakeBullet.transform.parent = FPSCamera.transform;
             // Debug.Log(MakeBullet.transform.position);
             // MakeBullet.transform.position = new Vector3(0.0f, 0f, 0f);
@@ -42,6 +42,8 @@ public class PlayerSetup : MonoBehaviourPunCallbacks
         }
         else{
             PlayerUI.SetActive(false);
+            MakeBullet.transform.position = new Vector3 (Player.transform.position.x + 0.065f, Player.transform.position.y - 0.2f, Player.transform.position.z + 0.7f);
+            MakeBullet.transform.rotation = Quaternion.Euler(0,0,0);
         }
         
     }

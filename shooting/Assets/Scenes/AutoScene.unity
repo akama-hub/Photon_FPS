@@ -834,7 +834,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc81414520f84154c90a794493fb0a0d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerPrefab: {fileID: 8418887320900205190, guid: 60f7c0c47d29f244b822d12a24b0e525, type: 3}
+  playerPrefab: {fileID: 3766108149811866252, guid: de58436f691ae2346adc43be45cb0e69, type: 3}
   Cpu: {fileID: 9052330830578195375, guid: 1247827733451960cb72e34bd986b879, type: 3}
 --- !u!43 &1825550154
 Mesh:

@@ -8311,7 +8311,7 @@ MonoBehaviour:
   HPBer: {fileID: 8418887320543103137}
   playerPrefab: {fileID: 8418887320900205190}
   bulletHitEffectPrefab: {fileID: 7840797188815948044, guid: c116467e444d2eb4f931040c4b5aaec8, type: 3}
-  damage: 10
+  damage: 1
 --- !u!114 &2077376074419958999
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11400,5 +11400,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9b199636593b5e4899fd627db352053, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  shotSpeed: 1000
+  shotSpeed: 5000
   muzzleFlashParticle: {fileID: 5178785617083926167}

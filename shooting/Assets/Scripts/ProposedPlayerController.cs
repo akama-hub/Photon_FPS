@@ -115,7 +115,7 @@ public class ProposedPlayerController : MonoBehaviourPunCallbacks
                 positionX = estimate.transform.position.x;
                 // Debug.Log(gap);
                 if(gap > 0){
-                    if(0.62 < positionX && positionX < 0.65 && GameState.canShoot){
+                    if(1.7 < positionX && positionX < 1.8 && GameState.canShoot){
                         Shoot.instance.Shot();
                         // Debug.Log(estimate.transform.position.x);
                         BulletController.instance.MakeBullet();
@@ -123,7 +123,7 @@ public class ProposedPlayerController : MonoBehaviourPunCallbacks
                     }
                 }
                 else if(gap < 0){
-                    if(3.745 < positionX && positionX < 3.753 && GameState.canShoot){
+                    if(2.2 < positionX && positionX < 2.3 && GameState.canShoot){
                         Shoot.instance.Shot();
                         // Debug.Log(estimate.transform.position.x);
                         BulletController.instance.MakeBullet();

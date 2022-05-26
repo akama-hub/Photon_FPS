@@ -12,7 +12,7 @@ public class TakingDamage : MonoBehaviourPunCallbacks
 
     [SerializeField] GameObject playerPrefab; //Inspectorで紐づけ
     [SerializeField] ParticleSystem bulletHitEffectPrefab;
-    [SerializeField] int damage = 10;
+    [SerializeField] int damage;
  
  
     // Start is called before the first frame update
@@ -22,30 +22,30 @@ public class TakingDamage : MonoBehaviourPunCallbacks
         HPBer.value = PlayerHP;
     }
 
-    void OnTriggerEnter(Collider other){
-        Debug.Log("Hit");
-        if(other.CompareTag("Bullet")){
-            Debug.Log("Take Damage");
-            PlayerHP -= damage;
+    // void OnTriggerEnter(Collider other){
+    //     Debug.Log("Hit");
+    //     if(other.CompareTag("Bullet")){
+    //         Debug.Log("Take Damage");
+    //         PlayerHP -= damage;
 
-            bulletHitEffectPrefab.Play();
+    //         bulletHitEffectPrefab.Play();
 
-            //ぶつかってきたオブジェクトを破壊する.
-            Destroy(other.gameObject);
-        }
+    //         //ぶつかってきたオブジェクトを破壊する.
+    //         Destroy(other.gameObject);
+    //     }
 
-        if(PlayerHP <= 0f) //hpが0以下になったら・・・
-        {
-            PlayerHP = 0;
-            Destroy(this.gameObject, 0f);
-            HPBer.value = PlayerHP;
-            Debug.Log(HPBer.value);
-            PhotonNetwork.LoadLevel("GameOver");
-        }
+    //     if(PlayerHP <= 0f) //hpが0以下になったら・・・
+    //     {
+    //         PlayerHP = 0;
+    //         Destroy(this.gameObject, 0f);
+    //         HPBer.value = PlayerHP;
+    //         Debug.Log(HPBer.value);
+    //         PhotonNetwork.LoadLevel("GameOver");
+    //     }
 
-        HPBer.value = PlayerHP;
-        Debug.Log(HPBer.value);
-    }
+    //     HPBer.value = PlayerHP;
+    //     Debug.Log(HPBer.value);
+    // }
  
     [PunRPC]
     public void TakeDamage(int _damage) //Playerへの当たり判定から呼び出されるメソッド

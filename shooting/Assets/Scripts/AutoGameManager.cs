@@ -58,13 +58,29 @@ public class AutoGameManager : MonoBehaviourPunCallbacks
     }
 
     void Update(){
-        if(!Cpu && cpuFlag == 1){
-            Cpu = GameObject.FindWithTag("Observer");
-            if(Cpu){
-                FPSCamera.transform.parent = Cpu.transform;
-                FPSCamera.transform.position = CameraPosition;
-                FPSCamera.transform.rotation = Quaternion.Euler(0.0f, 180f, 0.0f);
-            }
+        //Spaceが押された時
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            EndGame();
         }
+        
+        // if(!Cpu && cpuFlag == 1){
+        //     Cpu = GameObject.FindWithTag("Observer");
+        //     if(Cpu){
+        //         FPSCamera.transform.parent = Cpu.transform;
+        //         FPSCamera.transform.position = CameraPosition;
+        //         FPSCamera.transform.rotation = Quaternion.Euler(0.0f, 180f, 0.0f);
+        //     }
+        // }
+    }
+
+    //ゲーム終了
+    private void EndGame()
+    {
+        #if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;//ゲームプレイ終了
+        #else
+            Application.Quit();//ゲームプレイ終了
+        #endif
     }
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 
-public class BulletController : MonoBehaviour
+public class BulletController : MonoBehaviourPunCallbacks
 {
     // public GameObject bulletPrefab;
     public float shotSpeed;
@@ -26,11 +26,13 @@ public class BulletController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // if(Input.GetMouseButtonDown(0) && GameState.canShoot){
-        if(Input.GetMouseButtonDown(0)){
-            MakeBullet();
-            Debug.Log("make bullet");
-            // MakeRay();
+        if(photonView.IsMine){
+            // if(Input.GetMouseButtonDown(0) && GameState.canShoot){
+            if(Input.GetMouseButtonDown(0)){
+                MakeBullet();
+                // Debug.Log("make bullet");
+                // MakeRay();
+            }   
         }
         
     }

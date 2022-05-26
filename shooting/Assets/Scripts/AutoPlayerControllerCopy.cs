@@ -4,7 +4,7 @@ using UnityEngine;
 using Photon.Pun;
 
  
-public class AutoPlayerController : MonoBehaviourPunCallbacks
+public class AutoPlayerControllerCopy : MonoBehaviourPunCallbacks
 {  
     GameObject mainCamera; 
     bool cursorLock = true;
@@ -48,11 +48,8 @@ public class AutoPlayerController : MonoBehaviourPunCallbacks
 
                     // RTT(送受信遅延 + 実行遅延)の時
                     // 1.55-2.0
-                    // MakeBulletずらした分、-0.065する？
                     if(1.7 < positionX && positionX < 1.8 && GameState.canShoot){
-                        Shoot.instance.Shot();
-                        Debug.Log(Target.transform.position.x);
-                        BulletController.instance.MakeBullet();
+                        photonView.RPC("ShotRPC", RpcTarget.All);
                         GameState.canShoot = false;
                     }
                 }
@@ -63,11 +60,8 @@ public class AutoPlayerController : MonoBehaviourPunCallbacks
 
                     // RTT(送受信遅延 + 実行遅延)の時
                     // 2.0-2.58
-                    // MakeBulletずらした分、-0.065する？
                     if(2.2 < positionX && positionX < 2.3 && GameState.canShoot){
-                        Shoot.instance.Shot();
-                        Debug.Log(Target.transform.position.x);
-                        BulletController.instance.MakeBullet();
+                        photonView.RPC("ShotRPC", RpcTarget.All);
                         GameState.canShoot = false;
                     }
                 }
@@ -98,5 +92,12 @@ public class AutoPlayerController : MonoBehaviourPunCallbacks
         else if(!cursorLock){
             Cursor.lockState = CursorLockMode.None;
         }
+    }
+
+    [PunRPC]
+    private void ShotRPC(){
+        Shoot.instance.Shot();
+        BulletControllerCopy.instance.shoot();
+        GameState.canShoot = false;
     }
 }

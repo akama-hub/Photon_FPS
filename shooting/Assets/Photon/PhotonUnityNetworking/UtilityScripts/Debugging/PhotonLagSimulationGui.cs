@@ -84,6 +84,10 @@ namespace Photon.Pun.UtilityScripts
             // float inOutLag = this.Peer.NetworkSimulationSettings.IncomingLag;
             // ラグの大きさをここで設定できる
             float inOutLag = 0;
+            // float inOutLag = 25;
+            // float inOutLag = 50;
+            // float inOutLag = 100;
+            // float inOutLag = 150;
             // float inOutLag = 200;
             GUILayout.Label("Lag " + inOutLag);
             inOutLag = GUILayout.HorizontalSlider(inOutLag, 0, 500);
@@ -91,14 +95,18 @@ namespace Photon.Pun.UtilityScripts
             this.Peer.NetworkSimulationSettings.IncomingLag = (int)inOutLag;
             this.Peer.NetworkSimulationSettings.OutgoingLag = (int)inOutLag;
 
-            float inOutJitter = this.Peer.NetworkSimulationSettings.IncomingJitter;
+            // float inOutJitter = this.Peer.NetworkSimulationSettings.IncomingJitter;
+            // 送受信メッセージのランダム遅延
+            float inOutJitter = 0;
             GUILayout.Label("Jit " + inOutJitter);
             inOutJitter = GUILayout.HorizontalSlider(inOutJitter, 0, 100);
 
             this.Peer.NetworkSimulationSettings.IncomingJitter = (int)inOutJitter;
             this.Peer.NetworkSimulationSettings.OutgoingJitter = (int)inOutJitter;
 
-            float loss = this.Peer.NetworkSimulationSettings.IncomingLossPercentage;
+            // float loss = this.Peer.NetworkSimulationSettings.IncomingLossPercentage;
+            // メッセージのロス、一般的には2%未満
+            float loss = 0;
             GUILayout.Label("Loss " + loss);
             loss = GUILayout.HorizontalSlider(loss, 0, 10);
 

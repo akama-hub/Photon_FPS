@@ -14,6 +14,8 @@ import time
 # log_dir = f'/mnt/HDD/akama/Unity/movement_data/accel/zigzag'
 # os.makedirs(log_dir, exist_ok=True)
 
+# unity の速度はm/s
+
 def linear_regression(pos_x, pos_y, t, delay):
     lr = LinearRegression()
 
@@ -97,7 +99,9 @@ if __name__ == '__main__' :
 
     # frame_delay = 1
     # delay = frame_delay * 0.02
-    delay = 0.1
+    delay = 20 * 0.001
+    # delay = (20 + (25*2)) * 0.001
+    # delay = (20 + (50*2)) * 0.001
 
     print("connecting")
 
@@ -188,6 +192,7 @@ if __name__ == '__main__' :
 
                 # p_x, p_y = linear_regression(pos_x, pos_y, t, delay)
                 p_x, p_y = DR(pos_x, pos_y, vel_x, vel_y, delay)
+                # p_x, p_y =  MAADR(pos_x, pos_y, vel_x, vel_y, delay)
 
                 data = str(p_x) + "," + str(p_y) + "," + position_z
                 print("send message: ", data)

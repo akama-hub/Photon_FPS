@@ -10,6 +10,8 @@ public class CPUTakeDamageObserver : MonoBehaviourPunCallbacks
     public int CPUHP;
     public Slider HPBer;
     public Slider selfHPBer;
+    [SerializeField] public Text Hptext;
+    [SerializeField] public Text selfHptext;
 
     GameObject FPSCamera;
     private Vector3 CameraPosition;
@@ -29,6 +31,8 @@ public class CPUTakeDamageObserver : MonoBehaviourPunCallbacks
     {
         CPUHP = maxCPUHP; //HPの初期値を最大にする
         HPBer.value = CPUHP;
+        Hptext.text = CPUHP.ToString();
+        selfHptext.text = CPUHP.ToString();
 
         if(!photonView.IsMine){
             CPUUI.SetActive(false);
@@ -39,7 +43,7 @@ public class CPUTakeDamageObserver : MonoBehaviourPunCallbacks
         Debug.Log("Hit");
         HitCount += 1;
         if(other.CompareTag("Bullet")){
-            Debug.Log("Take Damage");
+            // Debug.Log("Take Damage");
             CPUHP -= damage;
 
             bulletHitEffectPrefab.Play();
@@ -48,6 +52,7 @@ public class CPUTakeDamageObserver : MonoBehaviourPunCallbacks
 
             //ぶつかってきたオブジェクトを破壊する.
             Destroy(other.gameObject);
+            Debug.Log("Destroy");
         }
 
         if(CPUHP <= 0f) //hpが0以下になったら・・・
@@ -63,7 +68,9 @@ public class CPUTakeDamageObserver : MonoBehaviourPunCallbacks
 
         HPBer.value = CPUHP;
         selfHPBer.value = CPUHP;
-        // Debug.Log(HPBer.value);
+        Hptext.text = CPUHP.ToString();
+        selfHptext.text = CPUHP.ToString();
+        Debug.Log(HPBer.value);
     }
  
     [PunRPC]
