@@ -10462,7 +10462,7 @@ GameObject:
   - component: {fileID: 470792959112239893}
   - component: {fileID: 8672012837334399032}
   m_Layer: 0
-  m_Name: ProposedAutoPlayer
+  m_Name: ProposedAutoPlayerCopy
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -10601,7 +10601,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_SynchronizePosition: 1
   m_SynchronizeRotation: 1
-  m_SynchronizeScale: 1
+  m_SynchronizeScale: 0
   m_UseLocal: 1
 --- !u!114 &7964932956573291841
 MonoBehaviour:

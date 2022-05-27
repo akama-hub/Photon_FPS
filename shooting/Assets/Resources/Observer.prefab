@@ -10008,6 +10008,7 @@ GameObject:
   - component: {fileID: 9052330830578195364}
   - component: {fileID: 1059975163492561329}
   - component: {fileID: 8363532404718450508}
+  - component: {fileID: -1729259720972232382}
   m_Layer: 8
   m_Name: Observer
   m_TagString: Observer
@@ -10132,6 +10133,7 @@ MonoBehaviour:
   observableSearch: 2
   ObservedComponents:
   - {fileID: 9052330830578195364}
+  - {fileID: -1729259720972232382}
   - {fileID: 7623423863226218341}
   sceneViewId: 0
   InstantiationId: 0
@@ -10184,6 +10186,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 113e7a12dce626af7ad8d9e45e87d15f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &-1729259720972232382
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9052330830578195375}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 64179f3720bbfe947b7724caa67b7c1d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SynchronizeVelocity: 1
+  m_SynchronizeAngularVelocity: 1
+  m_TeleportEnabled: 0
+  m_TeleportIfDistanceGreaterThan: 3
 --- !u!1 &9052330830624708241
 GameObject:
   m_ObjectHideFlags: 0

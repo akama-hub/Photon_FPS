@@ -1367,7 +1367,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3766108149811866252}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 64179f3720bbfe947b7724caa67b7c1d, type: 3}
   m_Name: 
@@ -6391,7 +6391,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   shotSpeed: 5000
   muzzleFlashParticle: {fileID: 524876158245148317}
-  Bullet: {fileID: 153685746339513387, guid: 225d7b0fc25cb134c8c5b2f87a30c47b, type: 3}
+  Bullet: {fileID: 6201372239086196903, guid: 3bf45565794e45de8b908a789452cf5b, type: 3}
 --- !u!1 &6016808482100624647
 GameObject:
   m_ObjectHideFlags: 0

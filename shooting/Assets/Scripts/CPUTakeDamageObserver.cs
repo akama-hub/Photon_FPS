@@ -40,25 +40,21 @@ public class CPUTakeDamageObserver : MonoBehaviourPunCallbacks
     }
 
     void OnTriggerEnter(Collider other){
-        Debug.Log("Hit");
+        // Debug.Log("Hit");
         HitCount += 1;
-        if(other.CompareTag("Bullet")){
-            // Debug.Log("Take Damage");
-            CPUHP -= damage;
+        Debug.Log(HitCount + "Hit");
+        CPUHP -= damage;
 
-            bulletHitEffectPrefab.Play();
+        bulletHitEffectPrefab.Play();
 
-            // DamageColor.instance.DamageImage();
-
-            //ぶつかってきたオブジェクトを破壊する.
-            Destroy(other.gameObject);
-            Debug.Log("Destroy");
-        }
+        //貫通したオブジェクトを破壊する.
+        Destroy(other.gameObject);
+        Debug.Log("Destroy");
 
         if(CPUHP <= 0f) //hpが0以下になったら・・・
         {
             CPUHP = 0;
-            PhotonNetwork.Instantiate("CPUObserver", respawn, Quaternion.identity); //y座標のみ0の下でプレハブを生成
+            PhotonNetwork.Instantiate("Observer", respawn, Quaternion.identity); //y座標のみ0の下でプレハブを生成
             FPSCamera = Camera.main.gameObject;  // Main Camera(Game Object) の取得
             if(FPSCamera.transform.parent == CameraParent){
                 FPSCamera.transform.parent = null;
@@ -70,7 +66,7 @@ public class CPUTakeDamageObserver : MonoBehaviourPunCallbacks
         selfHPBer.value = CPUHP;
         Hptext.text = CPUHP.ToString();
         selfHptext.text = CPUHP.ToString();
-        Debug.Log(HPBer.value);
+        // Debug.Log(HPBer.value);
     }
  
     [PunRPC]
@@ -81,7 +77,7 @@ public class CPUTakeDamageObserver : MonoBehaviourPunCallbacks
         if(CPUHP <= 0f) //hpが0以下になったら・・・
         {
             CPUHP = 0;
-            PhotonNetwork.Instantiate("CPUObserver", respawn, Quaternion.identity); //y座標のみ0の下でプレハブを生成
+            PhotonNetwork.Instantiate("Observer", respawn, Quaternion.identity); //y座標のみ0の下でプレハブを生成
             FPSCamera = Camera.main.gameObject; // Main Camera(Game Object) の取得
             if(FPSCamera.transform.parent == CameraParent){
                 FPSCamera.transform.parent = null;

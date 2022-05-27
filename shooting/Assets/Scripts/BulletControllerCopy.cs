@@ -12,6 +12,8 @@ public class BulletControllerCopy : MonoBehaviourPunCallbacks
 
     [SerializeField] public GameObject Bullet;
 
+    int count = 0;
+
     public static BulletControllerCopy instance;
     public void Awake(){
         if(instance == null)
@@ -42,7 +44,7 @@ public class BulletControllerCopy : MonoBehaviourPunCallbacks
     }
 
     public void shoot(){
-        photonView.RPC("MakeBullet", RpcTarget.AllBuffered);
+        photonView.RPC("MakeBullet", RpcTarget.All);
     }
 
     [PunRPC]
