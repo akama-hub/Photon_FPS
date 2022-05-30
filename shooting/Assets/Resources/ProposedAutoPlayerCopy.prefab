@@ -5061,7 +5061,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3421431502819165149}
-  - component: {fileID: 6979822299167653495}
+  - component: {fileID: 4933504365786395026}
+  - component: {fileID: 7471523140102789057}
   m_Layer: 0
   m_Name: MakeBullet
   m_TagString: Untagged
@@ -5084,7 +5085,7 @@ Transform:
   m_Father: {fileID: 6940519809220818779}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6979822299167653495
+--- !u!114 &4933504365786395026
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5093,11 +5094,34 @@ MonoBehaviour:
   m_GameObject: {fileID: 7794335703539151567}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b9b199636593b5e4899fd627db352053, type: 3}
+  m_Script: {fileID: 11500000, guid: 99ea5cd1b6125ee40b083c0dbd7dd4bb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   shotSpeed: 5000
   muzzleFlashParticle: {fileID: 6738083437046999381}
+  Bullet: {fileID: 6201372239086196903, guid: 3bf45565794e45de8b908a789452cf5b, type: 3}
+--- !u!114 &7471523140102789057
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7794335703539151567}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  observableSearch: 2
+  ObservedComponents: []
+  sceneViewId: 0
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
 --- !u!1 &7964932954692730550
 GameObject:
   m_ObjectHideFlags: 0
@@ -10460,7 +10484,7 @@ GameObject:
   - component: {fileID: 7964932956573291842}
   - component: {fileID: 7964932956573291843}
   - component: {fileID: 470792959112239893}
-  - component: {fileID: 8672012837334399032}
+  - component: {fileID: -707770549680348812}
   m_Layer: 0
   m_Name: ProposedAutoPlayerCopy
   m_TagString: Player
@@ -10669,7 +10693,7 @@ MonoBehaviour:
     height: 100
   WindowId: 101
   Visible: 1
---- !u!114 &8672012837334399032
+--- !u!114 &-707770549680348812
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -10678,7 +10702,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 7964932956573291844}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a5581fae6e648ad4db5ebec529b4b59b, type: 3}
+  m_Script: {fileID: 11500000, guid: d69ea194c95a85032aaa4918d6aab1a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   EstimatedPlayerPrefab: {fileID: 6161972553440328913, guid: 60ce5afcca251044c9168da3180a0ca7, type: 3}

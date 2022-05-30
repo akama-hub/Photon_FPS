@@ -5,6 +5,8 @@ using UnityEngine;
 public class EstimatedCPUController : MonoBehaviour
 {
     private forudp.UDP commUDP = new forudp.UDP();
+
+    private float pos_x, pos_y, pos_z;
     
     // Start is called before the first frame update
     void Start()
@@ -13,6 +15,7 @@ public class EstimatedCPUController : MonoBehaviour
         commUDP.init(50002, 50003, 50001);
         //UDP受信開始
         commUDP.start_receive();
+        
     }
 
     // Update is called once per frame
@@ -24,9 +27,9 @@ public class EstimatedCPUController : MonoBehaviour
         if(commUDP.rcvMsg != "ini"){
             // Debug.Log("Estimating");
 
-            float pos_x = float.Parse(position[0]);
-            float pos_y = float.Parse(position[1]);
-            float pos_z = float.Parse(position[2]);
+            pos_x = float.Parse(position[0]);
+            pos_y = float.Parse(position[1]);
+            pos_z = float.Parse(position[2]);
             
             // Debug.Log(pos_x);
             // Debug.Log(pos_y);

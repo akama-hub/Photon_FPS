@@ -47,9 +47,8 @@ public class AutoPlayerController : MonoBehaviourPunCallbacks
                     // if(0.62 < positionX && positionX < 0.6245 && GameState.canShoot){
 
                     // RTT(送受信遅延 + 実行遅延)の時
-                    // 1.55-2.0
-                    // MakeBulletずらした分、-0.065する？
-                    if(1.7 < positionX && positionX < 1.8 && GameState.canShoot){
+                    // 1.45-2.0
+                    if(1.75 < positionX && positionX < 1.85 && GameState.canShoot){
                         Shoot.instance.Shot();
                         Debug.Log(Target.transform.position.x);
                         BulletController.instance.MakeBullet();
@@ -62,9 +61,8 @@ public class AutoPlayerController : MonoBehaviourPunCallbacks
                     // if(3.745 < positionX && positionX < 3.753 && GameState.canShoot){
 
                     // RTT(送受信遅延 + 実行遅延)の時
-                    // 2.0-2.58
-                    // MakeBulletずらした分、-0.065する？
-                    if(2.2 < positionX && positionX < 2.3 && GameState.canShoot){
+                    // 2.4-3.0
+                    if(2.7 < positionX && positionX < 2.8 && GameState.canShoot){
                         Shoot.instance.Shot();
                         Debug.Log(Target.transform.position.x);
                         BulletController.instance.MakeBullet();

@@ -2,11 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DestroyTama : MonoBehaviour
+public class DestroyBullet : MonoBehaviour
 {
     void Update(){
         // Debug.Log("Destroy Bullet");
-        Destroy(this.gameObject, 0.8f);
+        // Destroy(this.gameObject, 0.8f);
     }
 
 }

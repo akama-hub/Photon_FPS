@@ -46,7 +46,7 @@ public class AutoPlayerControllerCopy : MonoBehaviourPunCallbacks
 
                             // RTT(送受信遅延 + 実行遅延)の時
                             // 1.45-2.0
-                            if(1.55 < positionX && positionX < 1.65 && GameState.canShoot){
+                            if(1.765 < positionX && positionX < 1.865 && GameState.canShoot){
                                 Shoot.instance.Shot();
                                 BulletControllerCopy.instance.shoot();
                                 canShot = false;

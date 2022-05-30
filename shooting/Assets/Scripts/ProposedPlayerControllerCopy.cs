@@ -11,9 +11,12 @@ public class ProposedPlayerControllerCopy : MonoBehaviourPunCallbacks
     private float pastPosition;
     private float gap;
     private float positionX;
+    private bool canShot = true;
+
     private float pastTime;
     private float nowTime = 0.1f;
     private float milSec;
+    
     // 絶対にとらない値を初期値に与えて判定に使用
     private float pastPosX = -100, pastPosY, pastPosZ;
     private float pos_x, pos_y, pos_z;
@@ -114,30 +117,40 @@ public class ProposedPlayerControllerCopy : MonoBehaviourPunCallbacks
                 gap = estimate.transform.position.x - pastPosition;
                 positionX = estimate.transform.position.x;
                 // Debug.Log(gap);
-                if(gap > 0){
-                    // 実行遅延時間なしと仮定したとき（送受信遅延のみ）
-                    // 0.405-0.63
-                    // if(0.62 < positionX && positionX < 0.6245 && GameState.canShoot){
+                if(canShot){
+                    if(gap > 0){
+                        // 実行遅延時間なしと仮定したとき（送受信遅延のみ）
+                        // 0.405-0.63
+                        // if(0.62 < positionX && positionX < 0.6245 && GameState.canShoot){
 
-                    // RTT(送受信遅延 + 実行遅延)の時
-                    // 1.55-2.0
-                    if(1.765 < positionX && positionX < 1.865 && GameState.canShoot){
-                        photonView.RPC("ShotRPC", RpcTarget.All);
-                        GameState.canShoot = false;
+                        // RTT(送受信遅延 + 実行遅延)の時
+                        // 1.55-2.0
+                        if(1.765 < positionX && positionX < 1.865 && GameState.canShoot){
+                            Shoot.instance.Shot();
+                            BulletControllerCopy.instance.shoot();
+                            canShot = false;
+                        }
+                    }
+                    else if(gap < 0){
+                        // 実行遅延時間なしと仮定したとき（送受信遅延のみ）
+                        // 3.6-3.9
+                        // if(3.745 < positionX && positionX < 3.753 && GameState.canShoot){
+
+                        // RTT(送受信遅延 + 実行遅延)の時
+                        // 2.4-3.0
+                        if(2.7 < positionX && positionX < 2.8 && GameState.canShoot){
+                            Shoot.instance.Shot();
+                            BulletControllerCopy.instance.shoot();
+                            canShot = false;
+                        }
                     }
                 }
-                else if(gap < 0){
-                    // 実行遅延時間なしと仮定したとき（送受信遅延のみ）
-                    // 3.6-3.9
-                    // if(3.745 < positionX && positionX < 3.753 && GameState.canShoot){
-
-                    // RTT(送受信遅延 + 実行遅延)の時
-                    // 2.0-2.58
-                    if(2.265 < positionX && positionX < 2.365 && GameState.canShoot){
-                        photonView.RPC("ShotRPC", RpcTarget.All);
-                        GameState.canShoot = false;
+                else{
+                    if(positionX < -3 || 8 < positionX){
+                        canShot = true;
                     }
                 }
+                
                 pastPosition = positionX;
             }
 
@@ -167,12 +180,5 @@ public class ProposedPlayerControllerCopy : MonoBehaviourPunCallbacks
         else if(!cursorLock){
             Cursor.lockState = CursorLockMode.None;
         }
-    }
-
-    [PunRPC]
-    private void ShotRPC(){
-        Shoot.instance.Shot();
-        BulletControllerCopy.instance.shoot();
-        GameState.canShoot = false;
     }
 }

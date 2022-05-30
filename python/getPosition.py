@@ -99,8 +99,8 @@ if __name__ == '__main__' :
 
     # frame_delay = 1
     # delay = frame_delay * 0.02
-    delay = 25 * 0.001
-    # delay = (25 + (25*2)) * 0.001
+    # delay = 25 * 0.001
+    delay = (25 + (25*2)) * 0.001
     # delay = (25 + (50*2)) * 0.001
 
     print("connecting")

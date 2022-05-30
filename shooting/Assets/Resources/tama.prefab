@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 4726635372197554793}
   - component: {fileID: 537599894825000949}
   - component: {fileID: 594644106298886185}
+  - component: {fileID: -8236462270414352975}
   m_Layer: 7
   m_Name: tama
   m_TagString: Bullet
@@ -112,3 +113,15 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 0
+--- !u!114 &-8236462270414352975
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6201372239086196903}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7801785886e224d418422f9018b50ab8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
