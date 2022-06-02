@@ -33,7 +33,7 @@ public class LauncherManager : MonoBehaviourPunCallbacks
         if(!PhotonNetwork.IsConnected) //サーバーに接続していたら
         {
             string playerName = playerNameInput.text;
-            Debug.Log(playerName);
+            // Debug.Log(playerName);
             if(!string.IsNullOrEmpty(playerName))
             {
                 PhotonNetwork.LocalPlayer.NickName = playerName;

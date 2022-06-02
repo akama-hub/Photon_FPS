@@ -24,7 +24,9 @@ public class ProposedGameManager : MonoBehaviour
         
             if(players.Length > 0){
                 Debug.Log("You are CPU!!");
-                GameObject Cpu = PhotonNetwork.Instantiate("Observer", CPURespawn, Quaternion.identity) as GameObject; //y座標のみ0の下でプレハブを生成
+                // GameObject Cpu = PhotonNetwork.Instantiate("Observer", CPURespawn, Quaternion.identity) as GameObject; //y座標のみ0の下でプレハブを生成
+                GameObject Cpu = PhotonNetwork.Instantiate("ProposedObserver", CPURespawn, Quaternion.identity) as GameObject; //y座標のみ0の下でプレハブを生成
+
                 // PhotonNetwork.Instantiate("EstimatedCPU", CPURespawn, Quaternion.identity);
                 
                 // Cpu = GameObject.FindWithTag("Observer");

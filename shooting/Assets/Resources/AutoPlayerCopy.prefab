@@ -1139,6 +1139,7 @@ GameObject:
   - component: {fileID: 6647964552879465693}
   - component: {fileID: 2653423369262674518}
   - component: {fileID: 29522784726856127}
+  - component: {fileID: 1768490345364700102}
   m_Layer: 0
   m_Name: AutoPlayerCopy
   m_TagString: Player
@@ -1376,6 +1377,26 @@ MonoBehaviour:
   m_SynchronizeAngularVelocity: 1
   m_TeleportEnabled: 0
   m_TeleportIfDistanceGreaterThan: 3
+--- !u!114 &1768490345364700102
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3766108149811866252}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5867a53c8db0e6745818285bb6b6e1b9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  WindowRect:
+    serializedVersion: 2
+    x: 0
+    y: 100
+    width: 120
+    height: 100
+  WindowId: 101
+  Visible: 1
 --- !u!1 &3766108149827723385
 GameObject:
   m_ObjectHideFlags: 0

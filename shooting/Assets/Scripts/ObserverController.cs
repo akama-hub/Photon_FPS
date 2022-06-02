@@ -35,7 +35,7 @@ public class ObserverController : MonoBehaviourPunCallbacks
         rigidbody = this.GetComponent<Rigidbody> ();
     }
 
-    private void Update(){
+    private void FixedUpdate(){
         if(photonView.IsMine){
             
             // curb moovment

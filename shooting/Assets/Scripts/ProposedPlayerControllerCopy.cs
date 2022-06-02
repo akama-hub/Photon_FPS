@@ -29,7 +29,7 @@ public class ProposedPlayerControllerCopy : MonoBehaviourPunCallbacks
     GameObject estimate;
     Vector3 CPURespawn = new Vector3(0f, -12, 10f);
     private int firstTime = 0;
- 
+
     // Start is called before the first frame update
     private void Start()
     {
@@ -48,6 +48,7 @@ public class ProposedPlayerControllerCopy : MonoBehaviourPunCallbacks
     // Update is called once per frame
     private void Update()
     {
+
         if(!photonView.IsMine){
             // Debug.Log("This player is not made by me");
             return;
@@ -181,4 +182,5 @@ public class ProposedPlayerControllerCopy : MonoBehaviourPunCallbacks
             Cursor.lockState = CursorLockMode.None;
         }
     }
+
 }

@@ -10,10 +10,6 @@ from sklearn.linear_model import LinearRegression #LinearRegression
 import time 
 import argparse
 
-motion = "ohuku"
-log_dir = f'../Log/{motion}'
-os.makedirs(log_dir, exist_ok=True)
-
 if __name__ == '__main__' :
     # ctrl-Cがなかなか反応しないのを直す
     signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -23,6 +19,10 @@ if __name__ == '__main__' :
     parser.add_argument("-up", "--unityport", type=int)
     parser.add_argument("-l", "--latency", type=int)
     args = parser.parse_args()    # 4. 引数を解析
+
+    motion = "ohuku"
+    log_dir = f'../Log/Lag{args.latency}/{motion}'
+    os.makedirs(log_dir, exist_ok=True)
 
     # log_date = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
     # windowsでは:をファイル名につけてはいけない？？
@@ -47,9 +47,9 @@ if __name__ == '__main__' :
 
     turminal = ""
     if unity_port == 50001:
-        turminal = "Host"
+        turminal = "Player"
     elif unity_port == 50011:
-        turminal = "participant"
+        turminal = "Cpu"
 
     pos_x = np.array([])
     pos_y = np.array([])
@@ -117,7 +117,7 @@ if __name__ == '__main__' :
                     velocity_z += data
 
             # with open(f"{log_dir}/{turminal}_0_{log_date}" + ".csv", 'a') as f:
-            with open(f"{log_dir}/{turminal}_Lag{args.latency}_{log_date}.csv", 'a') as f:
+            with open(f"{log_dir}/{turminal}_{log_date}.csv", 'a') as f:
                 writer = csv.writer(f, lineterminator='\n')
                 writer.writerow([send_time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z])
     

@@ -99,9 +99,11 @@ if __name__ == '__main__' :
 
     # frame_delay = 1
     # delay = frame_delay * 0.02
-    # delay = 25 * 0.001
-    delay = (25 + (25*2)) * 0.001
-    # delay = (25 + (50*2)) * 0.001
+    # delay = 26*4 * 0.001
+    # RTT 4tick分の実行遅延が入る
+    # delay = (26*4 + (25*2)) * 0.001
+    # delay = (26*4 + (50*2)) * 0.001
+    delay = (26*4 + (100*2)) * 0.001
 
     print("connecting")
 
