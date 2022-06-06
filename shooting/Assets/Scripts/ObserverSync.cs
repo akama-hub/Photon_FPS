@@ -4,7 +4,7 @@ using UnityEngine;
 using Photon.Pun;
 using System;
 
-public class ProposedCPUController : MonoBehaviourPunCallbacks
+public class ObserverSync : MonoBehaviourPunCallbacks, IPunObservable
 {
     float x = 0;
     float z = 0;
@@ -30,7 +30,13 @@ public class ProposedCPUController : MonoBehaviourPunCallbacks
     private forudp.UDP commUDP = new forudp.UDP();
 
     private Rigidbody rigidbody;
+
+    private Vector3 p1;
+    private Vector3 p2;
+    private float elapsedTime;
     
+    private float InterpolationPeriod = 0.1f;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -41,10 +47,19 @@ public class ProposedCPUController : MonoBehaviourPunCallbacks
             // commUDP.start_receive();
             rigidbody = this.GetComponent<Rigidbody> ();
         }
+
+        p1 = transform.position;
+        p2 = p1;
+        elapsedTime = Time.deltaTime;
     }
 
     private void FixedUpdate(){
         if(photonView.IsMine){
+            // 自身のネットワークオブジェクトは、毎フレームの移動量と経過時間を記録する
+            p1 = p2;
+            p2 = transform.position;
+            elapsedTime = Time.deltaTime;
+
             // curb moovment
             // position = (6. 1. 12)
             // if(isRight){
@@ -544,6 +559,33 @@ public class ProposedCPUController : MonoBehaviourPunCallbacks
             // Debug.Log(rigidbody.velocity.magnitude);
             // Debug.Log(rigidbody.velocity);
             // Debug.Log(commUDP.rcvMsg)
+        }
+        else{
+            // 他プレイヤーのネットワークオブジェクトは、補間処理を行う
+            elapsedTime += Time.deltaTime;
+            // transform.position = Vector3.LerpUnclamped(p1, p2, elapsedTime / InterpolationPeriod);
+            transform.position = Vector3.LerpUnclamped(p1, p2, elapsedTime);
+        }
+    }
+
+    void IPunObservable.OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info) {
+        if (stream.IsWriting) {
+            stream.SendNext(transform.position);
+            // 毎フレームの移動量と経過時間から、秒速を求めて送信する
+            stream.SendNext((p2 - p1) / elapsedTime);
+            stream.SendNext(rigidbody.velocity);
+        } else {
+            var networkPosition = (Vector3)stream.ReceiveNext();
+            var networkVelocity = (Vector3)stream.ReceiveNext();
+            var lag = Mathf.Max(0f, unchecked(PhotonNetwork.ServerTimestamp - info.SentServerTimestamp) / 1000f);
+            Debug.Log(lag);
+
+            // 受信時の座標を、補間の開始座標にする
+            p1 = transform.position;
+            // 現在時刻における予測座標を、補間の終了座標にする
+            p2 = networkPosition + networkVelocity * lag;
+            // 経過時間をリセットする
+            elapsedTime = 0f;
         }
     }
 }

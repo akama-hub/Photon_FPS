@@ -83,10 +83,11 @@ namespace Photon.Pun.UtilityScripts
             // 初期状態、スライダーで操作できる
             // float inOutLag = this.Peer.NetworkSimulationSettings.IncomingLag;
             // ラグの大きさをここで設定できる
-            // float inOutLag = 0;
+            float inOutLag = 0;
             // float inOutLag = 25;
             // float inOutLag = 50;
-            float inOutLag = 100;
+            // float inOutLag = 75;
+            // float inOutLag = 100;
             // float inOutLag = 150;
             // float inOutLag = 200;
             GUILayout.Label("Lag " + inOutLag);

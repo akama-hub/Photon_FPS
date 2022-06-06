@@ -3,7 +3,7 @@ import signal
 # import os
 # from datetime import datetime
 # import csv
-from turtle import pos
+from turtle import delay, pos
 import numpy as np
 from sklearn.linear_model import LinearRegression #LinearRegression
 import time 
@@ -99,11 +99,16 @@ if __name__ == '__main__' :
 
     # frame_delay = 1
     # delay = frame_delay * 0.02
-    # delay = 26*4 * 0.001
+    # 実行遅延なしのとき
+    # delay = 25*2 * 0.001
+    # delay = 50*2 * 0.001
+    # delay = 75*2 * 0.001
+    delay = 100*2 * 0.001
+
     # RTT 4tick分の実行遅延が入る
     # delay = (26*4 + (25*2)) * 0.001
     # delay = (26*4 + (50*2)) * 0.001
-    delay = (26*4 + (100*2)) * 0.001
+    # delay = (26*4 + (100*2)) * 0.001
 
     print("connecting")
 

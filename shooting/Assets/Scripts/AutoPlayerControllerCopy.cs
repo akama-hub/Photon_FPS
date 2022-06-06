@@ -46,7 +46,9 @@ public class AutoPlayerControllerCopy : MonoBehaviourPunCallbacks
 
                             // RTT(送受信遅延 + 実行遅延)の時
                             // 1.45-2.0
-                            if(1.765 < positionX && positionX < 1.865 && GameState.canShoot){
+                            // if(1.765 < positionX && positionX < 1.865 && GameState.canShoot){
+                            
+                            if(0.8 < positionX && positionX < 0.9&& GameState.canShoot){
                                 Shoot.instance.Shot();
                                 BulletControllerCopy.instance.shoot();
                                 canShot = false;
@@ -56,11 +58,13 @@ public class AutoPlayerControllerCopy : MonoBehaviourPunCallbacks
                         else if(gap < 0){
                             // 実行遅延時間なしと仮定したとき（送受信遅延のみ）
                             // 3.6-3.9
-                            // if(3.745 < positionX && positionX < 3.753 && GameState.canShoot){
+                            // if(3.5 < positionX && positionX < 3.6 && GameState.canShoot){
 
                             // RTT(送受信遅延 + 実行遅延)の時
                             // 2.4-3.0
-                            if(2.7 < positionX && positionX < 2.8 && GameState.canShoot){
+                            // if(2.7 < positionX && positionX < 2.8 && GameState.canShoot){
+
+                            if(3.5 < positionX && positionX < 3.6 && GameState.canShoot){
                                 Shoot.instance.Shot();
                                 BulletControllerCopy.instance.shoot();
                                 canShot = false;
