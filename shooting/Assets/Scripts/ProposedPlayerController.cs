@@ -51,8 +51,7 @@ public class ProposedPlayerController : MonoBehaviourPunCallbacks
 
         if(photonView.IsMine){
             Debug.Log(RecievePosition.x);
-            Debug.Log("hello");
-
+            
             // nowTime = Time.time;
             dt = DateTime.Now;
             milSec = dt.Millisecond / 1000f;

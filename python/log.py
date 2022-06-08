@@ -21,6 +21,8 @@ if __name__ == '__main__' :
     args = parser.parse_args()    # 4. 引数を解析
 
     motion = "ohuku"
+    # motion = "ohukuRandom"
+
     log_dir = f'../Log/Lag{args.latency}/{motion}'
     os.makedirs(log_dir, exist_ok=True)
 
@@ -37,6 +39,12 @@ if __name__ == '__main__' :
     # unity_port = 50011
     # serv_port = 50000
     # unity_port = 50001
+
+    # serv_port = 50020
+    # unity_port = 50024
+    # serv_port = 50030
+    # unity_port = 50031
+
     serv_port = args.servport
     unity_port = args.unityport
     serv = (host, serv_port)
@@ -46,9 +54,9 @@ if __name__ == '__main__' :
     unity_sock = socket.socket(socket.AF_INET, type=socket.SOCK_DGRAM)
 
     turminal = ""
-    if unity_port == 50001:
+    if unity_port == 50001 or unity_port == 50024:
         turminal = "Player"
-    elif unity_port == 50011:
+    elif unity_port == 50011 or unity_port == 50031:
         turminal = "Cpu"
 
     pos_x = np.array([])

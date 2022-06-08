@@ -136,6 +136,7 @@ namespace Photon.Pun
                     else
                     {
                         float lag = Mathf.Abs((float)(PhotonNetwork.Time - info.SentServerTime));
+                        // Debug.Log("Lag: " + lag); //addition
                         this.m_NetworkPosition += this.m_Direction * lag;
                         if (m_UseLocal)
                         {

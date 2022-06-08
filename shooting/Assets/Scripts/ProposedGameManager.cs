@@ -26,7 +26,8 @@ public class ProposedGameManager : MonoBehaviour
                 Debug.Log("You are CPU!!");
                 // GameObject Cpu = PhotonNetwork.Instantiate("Observer", CPURespawn, Quaternion.identity) as GameObject; //y座標のみ0の下でプレハブを生成
                 // GameObject Cpu = PhotonNetwork.Instantiate("ProposedObserver", CPURespawn, Quaternion.identity) as GameObject; //y座標のみ0の下でプレハブを生成
-                GameObject Cpu = PhotonNetwork.Instantiate("ObserverSync", CPURespawn, Quaternion.identity) as GameObject;
+                GameObject Cpu = PhotonNetwork.Instantiate("SelfSyncroObserver", CPURespawn, Quaternion.identity) as GameObject;
+                // GameObject Cpu = PhotonNetwork.Instantiate("SelfSyncroRandomObserver", CPURespawn, Quaternion.identity) as GameObject;
 
                 FPSCamera = Camera.main.gameObject; // Main Camera(Game Object) の取得
 
@@ -39,7 +40,8 @@ public class ProposedGameManager : MonoBehaviour
             else{
                 if(playerPrefab!=null) //生成するモノが紐づけられているか確認
                 {
-                    PhotonNetwork.Instantiate(playerPrefab.name, respawn, Quaternion.identity); //y座標のみ0の下でプレハブを生成
+                    PhotonNetwork.Instantiate("SyncroPlayer", respawn, Quaternion.identity);
+                    // PhotonNetwork.Instantiate(playerPrefab.name, respawn, Quaternion.identity); //y座標のみ0の下でプレハブを生成
                 }
                 else{
                     Debug.Log("player prefab is Null");

@@ -43,7 +43,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9b199636593b5e4899fd627db352053, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bulletPrefab: {fileID: 153685746339513387, guid: a9e9625d6af4ab740aefeca3f8bc8d37, type: 3}
   shotSpeed: 100
   muzzleFlashParticle: {fileID: 0}
 --- !u!1 &4173862109602251937
@@ -894,7 +893,7 @@ MonoBehaviour:
   m_SynchronizePosition: 1
   m_SynchronizeRotation: 1
   m_SynchronizeScale: 0
-  m_UseLocal: 1
+  m_UseLocal: 0
 --- !u!114 &4173862109854830160
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -925,6 +924,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Player: {fileID: 4173862109854830164}
   PlayerUI: {fileID: 4173862109818990611}
+  MakeBullet: {fileID: 0}
 --- !u!114 &4173862109854830162
 MonoBehaviour:
   m_ObjectHideFlags: 0
