@@ -213,26 +213,6 @@ def main():
             actual_change_frame = 0
             actual_action = 0
 
-            action = act_agent.act(obs)
-            n_frames_change = change_agent.act(obs)
-            
-            if player_keys.index(key) < 4:
-                last_position_x = np.roll(last_position_x, 1)
-                last_position_y = np.roll(last_position_y, 1)
-                last_velocity_x = np.roll(last_velocity_x, 1)
-                last_velocity_y = np.roll(last_velocity_y, 1)
-                last_time = np.roll(last_time, 1)
-
-                last_time[0] = key
-                last_position_x[0] = player_positions[key][0]
-                last_position_y[0] = player_positions[key][2]
-                last_velocity_x[0] = player_velocity[key][0]
-                last_velocity_y[0] = player_velocity[key][2]
-
-                continue
-
-            obs = [last_time[0], last_position_x[0], last_position_y[0], last_velocity_x[0], last_velocity_y[0], last_time[1], last_position_x[1], last_position_y[1], last_velocity_x[1], last_velocity_y[1], last_time[2], last_position_x[2], last_position_y[2], last_velocity_x[2], last_velocity_y[2], last_time[3], last_position_x[3], last_position_y[3], last_velocity_x[3], last_velocity_y[3]]
-
             last_position_x = np.roll(last_position_x, 1)
             last_position_y = np.roll(last_position_y, 1)
             last_velocity_x = np.roll(last_velocity_x, 1)
@@ -244,87 +224,92 @@ def main():
             last_position_y[0] = player_positions[key][2]
             last_velocity_x[0] = player_velocity[key][0]
             last_velocity_y[0] = player_velocity[key][2]
-          
-            # if keys.index(key) % n_frames != 0:
-            #     continue
 
-            player_index = player_keys.index(key)
-            predict_point = key+delay
-            last_cpu_index = cpu_index
-            
-            while True:
-                if cpu_keys[cpu_index] == predict_point:
-                    break
-                elif cpu_keys[cpu_index] < predict_point:
-                    cpu_index += 1
-                else:
-                    ax, bx = calculateLine(cpu_positions[cpu_keys[cpu_index]][0], cpu_positions[cpu_keys[cpu_index-1]][0], cpu_keys[cpu_index], cpu_keys[cpu_index-1])
-                    ay, by = calculateLine(cpu_positions[cpu_keys[cpu_index]][2], cpu_positions[cpu_keys[cpu_index-1]][2], cpu_keys[cpu_index], cpu_keys[cpu_index-1])
-                    break
-
-            if player_index >= player_length - n_frames or cpu_index >= cpu_length - n_frames:
-                break
-            
-            for i in range(n_frames):
-                if cpu_velocity[cpu_keys[last_cpu_index+i]][0] != cpu_velocity[cpu_keys[last_cpu_index+i-1]][0] or cpu_velocity[cpu_keys[last_cpu_index+i]][2] != cpu_velocity[cpu_keys[last_cpu_index+i-1]][2]: #fixed
-                    actual_change_frame = i
-                    break
-                else:
-                    actual_change_frame = 0
-
-            if actual_change_frame == 0:
-                max_R_change += 1
-                if actual_change_frame == n_frames_change:
-                    change_reward = 1
-                else:
-                    change_reward = 0
+            if player_keys.index(key) < 4:
+                continue
             else:
-                max_R_change += 3
-                if actual_change_frame == n_frames_change:
-                    change_reward = 3
+                obs = [last_time[0], last_position_x[0], last_position_y[0], last_velocity_x[0], last_velocity_y[0], last_time[1], last_position_x[1], last_position_y[1], last_velocity_x[1], last_velocity_y[1], last_time[2], last_position_x[2], last_position_y[2], last_velocity_x[2], last_velocity_y[2], last_time[3], last_position_x[3], last_position_y[3], last_velocity_x[3], last_velocity_y[3]]
+
+                action = act_agent.act(obs)
+                n_frames_change = change_agent.act(obs)
+
+                player_index = player_keys.index(key)
+                predict_point = key+delay
+                last_cpu_index = cpu_index
+                
+                while True:
+                    if cpu_keys[cpu_index] == predict_point:
+                        break
+                    elif cpu_keys[cpu_index] < predict_point:
+                        cpu_index += 1
+                    else:
+                        ax, bx = calculateLine(cpu_positions[cpu_keys[cpu_index]][0], cpu_positions[cpu_keys[cpu_index-1]][0], cpu_keys[cpu_index], cpu_keys[cpu_index-1])
+                        ay, by = calculateLine(cpu_positions[cpu_keys[cpu_index]][2], cpu_positions[cpu_keys[cpu_index-1]][2], cpu_keys[cpu_index], cpu_keys[cpu_index-1])
+                        break
+
+                if player_index >= player_length - n_frames or cpu_index >= cpu_length - n_frames:
+                    break
+                
+                for i in range(n_frames):
+                    if cpu_velocity[cpu_keys[last_cpu_index+i]][0] != cpu_velocity[cpu_keys[last_cpu_index+i-1]][0] or cpu_velocity[cpu_keys[last_cpu_index+i]][2] != cpu_velocity[cpu_keys[last_cpu_index+i-1]][2]: #fixed
+                        actual_change_frame = i
+                        break
+                    else:
+                        actual_change_frame = 0
+
+                if actual_change_frame == 0:
+                    max_R_change += 1
+                    if actual_change_frame == n_frames_change:
+                        change_reward = 1
+                    else:
+                        change_reward = 0
                 else:
-                    change_reward = 0
+                    max_R_change += 3
+                    if actual_change_frame == n_frames_change:
+                        change_reward = 3
+                    else:
+                        change_reward = 0
+                    
+
+                move_xdir = cpu_velocity[cpu_keys[last_cpu_index+actual_change_frame]][0]
+                move_ydir = cpu_velocity[cpu_keys[last_cpu_index+actual_change_frame]][2] #fixed
+
+                if move_xdir > 0 and move_ydir == 0:
+                    actual_action = 1
+                elif move_xdir < 0 and move_ydir == 0:
+                    actual_action = 2
+                elif move_xdir == 0 and move_ydir > 0:
+                    actual_action = 3
+                elif move_xdir == 0 and move_ydir < 0:
+                    actual_action = 4
+                elif move_xdir < 0 and move_ydir > 0:
+                    actual_action = 5
+                elif move_xdir < 0 and move_ydir < 0:
+                    actual_action = 7
+                elif move_xdir > 0 and move_ydir > 0:
+                    actual_action = 6
+                elif move_xdir > 0 and move_ydir < 0:
+                    actual_action = 8
+                else:
+                    actual_action = 0
                 
 
-            move_xdir = cpu_velocity[cpu_keys[last_cpu_index+actual_change_frame]][0]
-            move_ydir = cpu_velocity[cpu_keys[last_cpu_index+actual_change_frame]][2] #fixed
+                max_R_action += 1
+                        
+                if actual_action == action:
+                    action_reward = 1
 
-            if move_xdir > 0 and move_ydir == 0:
-                actual_action = 1
-            elif move_xdir < 0 and move_ydir == 0:
-                actual_action = 2
-            elif move_xdir == 0 and move_ydir > 0:
-                actual_action = 3
-            elif move_xdir == 0 and move_ydir < 0:
-                actual_action = 4
-            elif move_xdir < 0 and move_ydir > 0:
-                actual_action = 5
-            elif move_xdir < 0 and move_ydir < 0:
-                actual_action = 7
-            elif move_xdir > 0 and move_ydir > 0:
-                actual_action = 6
-            elif move_xdir > 0 and move_ydir < 0:
-                actual_action = 8
-            else:
-                actual_action = 0
-            
+                action_R += action_reward
+                change_R += change_reward
 
-            max_R_action += 1
-                    
-            if actual_action == action:
-                action_reward = 1
+                done = False
+                reset = False
 
-            action_R += action_reward
-            change_R += change_reward
+                change_agent.observe(obs, change_reward, done, reset)
+                act_agent.observe(obs, action_reward, done, reset)
 
-            done = False
-            reset = False
-
-            change_agent.observe(obs, change_reward, done, reset)
-            act_agent.observe(obs, action_reward, done, reset)
-
-            with open(f'{log_dir}/check.csv', 'a') as f:
-                f.write(f'{episode}, {action}, {actual_action},{n_frames_change}, {actual_change_frame}, {action_reward}, {change_reward} \n')
+                with open(f'{log_dir}/check.csv', 'a') as f:
+                    f.write(f'{episode}, {action}, {actual_action},{n_frames_change}, {actual_change_frame}, {action_reward}, {change_reward} \n')
 
         done = True
         reset = True
