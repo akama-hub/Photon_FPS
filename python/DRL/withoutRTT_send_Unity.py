@@ -166,8 +166,8 @@ def main():
     M_SIZE = 1024
     host = '127.0.0.1' 
     # 自分を指定
-    serv_port = 50000
-    unity_port = 50001
+    serv_port = 50020
+    unity_port = 50021
     serv = (host, serv_port)
     unity_addr = (host, unity_port)
     cli_sock = socket.socket(socket.AF_INET, type=socket.SOCK_DGRAM)
@@ -182,28 +182,18 @@ def main():
 
     motions = ["ohuku", "curb", "zigzag"]
     motion = motions[0]
+    # motion = motions[3]
+    delays = [25, 37, 50, 75, 100]
 
-    # 実行遅延なしのとき
-    # delay = 25*2 * 0.001
-    # delay = 50*2 * 0.001
-    # delay = 75*2 * 0.001
-    delay = 100*2 * 0.001
+    # delay = delays[0]*2*0.001
+    delay = delays[1]*2*0.001
+    # delay = delays[2]*2*0.001
 
-    # RTT 4tick分の実行遅延が入る
-    # delay = (26*4 + (25*2)) * 0.001
-    # delay = (26*4 + (50*2)) * 0.001
-    # delay = (26*4 + (100*2)) * 0.001
-
-    frame_delay = delay / (20*0.001)
-
-    log_dir = f'/mnt/HDD/Photon_FPS/DRLModels/{motion}/0.2/evaluate'
-    model_dir =f'/mnt/HDD/Photon_FPS/DRLModels/{motion}/0.2/20220603-17:42:07'
-
-    os.makedirs(log_dir, exist_ok=True)
+    model_dir =f'/mnt/HDD/Photon_FPS/DRLModels/{motion}/20220611-13:52:07'
 
     parser = ArgumentParser()
-    parser.add_argument("-change_model")
-    parser.add_argument("-act_model")
+    parser.add_argument("-change_model", type=int)
+    parser.add_argument("-act_model", type=int)
 
     args = parser.parse_args()
 
@@ -398,6 +388,12 @@ def main():
                 
                 action = act_agent.act(obs)
                 n_frames_change = change_agent.act(obs)
+                
+                fps = t[0] - t[1]
+                if fps != 0:
+                    frame_delay = round(delay / fps)
+                else:
+                    pass
 
                 if n_frames_change > frame_delay:
                     if last_action == 1 or last_action == 2 or last_action == 3 or last_action == 4:

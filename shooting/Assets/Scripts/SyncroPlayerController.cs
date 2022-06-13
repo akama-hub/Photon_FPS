@@ -112,7 +112,7 @@ public class SyncroPlayerController : MonoBehaviourPunCallbacks
 
             gap = CPUPrefab.transform.position.x - pastPosition;
             positionX = CPUPrefab.transform.position.x;
-            Debug.Log(gap);
+            // Debug.Log(gap);
 
             if(canShot){
                 if(gap > 0){

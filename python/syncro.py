@@ -95,23 +95,17 @@ if __name__ == '__main__' :
     cli_sock.bind(serv)
     unity_sock = socket.socket(socket.AF_INET, type=socket.SOCK_DGRAM)
 
-    turminal = ""
-    if unity_port == 50001:
-        turminal = "Player"
-    elif unity_port == 50011:
-        turminal = "Cpu"
-
     pos_x = np.array([])
     pos_y = np.array([])
     vel_x = np.array([])
     vel_y = np.array([])
     t = np.array([])
     
-    delay = 0
-    # delay = 25*2 * 0.001
-    # delay = 50*2 * 0.001
-    # delay = 75*2 * 0.001
-    # delay = 100*2 * 0.001
+    delays = [25, 37, 50, 75, 100]
+
+    # delay = delays[0]*2*0.001
+    delay = delays[1]*2*0.001
+    # delay = delays[2]*2*0.001
 
     print("connecting")
 

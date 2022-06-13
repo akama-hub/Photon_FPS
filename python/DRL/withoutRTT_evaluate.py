@@ -412,7 +412,7 @@ def main():
                 delay_diff_y.append(delay_y)
                 delay_diff.append(diff)
 
-                frame_delay = delay / fps
+                frame_delay = round(delay / fps)
 
                 if n_frames_change > frame_delay:
                     if last_action == 1 or last_action == 2 or last_action == 3 or last_action == 4:
