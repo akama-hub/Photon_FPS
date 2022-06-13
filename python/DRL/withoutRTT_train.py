@@ -43,8 +43,19 @@ def calculateLine(x1, x2, t1, t2):
 
 def main():
     motions = ["ohuku", "curb", "zigzag", "ohukuRandom"]
-    motion = motions[0]
+    # motion = motions[0]
+    motion = motions[1]
     # motion = motions[3]
+
+    if motion == "ohuku":
+        cpu_log = "Cpu_0608_1646.csv"
+        player_log = "Player_0608_1646.csv"
+    elif motion == "curb":
+        cpu_log = "Cpu_0613_2047.csv"
+        player_log = "Player_0613_2047.csv"
+    elif motion == "ohukuRandom":
+        cpu_log = "Cpu_0608_1641.csv"
+        player_log = "Player_0608_1641.csv"
 
     delay = 0.2
 
@@ -156,8 +167,7 @@ def main():
     cpu_velocity = {}
     cpu_keys = []
 
-    with open(f'/mnt/HDD/Photon_FPS/Log/Lag0/{motion}/Cpu_0608_1646.csv') as f:
-    # with open(f'/mnt/HDD/Photon_FPS/Log/Lag0/{motion}/Cpu_0608_1641.csv') as f:
+    with open(f'/mnt/HDD/Photon_FPS/Log/Lag0/{motion}/{cpu_log}') as f:
         reader = csv.reader(f)
         for row in reader:
             row[0] = float(row[0])
@@ -172,8 +182,7 @@ def main():
     player_velocity = {}
     player_keys = []
 
-    with open(f'/mnt/HDD/Photon_FPS/Log/Lag0/{motion}/Player_0608_1646.csv') as f:
-    # with open(f'/mnt/HDD/Photon_FPS/Log/Lag0/{motion}/Player_0608_1641.csv') as f:
+    with open(f'/mnt/HDD/Photon_FPS/Log/Lag0/{motion}/{player_log}') as f:
         reader = csv.reader(f)
         for row in reader:
             row[0] = float(row[0])

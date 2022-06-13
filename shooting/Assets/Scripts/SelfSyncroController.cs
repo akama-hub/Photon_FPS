@@ -50,9 +50,6 @@ public class SelfSyncroController : MonoBehaviourPunCallbacks
             // ohuku-加速あり\
             if(motion == "ohuku"){
                 if(isRight){
-                    // position = (0, 1, 8) aite
-                    // position = (10, 1, -8) zibunn
-                    // Debug.Log(this.rigidbody.velocity.x);
                     if(this.rigidbody.velocity.x < 0.7){
                         x = 1;
                         z = 0;
@@ -90,20 +87,15 @@ public class SelfSyncroController : MonoBehaviourPunCallbacks
             }
             // curb moovment 加速あり
             else if(motion == "curb"){
-                // position = (2, 1, 8) aite
-                // position = (10, 1, -8) zibunn
                 if(isRight){
+                    // 2
                     if(isBack){
-                        if(this.rigidbody.velocity.x == 0){
-                            x = 1/Mathf.Sqrt(2);
-                            if(this.rigidbody.velocity.z == 0){
-                                z = 1/Mathf.Sqrt(2);
-                            }
-                            if(this.rigidbody.velocity.z >= NonLinearSpeed){
-                                z = NonLinearSpeed;
-                            }
+                        if(this.rigidbody.velocity.z <= 0){
+                            z = 1/Mathf.Sqrt(2);
                         }
-                        
+                        else if(this.rigidbody.velocity.z >= NonLinearSpeed){
+                            z = NonLinearSpeed;
+                        }
                         else{
                             x = this.rigidbody.velocity.x + NonLinearAccel;
                             z = this.rigidbody.velocity.z + NonLinearAccel;
@@ -114,13 +106,16 @@ public class SelfSyncroController : MonoBehaviourPunCallbacks
                                 z = NonLinearSpeed;
                             }
                         }
-                        if(transform.position.x >= 2 + 5/Mathf.Sqrt(2)){
-                            isBack = false;
-                            noZ = true;
+                        if(transform.position.x >= 9 * Mathf.Sqrt(2) / 2){
+                            isBack = true;
+                            isRight = false;
+                            noZ = false;
+                            noX = true;
                         }
                     }
+                    // 1
                     else if(noZ){
-                        if(this.rigidbody.velocity.z > 0){
+                        if(this.rigidbody.velocity.z < 0){
                             x = this.rigidbody.velocity.x + LinearAccel;
                             z = 0;
                             if(this.rigidbody.velocity.x >= LinearSpeed){
@@ -139,16 +134,17 @@ public class SelfSyncroController : MonoBehaviourPunCallbacks
                                 x = LinearSpeed;
                             }
                         }
-                        if(transform.position.x >= 7 + 5/Mathf.Sqrt(2)){
+                        if(transform.position.x >= 9 * Mathf.Sqrt(2) - 9){
                             noZ = false;
-                            isBack = false;
+                            isBack = true;
                         }
                     }
+                    // 8
                     else{
-                        if(this.rigidbody.velocity.z == 0){
-                            z = -1/Mathf.Sqrt(2);
-                            if(x >= NonLinearSpeed){
-                                x = NonLinearSpeed;
+                        if(this.rigidbody.velocity.x == 0){
+                            x = 1/Mathf.Sqrt(2);
+                            if(Mathf.Abs(z) >= NonLinearSpeed){
+                                z = - NonLinearSpeed;
                             }
                         }
                         else{
@@ -158,84 +154,83 @@ public class SelfSyncroController : MonoBehaviourPunCallbacks
                                 x = NonLinearSpeed;
                             }
                             if(Mathf.Abs(z) >= NonLinearSpeed){
-                                z = 0-NonLinearSpeed;
+                                z = - NonLinearSpeed;
                             }
                         }
-                        if(transform.position.x >= 7 + 10/Mathf.Sqrt(2)){
-                            noX = true;
-                            isRight = false;
+                        if(transform.position.x >= 0){
+                            noZ = true;
+                            noX = false;
+                            isRight = true;
                         }
                     }
                 }
                 else if(noX){
+                    //3
                     if(isBack){
-                        if(this.rigidbody.velocity.x < 0){
-                            x = 0;
-                            z = this.rigidbody.velocity.z + LinearAccel;
-                            if(z >= LinearSpeed){
-                                z = LinearSpeed;
-                            }
-                        }
-                        else{
-                            x = 0;
-                            z = this.rigidbody.velocity.z + LinearAccel;
-                            if(z >= LinearSpeed){
-                                z = LinearSpeed;
-                            }
-                        }
-                        if(transform.position.z >= 8){
-                            isRight = true;
-                            noX = false;
-                        }
-                    }
-                    else{
                         if(this.rigidbody.velocity.x > 0){
                             x = 0;
-                            z = this.rigidbody.velocity.z - LinearAccel;
-                            if(Mathf.Abs(z) >= LinearSpeed){
-                                z = 0-LinearSpeed;
-                            }
                         }
-                        else{
-                            x = 0;
-                            z = this.rigidbody.velocity.z - LinearAccel;
-                            if(Mathf.Abs(z) >= LinearSpeed){
-                                z = 0-LinearSpeed;
-                            }
+                        z = this.rigidbody.velocity.z + LinearAccel;
+                        if(z > LinearSpeed){
+                            z = LinearSpeed;
                         }
-                        if(transform.position.z <= 3){
+
+                        if(transform.position.z >= 9 * Mathf.Sqrt(2) / 2 + 10){
                             isRight = false;
                             noX = false;
-                        }
-                    }
-                }
-                else{
-                    if(noZ){
-                        if(this.rigidbody.velocity.z < 0){
-                            x = this.rigidbody.velocity.x - LinearAccel;
-                            z = 0;
-                            if(Mathf.Abs(x) >= LinearSpeed){
-                                x = 0-LinearSpeed;
-                            }
-                        }
-                        else{
-                            x = this.rigidbody.velocity.x - LinearAccel;
-                            z = 0;
-                            if(Mathf.Abs(x) >= LinearSpeed){
-                                x = 0-LinearSpeed;
-                            }
-                        }
-                        if(transform.position.x <= 2 + 5/Mathf.Sqrt(2)){
                             noZ = false;
                             isBack = true;
                         }
                     }
-                    
+                    // 7
+                    else{
+                        if(this.rigidbody.velocity.x < 0){
+                            x = 0;
+                            z = this.rigidbody.velocity.z - LinearAccel;
+                            if(Mathf.Abs(z) >= LinearSpeed){
+                                z = 0-LinearSpeed;
+                            }
+                        }
+                        else{
+                            x = 0;
+                            z = this.rigidbody.velocity.z - LinearAccel;
+                            if(Mathf.Abs(z) >= LinearSpeed){
+                                z = 0-LinearSpeed;
+                            }
+                        }
+                        if(transform.position.z <= 19 - 9 * Mathf.Sqrt(2) / 2){
+                            isRight = true;
+                            isBack = false;
+                            noX = false;
+                            noZ = false;
+                        }
+                    }
+                }
+                else{
+                    // 5
+                    if(noZ){
+                        if(this.rigidbody.velocity.z > 0){
+                            z = 0;
+                        }
+
+                        x = this.rigidbody.velocity.x - LinearAccel;
+                        if(Mathf.Abs(x) >= LinearSpeed){
+                            x = 0-LinearSpeed;
+                        }
+                        
+                        if(transform.position.x <= 0){
+                            noX = false;
+                            noZ = false;
+                            isBack = false;
+                            isRight = false;
+                        }
+                    }
+                    // 4
                     else if(isBack){
-                        if(this.rigidbody.velocity.z == 0){
-                            z = 1/Mathf.Sqrt(2);
-                            if(Mathf.Abs(x) >= NonLinearSpeed){
-                                x = 0-NonLinearSpeed;
+                        if(this.rigidbody.velocity.x == 0){
+                            x = 1/Mathf.Sqrt(2);
+                            if(Mathf.Abs(z) >= NonLinearSpeed){
+                                z = 0-NonLinearSpeed;
                             }
                         }
                         else{
@@ -248,17 +243,19 @@ public class SelfSyncroController : MonoBehaviourPunCallbacks
                                 z = NonLinearSpeed;
                             }
                         }
-                        if(transform.position.x <= 2){
-                            noX = true;
+                        if(transform.position.x <= 9 * Mathf.Sqrt(2) - 9){
+                            noX = false;
                             isRight = false;
+                            noZ = true;
+                            isBack = false;
                         }
                     }
-                    
+                    // 6
                     else{
-                        if(this.rigidbody.velocity.x == 0){
-                            x = -1/Mathf.Sqrt(2);
-                            if(Mathf.Abs(z) >= NonLinearSpeed){
-                                z = 0-NonLinearSpeed;
+                        if(this.rigidbody.velocity.z == 0){
+                            z = -1/Mathf.Sqrt(2);
+                            if(Mathf.Abs(x) >= NonLinearSpeed){
+                                x = 0-NonLinearSpeed;
                             }
                         }
                         else{
@@ -271,9 +268,11 @@ public class SelfSyncroController : MonoBehaviourPunCallbacks
                                 z = 0-NonLinearSpeed;
                             }
                         }
-                        if(transform.position.x <= 7 + 5/Mathf.Sqrt(2)){
-                            noZ = true;
+                        if(transform.position.x <= 9 * Mathf.Sqrt(2) / 2 - 9){
+                            noZ = false;
+                            noX = true;
                             isRight = false;
+                            isBack = false;
                         }
                     }
                 }
