@@ -180,20 +180,30 @@ def main():
     vel_y = np.zeros(4)
     t = np.zeros(4)
 
-    motions = ["ohuku", "curb", "zigzag"]
-    motion = motions[0]
-    # motion = motions[3]
     delays = [25, 37, 50, 75, 100]
 
     # delay = delays[0]*2*0.001
     delay = delays[1]*2*0.001
     # delay = delays[2]*2*0.001
 
-    model_dir =f'/mnt/HDD/Photon_FPS/DRLModels/{motion}/20220611-13:52:07'
+    motions = ["ohuku", "curb", "zigzag", "ohukuRandom"]
+    motion = motions[0]
+    # motion = motions[1]
+    # motion = motions[3]
+
+    if motion == "ohuku":
+        model = "20220611-13:52:07"
+    elif motion == "curb":
+        model = "Cpu_0613_2047.csv"
+    elif motion == "ohukuRandom":
+        model = "Cpu_0608_1641.csv"
+
+    model_dir =f'/mnt/HDD/Photon_FPS/DRLModels/{motion}/{model}'
 
     parser = ArgumentParser()
-    parser.add_argument("-change_model", type=int)
-    parser.add_argument("-act_model", type=int)
+    parser.add_argument("-model", type=int)
+    # parser.add_argument("-change_model", type=int)
+    # parser.add_argument("-act_model", type=int)
 
     args = parser.parse_args()
 
@@ -277,7 +287,7 @@ def main():
         batch_accumulator="mean",
         phi=phi,
     )
-    change_agent.load(f'{model_dir}/change_model{args.change_model}')
+    change_agent.load(f'{model_dir}/change_model{args.model}')
 
     act_agent = agents.CategoricalDoubleDQN(
         act_q_func,
@@ -293,6 +303,7 @@ def main():
         batch_accumulator="mean",
         phi=phi,
     )
+    act_agent.load(f'{model_dir}/act_model{args.model}')
 
     n_input = 20
 

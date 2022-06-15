@@ -113,8 +113,8 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
                 else
                 {
                     // tr.position = Vector3.MoveTowards(tr.position, (this.m_NetworkPosition - tr.position) + pos, this.m_Distance * Time.deltaTime * PhotonNetwork.SerializationRate);
-                    // tr.position = Vector3.MoveTowards(tr.position, pos, this.m_Distance * Time.deltaTime * PhotonNetwork.SerializationRate);
-                    tr.position = Vector3.MoveTowards(pos, pos + (this.m_NetworkPosition - tr.position), this.m_Distance * Time.deltaTime * PhotonNetwork.SerializationRate);
+                    tr.position = Vector3.MoveTowards(tr.position, pos, this.m_Distance * Time.deltaTime * PhotonNetwork.SerializationRate);
+                    // 現在の位置、目標地点、現在位置と目標地点のベクトルでどれだけ進むか
                     tr.rotation = Quaternion.RotateTowards(tr.rotation, this.m_NetworkRotation, this.m_Angle * Time.deltaTime *  PhotonNetwork.SerializationRate);
                     // Debug.Log((this.m_NetworkPosition - tr.position) + pos);
                 }
