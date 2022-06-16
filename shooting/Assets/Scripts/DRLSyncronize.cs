@@ -112,7 +112,10 @@ public class DRLSyncronize : MonoBehaviourPun, IPunObservable
                 {
                     // tr.position = Vector3.MoveTowards(tr.position, (this.m_NetworkPosition - tr.position) + pos, this.m_Distance * Time.deltaTime * PhotonNetwork.SerializationRate);
                     tr.position = Vector3.MoveTowards(tr.position, this.m_NetworkPosition, this.m_Distance * Time.deltaTime * PhotonNetwork.SerializationRate);
-                    // 現在の位置、目標地点、現在位置と目標地点のベクトルでどれだけ進むか
+                    // MoveTowards (現在の位置、目標地点、現在位置と目標地点のベクトルでどれだけ進むか)
+
+                    // tr.position = Vector3.LerpUnclamped(tr.position, pos, delay + Time.deltaTime);
+                    //
                     tr.rotation = Quaternion.RotateTowards(tr.rotation, this.m_NetworkRotation, this.m_Angle * Time.deltaTime *  PhotonNetwork.SerializationRate);
                     // Debug.Log((this.m_NetworkPosition - tr.position) + pos);
                 }

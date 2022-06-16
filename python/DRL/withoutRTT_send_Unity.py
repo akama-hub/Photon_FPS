@@ -191,14 +191,18 @@ def main():
     # motion = motions[1]
     # motion = motions[3]
 
-    if motion == "ohuku":
-        model = "20220611-13:52:07"
-    elif motion == "curb":
-        model = "Cpu_0613_2047.csv"
-    elif motion == "ohukuRandom":
-        model = "Cpu_0608_1641.csv"
+    # ubuntu garellia
+    # if motion == "ohuku":
+    #     model = "20220611-13:52:07"
+    # elif motion == "curb":
+    #     model = "Cpu_0613_2047.csv"
+    # elif motion == "ohukuRandom":
+    #     model = "Cpu_0608_1641.csv"
 
-    model_dir =f'/mnt/HDD/Photon_FPS/DRLModels/{motion}/{model}'
+    # model_dir =f'../../DRLModels/{motion}/{model}'
+
+    # home pc
+    model_dir =f'../../DRLModels/{motion}/'
 
     parser = ArgumentParser()
     parser.add_argument("-model", type=int)
@@ -369,9 +373,11 @@ def main():
                     velocity_y += data
                 if flag == "velocity_z":
                     velocity_z += data
-            # with open(f'{log_dir}/zigzag.csv', 'a') as f:
-            #     writer = csv.writer(f, lineterminator='\n')
-            #     writer.writerow([send_time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z])
+
+            with open(f'../evaluate/{motion}/Cpu.csv', 'a') as f:
+                writer = csv.writer(f, lineterminator='\n')
+                writer.writerow([send_time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z])
+            
             print(send_time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z)
             # position_x = "00000020"
             
