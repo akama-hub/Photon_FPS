@@ -10006,7 +10006,7 @@ GameObject:
   - component: {fileID: 9052330830578195366}
   - component: {fileID: 9052330830578195365}
   - component: {fileID: 1059975163492561329}
-  - component: {fileID: 1228008167629283039}
+  - component: {fileID: 8252286505078945414}
   - component: {fileID: 2800641200246099210}
   m_Layer: 8
   m_Name: SelfSyncroObserver
@@ -10129,9 +10129,9 @@ MonoBehaviour:
   prefixField: -1
   Synchronization: 3
   OwnershipTransfer: 0
-  observableSearch: 0
+  observableSearch: 2
   ObservedComponents:
-  - {fileID: 1228008167629283039}
+  - {fileID: 8252286505078945414}
   - {fileID: 7623423863226218341}
   sceneViewId: 0
   InstantiationId: 0
@@ -10156,7 +10156,7 @@ MonoBehaviour:
   CameraParent: {fileID: 9052330830578195375}
   bulletHitEffectPrefab: {fileID: 4461511964038029802}
   CPUUI: {fileID: 671663066264709495}
---- !u!114 &1228008167629283039
+--- !u!114 &8252286505078945414
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

@@ -38,16 +38,21 @@ public class DRLSyncronize : MonoBehaviourPun, IPunObservable
     
     private Rigidbody rb;
 
-    private float pos_x, pos_y, pos_z;
-    private Vector3 RecieveVelocity;
+    private Vector3 delayedPosition;
+
+    private float lag;
 
     [Tooltip("Indicates if localPosition and localRotation should be used. Scale ignores this setting, and always uses localScale to avoid issues with lossyScale.")]
     public bool m_UseLocal;
 
+    private int lastAction = 0;
+
     bool m_firstTake = false;
 
-    private float delay = 37 * 2 * 0.001f;
-    private int frame, action;
+    private float firstSpeed = 2.6248f;
+    private Vector3 m_Vel;
+
+    private float frame_delay = 0;
 
     public void Awake()
     {
@@ -90,19 +95,39 @@ public class DRLSyncronize : MonoBehaviourPun, IPunObservable
 
         if (!this.photonView.IsMine)
         {
-            string[] msg = commUDPnotMine.rcvMsg.Split(',');
+            dt = DateTime.Now;
+
+            milSec = dt.Millisecond / 1000f;
+            nowTime = (dt.Minute * 60) + dt.Second + milSec;
+
+            string position_x = delayedPosition.x.ToString("00.000000");
+            string position_y = delayedPosition.y.ToString("00.000000");
+            string position_z = delayedPosition.z.ToString("00.000000");
+            // string time = Time.time.ToString("0000.0000");
+            string time = nowTime.ToString("F3");
+
+            string velocity_x = rb.velocity.x.ToString("00.000000");
+            string velocity_y = rb.velocity.y.ToString("00.000000");
+            string velocity_z = rb.velocity.z.ToString("00.000000");
+            string lagging = lag.ToString("0000.0000");
+            // Debug.Log(Time.time);
+            string data = "D" + "t" + time + "x" + position_x + "y" + position_y + "z" + position_z + "vx" + velocity_x + "vy" + velocity_y + "vz" + velocity_z ;
+            // string data = "t" + time + "x" + position_x + "y" + position_y + "z" + position_z + "vx" + velocity_x + "vy" + velocity_y;
+            commUDPnotMine.send(data);
+
+            string[] position = commUDPnotMine.rcvMsg.Split(',');
             // Debug.Log(commUDP.rcvMsg);
 
             if(commUDPnotMine.rcvMsg != "ini"){
-                // Debug.Log("Estimating");
 
-                frame = int.Parse(msg[0]);
-                action = int.Parse(msg[1]);
+                Vector3 pos = delayedPosition;
                 
+                int action = int.Parse(position[0]);
+                float NframesChange = float.Parse(position[1]);
 
-
-                // Debug.Log(pos);
-
+                // Debug.Log(action);
+                // Debug.Log(NframesChange);
+                
                 if (m_UseLocal)
                 {
                     tr.localPosition = Vector3.MoveTowards(tr.localPosition, this.m_NetworkPosition, this.m_Distance  * Time.deltaTime * PhotonNetwork.SerializationRate);
@@ -110,15 +135,186 @@ public class DRLSyncronize : MonoBehaviourPun, IPunObservable
                 }
                 else
                 {
-                    // tr.position = Vector3.MoveTowards(tr.position, (this.m_NetworkPosition - tr.position) + pos, this.m_Distance * Time.deltaTime * PhotonNetwork.SerializationRate);
-                    tr.position = Vector3.MoveTowards(tr.position, this.m_NetworkPosition, this.m_Distance * Time.deltaTime * PhotonNetwork.SerializationRate);
-                    // MoveTowards (現在の位置、目標地点、現在位置と目標地点のベクトルでどれだけ進むか)
+                    if(Time.deltaTime != 0)
+                    {
+                        frame_delay = lag / Time.deltaTime;
+                    }
+                    else
+                    {
 
-                    // tr.position = Vector3.LerpUnclamped(tr.position, pos, delay + Time.deltaTime);
-                    //
-                    tr.rotation = Quaternion.RotateTowards(tr.rotation, this.m_NetworkRotation, this.m_Angle * Time.deltaTime *  PhotonNetwork.SerializationRate);
-                    // Debug.Log((this.m_NetworkPosition - tr.position) + pos);
+                    }
+                    // Debug.Log(lag);
+                    // Debug.Log(Time.deltaTime);
+                    // Debug.Log(delayedPosition);
+                    // Debug.Log(pos);                
+
+                    if (NframesChange >= frame_delay){
+                        pos.x = tr.position.x + this.m_Vel.x * lag;
+                        pos.z = tr.position.z + this.m_Vel.z * lag;
+
+                        tr.rotation = Quaternion.RotateTowards(tr.rotation, this.m_NetworkRotation, this.m_Angle * Time.deltaTime *  PhotonNetwork.SerializationRate);
+                    }
+                    else
+                    {
+                        if(action == 0)
+                        {
+                            pos.x = tr.position.x + this.m_Vel.x * NframesChange * Time.deltaTime;
+                            pos.z = tr.position.z + this.m_Vel.z * NframesChange * Time.deltaTime;
+                        }
+                        else if (action == 1)
+                        {
+                            if(lastAction == 1 || lastAction == 6 || lastAction == 8)
+                            {
+                                pos.x = tr.position.x + this.m_Vel.x * lag;
+                                pos.z = tr.position.z + this.m_Vel.z * NframesChange * Time.deltaTime;
+                            }
+                            else
+                            {
+                                pos.x = tr.position.x + this.m_Vel.x * NframesChange * Time.deltaTime + firstSpeed * (lag - NframesChange * Time.deltaTime);
+                                pos.z = tr.position.z + this.m_Vel.z * NframesChange * Time.deltaTime;
+                            }
+                        }
+                        else if (action == 2)
+                        {
+                            if(lastAction == 2 || lastAction == 5 || lastAction == 7)
+                            {
+                                pos.x = tr.position.x + this.m_Vel.x * lag;
+                                pos.z = tr.position.z + this.m_Vel.z * NframesChange * Time.deltaTime;
+                            }
+                            else
+                            {
+                                pos.x = tr.position.x + this.m_Vel.x * NframesChange * Time.deltaTime + firstSpeed * (lag - NframesChange * Time.deltaTime);
+                                pos.z = tr.position.z + this.m_Vel.z * NframesChange * Time.deltaTime;
+                            }
+                        }
+                        else if (action == 3)
+                        {
+                            if(lastAction == 3 || lastAction == 5 || lastAction == 6)
+                            {
+                                pos.x = tr.position.x + this.m_Vel.x * NframesChange * Time.deltaTime;
+                                pos.z = tr.position.z + this.m_Vel.z * lag;
+                            }
+                            else
+                            {
+                                pos.x = tr.position.x + this.m_Vel.x  * NframesChange * Time.deltaTime;
+                                pos.z = tr.position.z + this.m_Vel.z * NframesChange * Time.deltaTime + firstSpeed * (lag - NframesChange * Time.deltaTime);
+                            }
+                        }
+                        else if (action == 4)
+                        {
+                            if(lastAction == 4 || lastAction == 7 || lastAction == 8)
+                            {
+                                pos.x = tr.position.x + this.m_Vel.x * NframesChange * Time.deltaTime;
+                                pos.z = tr.position.z + this.m_Vel.z * lag;
+                            }
+                            else
+                            {
+                                pos.x = tr.position.x + this.m_Vel.x  * NframesChange * Time.deltaTime;
+                                pos.z = tr.position.z + this.m_Vel.z * NframesChange * Time.deltaTime + firstSpeed * (lag - NframesChange * Time.deltaTime);
+                            }
+                        }
+                        else if (action == 5)
+                        {
+                            if(lastAction == action){
+                                pos.x = tr.position.x + this.m_Vel.x * lag;
+                                pos.z = tr.position.z + this.m_Vel.z * lag;
+                            }
+                            else if(lastAction == 2 || lastAction == 7)
+                            {
+                                pos.x = tr.position.x + this.m_Vel.x * lag;
+                                pos.z = tr.position.z + this.m_Vel.z * NframesChange * Time.deltaTime + firstSpeed * (lag - NframesChange * Time.deltaTime);
+                            }
+                            else if(lastAction == 3 || lastAction == 6)
+                            {
+                                pos.x = tr.position.x + this.m_Vel.x * NframesChange * Time.deltaTime + firstSpeed * (lag - NframesChange * Time.deltaTime);
+                                pos.z = tr.position.z + this.m_Vel.z * lag;
+                            }
+                            else
+                            {
+                                pos.x = tr.position.x + this.m_Vel.x * NframesChange * Time.deltaTime + firstSpeed * (lag - NframesChange * Time.deltaTime);
+                                pos.z = tr.position.z + this.m_Vel.z * NframesChange * Time.deltaTime + firstSpeed * (lag - NframesChange * Time.deltaTime);
+                            }
+                        }
+                        else if (action == 6)
+                        {
+                            if(lastAction == action){
+                                pos.x = tr.position.x + this.m_Vel.x * lag;
+                                pos.z = tr.position.z + this.m_Vel.z * lag;
+                            }
+                            else if(lastAction == 1 || lastAction == 8)
+                            {
+                                pos.x = tr.position.x + this.m_Vel.x * lag;
+                                pos.z = tr.position.z + this.m_Vel.z * NframesChange * Time.deltaTime + firstSpeed * (lag - NframesChange * Time.deltaTime);
+                            }
+                            else if(lastAction == 3 || lastAction == 5)
+                            {
+                                pos.x = tr.position.x + this.m_Vel.x * NframesChange * Time.deltaTime + firstSpeed * (lag - NframesChange * Time.deltaTime);
+                                pos.z = tr.position.z + this.m_Vel.z * lag;
+                            }
+                            else
+                            {
+                                pos.x = tr.position.x + this.m_Vel.x * NframesChange * Time.deltaTime + firstSpeed * (lag - NframesChange * Time.deltaTime);
+                                pos.z = tr.position.z + this.m_Vel.z * NframesChange * Time.deltaTime + firstSpeed * (lag - NframesChange * Time.deltaTime);
+                            }
+                        }
+                        else if (action == 7)
+                        {
+                            if(lastAction == action){
+                                pos.x = tr.position.x + this.m_Vel.x * lag;
+                                pos.z = tr.position.z + this.m_Vel.z * lag;
+                            }
+                            else if(lastAction == 2 || lastAction == 5)
+                            {
+                                pos.x = tr.position.x + this.m_Vel.x * lag;
+                                pos.z = tr.position.z + this.m_Vel.z * NframesChange * Time.deltaTime + firstSpeed * (lag - NframesChange * Time.deltaTime);
+                            }
+                            else if(lastAction == 4 || lastAction == 8)
+                            {
+                                pos.x = tr.position.x + this.m_Vel.x * NframesChange * Time.deltaTime + firstSpeed * (lag - NframesChange * Time.deltaTime);
+                                pos.z = tr.position.z + this.m_Vel.z * lag;
+                            }
+                            else
+                            {
+                                pos.x = tr.position.x + this.m_Vel.x * NframesChange * Time.deltaTime + firstSpeed * (lag - NframesChange * Time.deltaTime);
+                                pos.z = tr.position.z + this.m_Vel.z * NframesChange * Time.deltaTime + firstSpeed * (lag - NframesChange * Time.deltaTime);
+                            }
+                        }
+                        else if (action == 8)
+                        {
+                            if(lastAction == action){
+                                pos.x = tr.position.x + this.m_Vel.x * lag;
+                                pos.z = tr.position.z + this.m_Vel.z * lag;
+                            }
+                            else if(lastAction == 1 || lastAction == 6)
+                            {
+                                pos.x = tr.position.x + this.m_Vel.x * lag;
+                                pos.z = tr.position.z + this.m_Vel.z * NframesChange * Time.deltaTime + firstSpeed * (lag - NframesChange * Time.deltaTime);
+                            }
+                            else if(lastAction == 4 || lastAction == 7)
+                            {
+                                pos.x = tr.position.x + this.m_Vel.x * NframesChange * Time.deltaTime + firstSpeed * (lag - NframesChange * Time.deltaTime);
+                                pos.z = tr.position.z + this.m_Vel.z * lag;
+                            }
+                            else
+                            {
+                                pos.x = tr.position.x + this.m_Vel.x * NframesChange * Time.deltaTime + firstSpeed * (lag - NframesChange * Time.deltaTime);
+                                pos.z = tr.position.z + this.m_Vel.z * NframesChange * Time.deltaTime + firstSpeed * (lag - NframesChange * Time.deltaTime);
+                            }
+                        }
+
+                    }
+                    lastAction = action;
+                    // Debug.Log(pos);
+                    if(lag != 0){
+                        tr.position = Vector3.LerpUnclamped(delayedPosition, pos, 1 + Time.deltaTime/lag);
+                    }
+                    else
+                    {
+                        tr.position = Vector3.MoveTowards(tr.position, this.m_NetworkPosition, this.m_Distance * Time.deltaTime * PhotonNetwork.SerializationRate);
+                    }
                 }
+                
+                
             }
             else{
                 if (m_UseLocal)
@@ -128,10 +324,40 @@ public class DRLSyncronize : MonoBehaviourPun, IPunObservable
                 }
                 else
                 {
-                    tr.position = Vector3.LerpUnclamped(tr.position, this.m_NetworkPosition, delay);
+                    tr.position = Vector3.MoveTowards(tr.position, this.m_NetworkPosition, this.m_Distance * Time.deltaTime * PhotonNetwork.SerializationRate);
                     tr.rotation = Quaternion.RotateTowards(tr.rotation, this.m_NetworkRotation, this.m_Angle * Time.deltaTime *  PhotonNetwork.SerializationRate);
                 }
             }
+
+            dt = DateTime.Now;
+
+            milSec = dt.Millisecond / 1000f;
+            nowTime = (dt.Minute * 60) + dt.Second + milSec;
+
+            // string position_x = tr.position.x.ToString("00.000000");
+            // string position_y = tr.position.y.ToString("00.000000");
+            // string position_z = tr.position.z.ToString("00.000000");
+            // // string time = Time.time.ToString("0000.0000");
+            // string time = nowTime.ToString("F3");
+
+            // string velocity_x = rb.velocity.x.ToString("00.000000");
+            // string velocity_y = rb.velocity.y.ToString("00.000000");
+            // string velocity_z = rb.velocity.z.ToString("00.000000");
+            // // Debug.Log(Time.time);
+            // string data = "t" + time + "x" + position_x + "y" + position_y + "z" + position_z + "vx" + velocity_x + "vy" + velocity_y + "vz" + velocity_z;
+
+            position_x = tr.position.x.ToString("00.000000");
+            position_y = tr.position.y.ToString("00.000000");
+            position_z = tr.position.z.ToString("00.000000");
+            time = nowTime.ToString("F3");
+
+            velocity_x = rb.velocity.x.ToString("00.000000");
+            velocity_y = rb.velocity.y.ToString("00.000000");
+            velocity_z = rb.velocity.z.ToString("00.000000");
+            data = "P" + "t" + time + "x" + position_x + "y" + position_y + "z" + position_z + "vx" + velocity_x + "vy" + velocity_y + "vz" + velocity_z + "l" + lagging + "T" + Time.deltaTime.ToString("0.000000");
+            // string data = "t" + time + "x" + position_x + "y" + position_y + "z" + position_z + "vx" + velocity_x + "vy" + velocity_y;
+            commUDPnotMine.send(data);
+
         }
         else
         {
@@ -176,8 +402,10 @@ public class DRLSyncronize : MonoBehaviourPun, IPunObservable
                 {
                     this.m_Direction = tr.position - this.m_StoredPosition;
                     this.m_StoredPosition = tr.position;
+                    this.m_Vel = (this.m_Direction/Time.deltaTime);
                     stream.SendNext(tr.position);
                     stream.SendNext(this.m_Direction);
+                    stream.SendNext(this.m_Vel);
                 }
             }
 
@@ -207,6 +435,7 @@ public class DRLSyncronize : MonoBehaviourPun, IPunObservable
             {
                 this.m_NetworkPosition = (Vector3)stream.ReceiveNext();
                 this.m_Direction = (Vector3)stream.ReceiveNext();
+                this.m_Vel = (Vector3)stream.ReceiveNext();
 
                 if (m_firstTake)
                 {
@@ -219,10 +448,11 @@ public class DRLSyncronize : MonoBehaviourPun, IPunObservable
                 }
                 else
                 {
-                    float lag = Mathf.Abs((float)(PhotonNetwork.Time - info.SentServerTime));
-                    // メッセージが送信されてから受信されるまでの時間
-                    // Debug.Log("Lag: " + lag); 
+                    lag = Mathf.Abs((float)(PhotonNetwork.Time - info.SentServerTime));
+                    // Debug.Log("Lag: " + lag); //addition
+                    this.delayedPosition = this.m_NetworkPosition;
                     this.m_NetworkPosition += this.m_Direction * lag;
+                    this.m_Distance = Vector3.Distance(tr.position, this.m_NetworkPosition);
                     if (m_UseLocal)
                     {
                         this.m_Distance = Vector3.Distance(tr.localPosition, this.m_NetworkPosition);
@@ -274,8 +504,6 @@ public class DRLSyncronize : MonoBehaviourPun, IPunObservable
             {
                 m_firstTake = false;
             }
-
-            RecieveVelocity = (Vector3)stream.ReceiveNext();
         }
     }
 }

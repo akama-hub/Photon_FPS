@@ -84,8 +84,9 @@ namespace Photon.Pun.UtilityScripts
             // float inOutLag = this.Peer.NetworkSimulationSettings.IncomingLag;
             // ラグの大きさをここで設定できる
             // float inOutLag = 0;
+            float inOutLag = 10;
             // float inOutLag = 25;
-            float inOutLag = 37;
+            // float inOutLag = 37;
             // float inOutLag = 50;
             // float inOutLag = 75;
             // float inOutLag = 100;

@@ -192,17 +192,20 @@ def main():
     # motion = motions[3]
 
     # ubuntu garellia
-    # if motion == "ohuku":
-    #     model = "20220611-13:52:07"
-    # elif motion == "curb":
-    #     model = "Cpu_0613_2047.csv"
-    # elif motion == "ohukuRandom":
-    #     model = "Cpu_0608_1641.csv"
+    if motion == "ohuku":
+        model = "20220611-13:52:07"
+    elif motion == "curb":
+        model = "Cpu_0613_2047.csv"
+    elif motion == "ohukuRandom":
+        model = "Cpu_0608_1641.csv"
 
-    # model_dir =f'../../DRLModels/{motion}/{model}'
+    model_dir =f'../../DRLModels/{motion}/{model}'
+
+    evaluate_dir = f"../evaluate/{motion}"
+    os.makedirs(evaluate_dir, exist_ok=True)
 
     # home pc
-    model_dir =f'../../DRLModels/{motion}/'
+    # model_dir =f'../../DRLModels/{motion}/'
 
     parser = ArgumentParser()
     parser.add_argument("-model", type=int)
@@ -314,6 +317,8 @@ def main():
     obs = np.zeros(n_input, dtype=np.float32)
     last_action = 0
 
+    cnt = 0
+
     while True:
         try:
             # start = time.time() #単位は秒
@@ -359,6 +364,10 @@ def main():
                 elif data == "v":
                     flag = "velocity"
                     continue
+                elif data == "l":
+                    flag = "lag"
+                    continue
+
                 if flag == "time":
                     send_time += data
                 if flag == "position_x":
@@ -373,20 +382,18 @@ def main():
                     velocity_y += data
                 if flag == "velocity_z":
                     velocity_z += data
-
-            with open(f'../evaluate/{motion}/Cpu.csv', 'a') as f:
-                writer = csv.writer(f, lineterminator='\n')
-                writer.writerow([send_time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z])
             
             print(send_time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z)
             # position_x = "00000020"
             
-            if len(pos_x) < 4:
+            if cnt < 4:
                 pos_x[0] = float(position_x)
                 pos_y[0] = float(position_y)
                 vel_x[0] = float(velocity_x)
                 vel_y[0] = float(velocity_y)
                 t[0] = float(send_time)
+
+                cnt += 1
 
             else:
                 pos_x = np.roll(pos_x, 1)
@@ -406,166 +413,175 @@ def main():
                 action = act_agent.act(obs)
                 n_frames_change = change_agent.act(obs)
                 
-                fps = t[0] - t[1]
-                if fps != 0:
-                    frame_delay = round(delay / fps)
-                else:
-                    pass
+                ##########################
+                # fps = t[0] - t[1]
+                # if fps != 0:
+                #     frame_delay = round(delay / fps)
+                # else:
+                #     pass
 
-                if n_frames_change > frame_delay:
-                    if last_action == 1 or last_action == 2 or last_action == 3 or last_action == 4:
-                        predict_x = pos_x[1] + linear_move(frame_delay, vel_x[1] * linear_speed, vel_x[1])
-                        predict_y = pos_y[1] + linear_move(frame_delay, vel_y[1] * linear_speed, vel_y[1])
-                    elif last_action == 5 or last_action == 6 or last_action == 7 or last_action == 8: 
-                        predict_x = pos_x[1] + nonlinear_move(frame_delay, vel_x[1] * linear_speed, vel_x[1])
-                        predict_y = pos_y[1] + nonlinear_move(frame_delay, vel_y[1] * linear_speed, vel_y[1])
-                    else:
-                        predict_x = pos_x[1]
-                        predict_y = pos_y[1]
+                # if n_frames_change > frame_delay:
+                #     if last_action == 1 or last_action == 2 or last_action == 3 or last_action == 4:
+                #         predict_x = pos_x[1] + linear_move(frame_delay, vel_x[1] * linear_speed, vel_x[1])
+                #         predict_y = pos_y[1] + linear_move(frame_delay, vel_y[1] * linear_speed, vel_y[1])
+                #     elif last_action == 5 or last_action == 6 or last_action == 7 or last_action == 8: 
+                #         predict_x = pos_x[1] + nonlinear_move(frame_delay, vel_x[1] * linear_speed, vel_x[1])
+                #         predict_y = pos_y[1] + nonlinear_move(frame_delay, vel_y[1] * linear_speed, vel_y[1])
+                #     else:
+                #         predict_x = pos_x[1]
+                #         predict_y = pos_y[1]
 
-                else:
-                    if action == 0:
-                        if last_action == 1 or last_action == 2 or last_action == 3 or last_action == 4:
-                            predict_x = pos_x[1] + linear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1])
+                # else:
+                #     if action == 0:
+                #         if last_action == 1 or last_action == 2 or last_action == 3 or last_action == 4:
+                #             predict_x = pos_x[1] + linear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1])
 
-                            predict_y = pos_y[1] + linear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1])
-                        elif last_action == 5 or last_action == 6 or last_action == 7 or last_action == 8: 
-                            predict_x = pos_x[1] + nonlinear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1])
+                #             predict_y = pos_y[1] + linear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1])
+                #         elif last_action == 5 or last_action == 6 or last_action == 7 or last_action == 8: 
+                #             predict_x = pos_x[1] + nonlinear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1])
                             
-                            predict_y = pos_y[1] + nonlinear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1])
-                        else:
-                            predict_x = pos_x[1]
-                            predict_y = pos_y[1]
+                #             predict_y = pos_y[1] + nonlinear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1])
+                #         else:
+                #             predict_x = pos_x[1]
+                #             predict_y = pos_y[1]
 
-                    elif action == 1:
-                        if last_action == 1 or last_action == 2 or last_action == 3 or last_action == 4:
-                            predict_x = pos_x[1] + linear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1]) + linear_move(frame_delay - n_frames_change , linear_velocity(n_frames_change, vel_x[1] * linear_speed, vel_x[1]), 1)
+                #     elif action == 1:
+                #         if last_action == 1 or last_action == 2 or last_action == 3 or last_action == 4:
+                #             predict_x = pos_x[1] + linear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1]) + linear_move(frame_delay - n_frames_change , linear_velocity(n_frames_change, vel_x[1] * linear_speed, vel_x[1]), 1)
                             
-                            predict_y = pos_y[1] + linear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1])
+                #             predict_y = pos_y[1] + linear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1])
 
-                        elif last_action == 5 or last_action == 6 or last_action == 7 or last_action == 8:  
-                            predict_x = pos_x[1] + nonlinear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1]) + linear_move(frame_delay - n_frames_change , linear_velocity(1, nonlinear_velocity(n_frames_change-1, vel_x[1] * linear_speed, vel_x[1]), 1) , 1)
+                #         elif last_action == 5 or last_action == 6 or last_action == 7 or last_action == 8:  
+                #             predict_x = pos_x[1] + nonlinear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1]) + linear_move(frame_delay - n_frames_change , linear_velocity(1, nonlinear_velocity(n_frames_change-1, vel_x[1] * linear_speed, vel_x[1]), 1) , 1)
                             
-                            predict_y = pos_y[1] + nonlinear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1])
+                #             predict_y = pos_y[1] + nonlinear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1])
 
-                        else:
-                            predict_x = pos_x[1] + linear_move(frame_delay - n_frames_change , 0, 1)
-                            predict_y = pos_y[1]
+                #         else:
+                #             predict_x = pos_x[1] + linear_move(frame_delay - n_frames_change , 0, 1)
+                #             predict_y = pos_y[1]
 
-                    elif action == 2:
-                        if last_action == 1 or last_action == 2 or last_action == 3 or last_action == 4:
-                            predict_x = pos_x[1] + linear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1]) + linear_move(frame_delay - n_frames_change , linear_velocity(n_frames_change, vel_x[1] * linear_speed, vel_x[1]), -1)
+                #     elif action == 2:
+                #         if last_action == 1 or last_action == 2 or last_action == 3 or last_action == 4:
+                #             predict_x = pos_x[1] + linear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1]) + linear_move(frame_delay - n_frames_change , linear_velocity(n_frames_change, vel_x[1] * linear_speed, vel_x[1]), -1)
                             
-                            predict_y = pos_y[1] + linear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1])
+                #             predict_y = pos_y[1] + linear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1])
                         
-                        elif last_action == 5 or last_action == 6 or last_action == 7 or last_action == 8: 
-                            predict_x = pos_x[1] + nonlinear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1]) + linear_move(frame_delay - n_frames_change , linear_velocity(1, nonlinear_velocity(n_frames_change-1, vel_x[1] * linear_speed, vel_x[1]), -1), -1)
+                #         elif last_action == 5 or last_action == 6 or last_action == 7 or last_action == 8: 
+                #             predict_x = pos_x[1] + nonlinear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1]) + linear_move(frame_delay - n_frames_change , linear_velocity(1, nonlinear_velocity(n_frames_change-1, vel_x[1] * linear_speed, vel_x[1]), -1), -1)
                             
-                            predict_y = pos_y[1] + nonlinear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1])
-                        else:
-                            predict_x = pos_x[1] + linear_move(frame_delay - n_frames_change , 0, -1)
-                            predict_y = pos_y[1] 
+                #             predict_y = pos_y[1] + nonlinear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1])
+                #         else:
+                #             predict_x = pos_x[1] + linear_move(frame_delay - n_frames_change , 0, -1)
+                #             predict_y = pos_y[1] 
 
-                    elif action == 3:
-                        if last_action == 1 or last_action == 2 or last_action == 3 or last_action == 4:
-                            predict_x = pos_x[1] + linear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1]) 
+                #     elif action == 3:
+                #         if last_action == 1 or last_action == 2 or last_action == 3 or last_action == 4:
+                #             predict_x = pos_x[1] + linear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1]) 
                             
-                            predict_y = pos_y[1] + linear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1]) + linear_move(frame_delay - n_frames_change , linear_velocity(n_frames_change, vel_y[1] * linear_speed, vel_y[1]), 1)
+                #             predict_y = pos_y[1] + linear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1]) + linear_move(frame_delay - n_frames_change , linear_velocity(n_frames_change, vel_y[1] * linear_speed, vel_y[1]), 1)
                         
-                        elif last_action == 5 or last_action == 6 or last_action == 7 or last_action == 8:
-                            predict_x = pos_x[1] + nonlinear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1]) 
+                #         elif last_action == 5 or last_action == 6 or last_action == 7 or last_action == 8:
+                #             predict_x = pos_x[1] + nonlinear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1]) 
                             
-                            predict_y = pos_y[1] + nonlinear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1]) + linear_move(frame_delay - n_frames_change , linear_velocity(1, nonlinear_velocity(n_frames_change-1, vel_y[1] * linear_speed, vel_y[1]), 1), 1)
+                #             predict_y = pos_y[1] + nonlinear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1]) + linear_move(frame_delay - n_frames_change , linear_velocity(1, nonlinear_velocity(n_frames_change-1, vel_y[1] * linear_speed, vel_y[1]), 1), 1)
                         
-                        else:
-                            predict_x = pos_x[1]
-                            predict_y = pos_y[1] + linear_move(frame_delay - n_frames_change , 0, 1)
+                #         else:
+                #             predict_x = pos_x[1]
+                #             predict_y = pos_y[1] + linear_move(frame_delay - n_frames_change , 0, 1)
 
-                    elif action == 4:
-                        if last_action == 1 or last_action == 2 or last_action == 3 or last_action == 4:
-                            predict_x = pos_x[1] + linear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1]) 
+                #     elif action == 4:
+                #         if last_action == 1 or last_action == 2 or last_action == 3 or last_action == 4:
+                #             predict_x = pos_x[1] + linear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1]) 
                             
-                            predict_y = pos_y[1] + linear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1]) + linear_move(frame_delay - n_frames_change , linear_velocity(n_frames_change, vel_y[1] * linear_speed, vel_y[1]), -1)
+                #             predict_y = pos_y[1] + linear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1]) + linear_move(frame_delay - n_frames_change , linear_velocity(n_frames_change, vel_y[1] * linear_speed, vel_y[1]), -1)
 
-                        elif last_action == 5 or last_action == 6 or last_action == 7 or last_action == 8: 
-                            predict_x = pos_x[1] + nonlinear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1]) 
+                #         elif last_action == 5 or last_action == 6 or last_action == 7 or last_action == 8: 
+                #             predict_x = pos_x[1] + nonlinear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1]) 
                             
-                            predict_y = pos_y[1] + nonlinear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1]) + linear_move(frame_delay - n_frames_change , linear_velocity(1, nonlinear_velocity(n_frames_change-1, vel_y[1] * linear_speed, vel_y[1]), -1), -1)
+                #             predict_y = pos_y[1] + nonlinear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1]) + linear_move(frame_delay - n_frames_change , linear_velocity(1, nonlinear_velocity(n_frames_change-1, vel_y[1] * linear_speed, vel_y[1]), -1), -1)
 
-                        else:
-                            predict_x = pos_x[1]
-                            predict_y = pos_y[1] + linear_move(frame_delay - n_frames_change , 0, -1)
+                #         else:
+                #             predict_x = pos_x[1]
+                #             predict_y = pos_y[1] + linear_move(frame_delay - n_frames_change , 0, -1)
 
 
-                    elif action == 5:
-                        if last_action == 1 or last_action == 2 or last_action == 3 or last_action == 4:
-                            predict_x = pos_x[1] + linear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1]) + nonlinear_move(frame_delay - n_frames_change , nonlinear_velocity(1, linear_velocity(n_frames_change-1, vel_x[1] * linear_speed, vel_x[1]), -1), -1)
+                #     elif action == 5:
+                #         if last_action == 1 or last_action == 2 or last_action == 3 or last_action == 4:
+                #             predict_x = pos_x[1] + linear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1]) + nonlinear_move(frame_delay - n_frames_change , nonlinear_velocity(1, linear_velocity(n_frames_change-1, vel_x[1] * linear_speed, vel_x[1]), -1), -1)
                             
-                            predict_y = pos_y[1] + linear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1]) + nonlinear_move(frame_delay - n_frames_change , nonlinear_velocity(1, linear_velocity(n_frames_change-1, vel_y[1] * linear_speed, vel_y[1]), 1), 1)
+                #             predict_y = pos_y[1] + linear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1]) + nonlinear_move(frame_delay - n_frames_change , nonlinear_velocity(1, linear_velocity(n_frames_change-1, vel_y[1] * linear_speed, vel_y[1]), 1), 1)
                         
-                        elif last_action == 5 or last_action == 6 or last_action == 7 or last_action == 8: 
-                            predict_x = pos_x[1] + nonlinear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1]) + nonlinear_move(frame_delay - n_frames_change , nonlinear_velocity(n_frames_change, vel_x[1] * linear_speed, vel_x[1]), -1)
+                #         elif last_action == 5 or last_action == 6 or last_action == 7 or last_action == 8: 
+                #             predict_x = pos_x[1] + nonlinear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1]) + nonlinear_move(frame_delay - n_frames_change , nonlinear_velocity(n_frames_change, vel_x[1] * linear_speed, vel_x[1]), -1)
                             
-                            predict_y = pos_y[1] + nonlinear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1]) + nonlinear_move(frame_delay - n_frames_change , nonlinear_velocity(n_frames_change, vel_y[1] * linear_speed, vel_y[1]), 1)
-                        else:
-                            predict_x = pos_x[1] + nonlinear_move(frame_delay - n_frames_change , 0, -1)
-                            predict_y = pos_y[1] + nonlinear_move(frame_delay - n_frames_change , 0, 1)
+                #             predict_y = pos_y[1] + nonlinear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1]) + nonlinear_move(frame_delay - n_frames_change , nonlinear_velocity(n_frames_change, vel_y[1] * linear_speed, vel_y[1]), 1)
+                #         else:
+                #             predict_x = pos_x[1] + nonlinear_move(frame_delay - n_frames_change , 0, -1)
+                #             predict_y = pos_y[1] + nonlinear_move(frame_delay - n_frames_change , 0, 1)
 
-                    elif action == 6:
-                        if last_action == 1 or last_action == 2 or last_action == 3 or last_action == 4:
-                            predict_x = pos_x[1] + linear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1]) + nonlinear_move(frame_delay - n_frames_change , nonlinear_velocity(1, linear_velocity(n_frames_change-1, vel_x[1] * linear_speed, vel_x[1]), 1), 1)
+                #     elif action == 6:
+                #         if last_action == 1 or last_action == 2 or last_action == 3 or last_action == 4:
+                #             predict_x = pos_x[1] + linear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1]) + nonlinear_move(frame_delay - n_frames_change , nonlinear_velocity(1, linear_velocity(n_frames_change-1, vel_x[1] * linear_speed, vel_x[1]), 1), 1)
                             
-                            predict_y = pos_y[1] + linear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1]) + nonlinear_move(frame_delay - n_frames_change , nonlinear_velocity(1, linear_velocity(n_frames_change-1, vel_y[1] * linear_speed, vel_y[1]), 1), 1)
+                #             predict_y = pos_y[1] + linear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1]) + nonlinear_move(frame_delay - n_frames_change , nonlinear_velocity(1, linear_velocity(n_frames_change-1, vel_y[1] * linear_speed, vel_y[1]), 1), 1)
 
-                        elif last_action == 5 or last_action == 6 or last_action == 7 or last_action == 8: 
-                            predict_x = pos_x[1] + nonlinear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1]) + nonlinear_move(frame_delay - n_frames_change , nonlinear_velocity(n_frames_change, vel_x[1] * linear_speed, vel_x[1]), 1)
+                #         elif last_action == 5 or last_action == 6 or last_action == 7 or last_action == 8: 
+                #             predict_x = pos_x[1] + nonlinear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1]) + nonlinear_move(frame_delay - n_frames_change , nonlinear_velocity(n_frames_change, vel_x[1] * linear_speed, vel_x[1]), 1)
                             
-                            predict_y = pos_y[1] + nonlinear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1]) + nonlinear_move(frame_delay - n_frames_change , nonlinear_velocity(n_frames_change, vel_y[1] * linear_speed, vel_y[1]), 1)
+                #             predict_y = pos_y[1] + nonlinear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1]) + nonlinear_move(frame_delay - n_frames_change , nonlinear_velocity(n_frames_change, vel_y[1] * linear_speed, vel_y[1]), 1)
 
-                        else:
-                            predict_x = pos_x[1] + nonlinear_move(frame_delay - n_frames_change , 0, 1)
-                            predict_y = pos_y[1] + nonlinear_move(frame_delay - n_frames_change , 0, 1)
+                #         else:
+                #             predict_x = pos_x[1] + nonlinear_move(frame_delay - n_frames_change , 0, 1)
+                #             predict_y = pos_y[1] + nonlinear_move(frame_delay - n_frames_change , 0, 1)
 
-                    elif action == 7:
-                        if last_action == 1 or last_action == 2 or last_action == 3 or last_action == 4:
-                            predict_x = pos_x[1] + linear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1]) + nonlinear_move(frame_delay - n_frames_change , nonlinear_velocity(1, linear_velocity(n_frames_change-1, vel_x[1] * linear_speed, vel_x[1]), -1), -1)
+                #     elif action == 7:
+                #         if last_action == 1 or last_action == 2 or last_action == 3 or last_action == 4:
+                #             predict_x = pos_x[1] + linear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1]) + nonlinear_move(frame_delay - n_frames_change , nonlinear_velocity(1, linear_velocity(n_frames_change-1, vel_x[1] * linear_speed, vel_x[1]), -1), -1)
                             
-                            predict_y = pos_y[1] + linear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1]) + nonlinear_move(frame_delay - n_frames_change , nonlinear_velocity(1, linear_velocity(n_frames_change-1, vel_y[1] * linear_speed, vel_y[1]), -1), -1)   
+                #             predict_y = pos_y[1] + linear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1]) + nonlinear_move(frame_delay - n_frames_change , nonlinear_velocity(1, linear_velocity(n_frames_change-1, vel_y[1] * linear_speed, vel_y[1]), -1), -1)   
                         
-                        elif last_action == 5 or last_action == 6 or last_action == 7 or last_action == 8:
-                            predict_x = pos_x[1] + nonlinear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1]) + nonlinear_move(frame_delay - n_frames_change , nonlinear_velocity(n_frames_change, vel_x[1] * linear_speed, vel_x[1]), -1)
+                #         elif last_action == 5 or last_action == 6 or last_action == 7 or last_action == 8:
+                #             predict_x = pos_x[1] + nonlinear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1]) + nonlinear_move(frame_delay - n_frames_change , nonlinear_velocity(n_frames_change, vel_x[1] * linear_speed, vel_x[1]), -1)
                             
-                            predict_y = pos_y[1] + nonlinear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1]) + nonlinear_move(frame_delay - n_frames_change , nonlinear_velocity(n_frames_change, vel_y[1] * linear_speed, vel_y[1]), -1)   
+                #             predict_y = pos_y[1] + nonlinear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1]) + nonlinear_move(frame_delay - n_frames_change , nonlinear_velocity(n_frames_change, vel_y[1] * linear_speed, vel_y[1]), -1)   
                         
-                        else:
-                            predict_x = pos_x[1] + nonlinear_move(frame_delay - n_frames_change , 0, -1)
-                            predict_y = pos_y[1] + nonlinear_move(frame_delay - n_frames_change , 0, -1)                    
+                #         else:
+                #             predict_x = pos_x[1] + nonlinear_move(frame_delay - n_frames_change , 0, -1)
+                #             predict_y = pos_y[1] + nonlinear_move(frame_delay - n_frames_change , 0, -1)                    
 
-                    elif action == 8:
-                        if last_action == 1 or last_action == 2 or last_action == 3 or last_action == 4:
-                            predict_x = pos_x[1] + linear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1]) + nonlinear_move(frame_delay - n_frames_change , nonlinear_velocity(1, linear_velocity(n_frames_change-1, vel_x[1] * linear_speed, vel_x[1]), 1), 1)
+                #     elif action == 8:
+                #         if last_action == 1 or last_action == 2 or last_action == 3 or last_action == 4:
+                #             predict_x = pos_x[1] + linear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1]) + nonlinear_move(frame_delay - n_frames_change , nonlinear_velocity(1, linear_velocity(n_frames_change-1, vel_x[1] * linear_speed, vel_x[1]), 1), 1)
                             
-                            predict_y = pos_y[1] + linear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1]) + nonlinear_move(frame_delay - n_frames_change , nonlinear_velocity(1, linear_velocity(n_frames_change-1, vel_y[1] * linear_speed, vel_y[1]), -1), -1)
+                #             predict_y = pos_y[1] + linear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1]) + nonlinear_move(frame_delay - n_frames_change , nonlinear_velocity(1, linear_velocity(n_frames_change-1, vel_y[1] * linear_speed, vel_y[1]), -1), -1)
                         
-                        elif last_action == 5 or last_action == 6 or last_action == 7 or last_action == 8:
-                            predict_x = pos_x[1] + nonlinear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1]) + nonlinear_move(frame_delay - n_frames_change , nonlinear_velocity(n_frames_change, vel_x[1] * linear_speed, vel_x[1]), 1)
+                #         elif last_action == 5 or last_action == 6 or last_action == 7 or last_action == 8:
+                #             predict_x = pos_x[1] + nonlinear_move(n_frames_change, vel_x[1] * linear_speed, vel_x[1]) + nonlinear_move(frame_delay - n_frames_change , nonlinear_velocity(n_frames_change, vel_x[1] * linear_speed, vel_x[1]), 1)
                             
-                            predict_y = pos_y[1] + nonlinear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1]) + nonlinear_move(frame_delay - n_frames_change , nonlinear_velocity(n_frames_change, vel_y[1] * linear_speed, vel_y[1]), -1)
+                #             predict_y = pos_y[1] + nonlinear_move(n_frames_change, vel_y[1] * linear_speed, vel_y[1]) + nonlinear_move(frame_delay - n_frames_change , nonlinear_velocity(n_frames_change, vel_y[1] * linear_speed, vel_y[1]), -1)
                         
-                        else:
-                            predict_x = pos_x[1] + nonlinear_move(frame_delay - n_frames_change , 0, 1)
-                            predict_y = pos_y[1] + nonlinear_move(frame_delay - n_frames_change , 0, -1)
+                #         else:
+                #             predict_x = pos_x[1] + nonlinear_move(frame_delay - n_frames_change , 0, 1)
+                #             predict_y = pos_y[1] + nonlinear_move(frame_delay - n_frames_change , 0, -1)
 
-                last_action = action
+                # last_action = action
                 
-                data = str(predict_x) + "," + str(predict_y) + "," + position_z
-                print("send message: ", data)
+                # data = str(predict_x) + "," + str(predict_y) + "," + position_z
+                # print("send message: ", data)
 
-                predict_data = data.encode("utf-8")
-                print(predict_data)
-                # print("Unity client", cli_data, data)
-                print("Unity client", cli_data)
+                # predict_data = data.encode("utf-8")
+                # print(predict_data)
+                # # print("Unity client", cli_data, data)
+                # print("Unity client", cli_data)
+                # unity_sock.sendto(predict_data, unity_addr)
+
+                predict_data = (str(action) + "," + str(n_frames_change)).encode("utf-8")
                 unity_sock.sendto(predict_data, unity_addr)
+
+                with open(f'{evaluate_dir}/no_delay_log_action.csv', 'a') as f:
+                    writer = csv.writer(f, lineterminator='\n')
+                    writer.writerow([send_time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z])
+                    # writer.writerow([send_time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z, predict_x])
 
                 # end = time.time()
                 # exe_time = end - start

@@ -115,6 +115,7 @@ public class SyncroPlayerController : MonoBehaviourPunCallbacks
             // Debug.Log(gap);
 
             if(canShot){
+                // my position x 2.2 
                 if(gap > 0){
                     // 実行遅延時間なしと仮定したとき（送受信遅延のみ）
                     // 0.405-0.63
@@ -124,7 +125,8 @@ public class SyncroPlayerController : MonoBehaviourPunCallbacks
                     // 1.55-2.0
                     // if(1.765 < positionX && positionX < 1.865 && GameState.canShoot){
                         
-                    if(0.8 < positionX && positionX < 0.9&& GameState.canShoot){
+                    // if(0.8 < positionX && positionX < 0.9&& GameState.canShoot){
+                    if(1.8 < positionX && positionX < 1.9 && GameState.canShoot){
                         Shoot.instance.Shot();
                         BulletControllerCopy.instance.shoot();
                         canShot = false;
@@ -139,7 +141,8 @@ public class SyncroPlayerController : MonoBehaviourPunCallbacks
                     // 2.4-3.0
                     // if(2.7 < positionX && positionX < 2.8 && GameState.canShoot){
                     
-                    if(3.5 < positionX && positionX < 3.6 && GameState.canShoot){
+                    // if(3.5 < positionX && positionX < 3.6 && GameState.canShoot){
+                    if(2.5 < positionX && positionX < 2.6 && GameState.canShoot){
                         Shoot.instance.Shot();
                         BulletControllerCopy.instance.shoot();
                         canShot = false;

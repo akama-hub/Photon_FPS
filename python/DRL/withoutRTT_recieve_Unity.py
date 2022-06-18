@@ -26,139 +26,6 @@ import signal
 
 import math
 
-linear_speed = 0.02
-nonlinear_speed = linear_speed * math.sqrt(2) / 2
-#0.014142
-
-max_linear_speed = 0.1
-max_nonlinear_speed = max_linear_speed * math.sqrt(2) / 2
-#0.1697
-
-def linear_move(time, speed, move_direction):
-    move = 0
-    if move_direction > 0:
-        if speed <= 0:
-            speed = linear_speed
-
-        elif speed > max_linear_speed:
-            speed = max_linear_speed
-
-        for _ in range(time):
-            move += speed
-            speed += linear_speed
-            if speed > max_linear_speed:
-                speed = max_linear_speed
-            
-    elif move_direction < 0:
-        if speed >= 0:
-            speed = -linear_speed
-            
-        elif speed < -max_linear_speed:
-            speed = -max_linear_speed
-        for _ in range(time):
-            move += speed
-            speed -= linear_speed
-            if speed < -max_linear_speed:
-                speed = -max_linear_speed
-            
-    else:
-        move = 0
-
-    # print("move: ", move)
-    return move
-
-def linear_velocity(time, speed, move_direction):
-    if move_direction > 0:
-        if speed <= 0:
-            speed = linear_speed
-            time -= 1
-        for _ in range(time):
-            speed += linear_speed
-        if speed > max_linear_speed:
-            speed = max_linear_speed
-            
-    elif move_direction < 0:
-        if speed >= 0:
-            speed = -linear_speed
-            time -= 1
-        for _ in range(time):
-            speed -= linear_speed
-        if speed < -max_linear_speed:
-            speed = -max_linear_speed
-            
-    else:
-        speed = 0
-
-    # print("velocity: ", speed)
-    return speed
-
-def nonlinear_move(time, speed, move_direction):
-    move = 0
-    if move_direction > 0:
-        if speed <= 0:
-            speed = nonlinear_speed
-            
-        elif speed > max_nonlinear_speed:
-            speed = max_nonlinear_speed
-
-        for _ in range(time):
-            move += speed
-            speed += nonlinear_speed
-            if speed > max_nonlinear_speed:
-                speed = max_nonlinear_speed
-            
-    elif move_direction < 0:
-        if speed >= 0:
-            speed = -nonlinear_speed
-            
-        elif speed < -max_nonlinear_speed:
-            speed = -max_nonlinear_speed
-        for _ in range(time):
-            move += speed
-            speed -= nonlinear_speed
-            if speed < -max_nonlinear_speed:
-                speed = -max_nonlinear_speed
-            
-    else:
-        move = 0
-
-    # print("move: ", move)
-    return move
-
-def nonlinear_velocity(time, speed, move_direction):
-    if move_direction > 0:
-        if speed < 0:
-            speed = nonlinear_speed
-            time -= 1
-        for _ in range(time):
-            speed += nonlinear_speed
-        if speed > max_nonlinear_speed:
-            speed = max_nonlinear_speed
-            
-    elif move_direction < 0:
-        if speed >= 0:
-            speed = -nonlinear_speed
-            time -= 1
-        for _ in range(time):
-            speed -= nonlinear_speed
-        if speed < -max_nonlinear_speed:
-            speed = -max_nonlinear_speed
-            
-    else:
-        speed = 0
-
-    # print("velocity: ", speed)
-    return speed
-
-
-def calculateLine(x1, x2, t1, t2):
-    if t1 - t2 == 0:
-        a = 0
-        b = 0
-    else:
-        a = (x1 - x2) / (t1 - t2)
-        b = x1 - a * t1
-    return a, b
 
 def main():
     # ctrl-Cがなかなか反応しないのを直す
@@ -166,19 +33,13 @@ def main():
     M_SIZE = 1024
     host = '127.0.0.1' 
     # 自分を指定
-    serv_port = 50040
-    unity_port = 50026
+    serv_port = 50026
+    unity_port = 50040
     serv = (host, serv_port)
     unity_addr = (host, unity_port)
     cli_sock = socket.socket(socket.AF_INET, type=socket.SOCK_DGRAM)
     cli_sock.bind(serv)
     unity_sock = socket.socket(socket.AF_INET, type=socket.SOCK_DGRAM)
-
-    pos_x = np.zeros(4)
-    pos_y = np.zeros(4)
-    vel_x = np.zeros(4)
-    vel_y = np.zeros(4)
-    t = np.zeros(4)
 
     delays = [25, 37, 50, 75, 100]
 
@@ -190,6 +51,9 @@ def main():
     motion = motions[0]
     # motion = motions[1]
     # motion = motions[3]
+
+    evaluate_dir = f"../evaluate/{motion}"
+    os.makedirs(evaluate_dir, exist_ok=True)
 
     while True:
         try:
@@ -210,8 +74,21 @@ def main():
             velocity_z = ""
             flag = "first"
 
+            Dflag = "first"
+            lag = ""
+            frame_time = ""
+
             print("recieving data: ", cli_data)
             for data in cli_str_data:
+                if data == "D" and Dflag == "first":
+                    Dflag = "delay"
+                    print("dalay log")
+                    continue
+                elif data == "P" and Dflag == "first":
+                    Dflag = "predict"
+                    print("predict log")
+                    continue
+
                 if data == "t" and flag == "first":
                     flag = "time"
                     continue
@@ -236,6 +113,14 @@ def main():
                 elif data == "v":
                     flag = "velocity"
                     continue
+                elif data == "l":
+                    flag = "lag"
+                    continue
+                elif data == "T":
+                    flag = "Time"
+                    continue
+
+                
                 if flag == "time":
                     send_time += data
                 if flag == "position_x":
@@ -250,10 +135,35 @@ def main():
                     velocity_y += data
                 if flag == "velocity_z":
                     velocity_z += data
+                if flag == "lag":
+                    lag += data
+                if flag == "Time":
+                    frame_time += data
 
-            with open(f'../evaluate/{motion}/Player.csv', 'a') as f:
-                writer = csv.writer(f, lineterminator='\n')
-                writer.writerow([send_time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z])
+            if Dflag == "delay":
+                # with open(f'{evaluate_dir}/delay_log.csv', 'a') as f:
+                # with open(f'{evaluate_dir}/delay_log_lerpumclamped2.csv', 'a') as f:
+                # with open(f'{evaluate_dir}/delay_log_interpolate.csv', 'a') as f:
+                # with open(f'{evaluate_dir}/delay_log_lerp2.csv', 'a') as f:
+                # # with open(f'{evaluate_dir}/delay_log_action.csv', 'a') as f:
+                #     writer = csv.writer(f, lineterminator='\n')
+                #     writer.writerow([send_time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z])
+                with open(f'{evaluate_dir}/check_lag0.csv', 'a') as f:
+                    writer = csv.writer(f, lineterminator='\n')
+                    writer.writerow([lag])
+
+            elif Dflag == "predict":
+                # with open(f'{evaluate_dir}/predict_log.csv', 'a') as f:
+                # with open(f'{evaluate_dir}/predict_log_lerpumclamped2.csv', 'a') as f:
+                # with open(f'{evaluate_dir}/predict_log_interpolate3.csv', 'a') as f:
+                #     writer = csv.writer(f, lineterminator='\n')
+                #     writer.writerow([send_time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z])
+                # with open(f'{evaluate_dir}/predict_log_interpolate.csv', 'a') as f:
+                with open(f'{evaluate_dir}/predict_log_lerp2.csv', 'a') as f:
+                # with open(f'{evaluate_dir}/predict_log_action.csv', 'a') as f:
+                    writer = csv.writer(f, lineterminator='\n')
+                    writer.writerow([send_time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z, lag, frame_time])
+            
     
         except KeyboardInterrupt:
             print ('\n . . .\n')
