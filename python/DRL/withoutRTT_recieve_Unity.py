@@ -1,31 +1,17 @@
 from __future__ import print_function
-import argparse
+import string
 
-import numpy as np
-from numpy.lib.function_base import diff
-import torch
-from torch import distributions, nn
-
-from pfrl import agents, explorers, replay_buffers, utils
-from pfrl import nn as pnn
-from pfrl.q_functions import DistributionalFCStateQFunctionWithDiscreteAction
-
-
-from argparse import ArgumentParser
 from time import sleep
 import csv
 
-import logging
-
 import os
-
-import torch.nn.functional as F
 
 import socket
 import signal
 
 import math
 
+import argparse
 
 def main():
     # ctrl-Cがなかなか反応しないのを直す
@@ -41,18 +27,23 @@ def main():
     cli_sock.bind(serv)
     unity_sock = socket.socket(socket.AF_INET, type=socket.SOCK_DGRAM)
 
-    delays = [25, 37, 50, 75, 100]
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-m", "--motion", type=str)
+    parser.add_argument("-s", "--scheme", type=str)
+    parser.add_argument("-l", "--latency", type=int)
+    args = parser.parse_args()    # 4. 引数を解析
 
-    # delay = delays[0]*2*0.001
-    delay = delays[1]*2*0.001
-    # delay = delays[2]*2*0.001
+    delays = [0, 25, 37, 50, 75, 100]
 
-    motions = ["ohuku", "curb", "zigzag", "ohukuRandom"]
-    motion = motions[0]
+    delay = delays[0]
+
+    # motions = ["ohuku", "curb", "zigzag", "ohukuRandom"]
+    # motion = motions[0]
     # motion = motions[1]
     # motion = motions[3]
 
-    evaluate_dir = f"../evaluate/{motion}"
+
+    evaluate_dir = f"../evaluate/EvaluateDiffLog/Lag{args.latency}/{args.motion}/{args.scheme}"
     os.makedirs(evaluate_dir, exist_ok=True)
 
     while True:
@@ -141,28 +132,19 @@ def main():
                     frame_time += data
 
             if Dflag == "delay":
-                # with open(f'{evaluate_dir}/delay_log.csv', 'a') as f:
-                # with open(f'{evaluate_dir}/delay_log_lerpumclamped2.csv', 'a') as f:
-                # with open(f'{evaluate_dir}/delay_log_interpolate.csv', 'a') as f:
-                # with open(f'{evaluate_dir}/delay_log_lerp2.csv', 'a') as f:
-                # # with open(f'{evaluate_dir}/delay_log_action.csv', 'a') as f:
-                #     writer = csv.writer(f, lineterminator='\n')
-                #     writer.writerow([send_time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z])
-                with open(f'{evaluate_dir}/check_lag0.csv', 'a') as f:
+                with open(f'{evaluate_dir}/delayed_log_train.csv', 'a') as f:
                     writer = csv.writer(f, lineterminator='\n')
-                    writer.writerow([lag])
+                    writer.writerow([send_time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z, lag])
+                    # writer.writerow([send_time, position_x, position_y, position_z])
+                # with open(f'{evaluate_dir}/check_lag0.csv', 'a') as f:
+                #     writer = csv.writer(f, lineterminator='\n')
+                #     writer.writerow([lag])
 
             elif Dflag == "predict":
-                # with open(f'{evaluate_dir}/predict_log.csv', 'a') as f:
-                # with open(f'{evaluate_dir}/predict_log_lerpumclamped2.csv', 'a') as f:
-                # with open(f'{evaluate_dir}/predict_log_interpolate3.csv', 'a') as f:
-                #     writer = csv.writer(f, lineterminator='\n')
-                #     writer.writerow([send_time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z])
-                # with open(f'{evaluate_dir}/predict_log_interpolate.csv', 'a') as f:
-                with open(f'{evaluate_dir}/predict_log_lerp2.csv', 'a') as f:
-                # with open(f'{evaluate_dir}/predict_log_action.csv', 'a') as f:
+                with open(f'{evaluate_dir}/predict_log_train.csv', 'a') as f:
                     writer = csv.writer(f, lineterminator='\n')
-                    writer.writerow([send_time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z, lag, frame_time])
+                    # writer.writerow([send_time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z, lag, frame_time])
+                    writer.writerow([send_time, position_x, position_y, position_z])
             
     
         except KeyboardInterrupt:

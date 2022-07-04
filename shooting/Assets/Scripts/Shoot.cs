@@ -2,9 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-// using Photon.Pun;
+using Photon.Pun;
  
-public class Shoot : MonoBehaviour
+public class Shoot : MonoBehaviourPunCallbacks
 {
     // [SerializeField] Camera fpsCamera;
     Camera fpsCamera;
@@ -31,24 +31,28 @@ public class Shoot : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // Debug.Log(GameState.canShoot);
-        if(Input.GetMouseButtonDown(0) && GameState.canShoot) //左クリックした場合
+        if(photonView.IsMine)
         {
-            Shot();            
-        }
-
-        if(Input.GetKeyDown(KeyCode.R)){
-            int amountNeed = maxAmmoClip - ammoClip;
-            int ammoAvailable  = amountNeed < ammunition ? amountNeed : ammunition;
-
-            if(amountNeed != 0 && ammunition != 0){
-                animator.SetTrigger("Reload");
+            // Debug.Log(GameState.canShoot);
+            if(Input.GetMouseButtonDown(0) && GameState.canShoot) //左クリックした場合
+            {
+                Shot();            
             }
-            
-            ammunition -= ammoAvailable;
-            ammoClip += ammoAvailable;
-            ammoText.text = "Ammo " + ammoClip + " / " + ammunition;
+
+            if(Input.GetKeyDown(KeyCode.R)){
+                int amountNeed = maxAmmoClip - ammoClip;
+                int ammoAvailable  = amountNeed < ammunition ? amountNeed : ammunition;
+
+                if(amountNeed != 0 && ammunition != 0){
+                    animator.SetTrigger("Reload");
+                }
+                
+                ammunition -= ammoAvailable;
+                ammoClip += ammoAvailable;
+                ammoText.text = "Ammo " + ammoClip + " / " + ammunition;
+            }
         }
+        
     }
 
     public void Shot(){

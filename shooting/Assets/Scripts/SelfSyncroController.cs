@@ -25,21 +25,22 @@ public class SelfSyncroController : MonoBehaviourPunCallbacks
 
     private Rigidbody rigidbody;
 
-    private forudp.UDP commUDP = new forudp.UDP();
+    // private forudp.UDP commUDP = new forudp.UDP();
 
-    private DateTime dt;
-    private float nowTime;
-    private float milSec;
+    // private DateTime dt;
+    // private float nowTime;
+    // private float milSec;
 
     private string motion = "ohuku";
     // private string motion = "curb";
+    // private string motion = "zigzag";
     
     // Start is called before the first frame update
     void Start()
     {
         if(photonView.IsMine){
             // commUDP.init(int型の送信用ポート番号, int型の送信先ポート番号, int型の受信用ポート番号);
-            commUDP.init(50032, 50030, 50031);
+            // commUDP.init(50032, 50030, 50031);
 
             rigidbody = this.GetComponent<Rigidbody> ();
         }
@@ -323,14 +324,14 @@ public class SelfSyncroController : MonoBehaviourPunCallbacks
                         }
                     }
 
-                    if(transform.position.x > 20){
+                    if(transform.position.x > 10){
                         isRight = false;
                     }
                     
-                    if(transform.position.z > 12){
+                    if(transform.position.z > 14.5){
                         isBack = false;
                     }
-                    else if(transform.position.z < 8){
+                    else if(transform.position.z < 9.5){
                         isBack = true;
                     }
                 }
@@ -376,13 +377,13 @@ public class SelfSyncroController : MonoBehaviourPunCallbacks
                         }
                     }
 
-                    if(transform.position.x < 0){
+                    if(transform.position.x < -5){
                         isRight = true;
                     }
-                    if(transform.position.z > 12){
+                    if(transform.position.z > 14.5){
                         isBack = false;
                     }
-                    else if(transform.position.z < 8){
+                    else if(transform.position.z < 9.5){
                         isBack = true;
                     }
                 }
@@ -390,23 +391,23 @@ public class SelfSyncroController : MonoBehaviourPunCallbacks
             
             this.rigidbody.velocity = new Vector3(x, 0, z);
 
-            dt = DateTime.Now;
-            milSec = dt.Millisecond / 1000f;
-            nowTime = (dt.Minute * 60) + dt.Second + milSec;
+            // dt = DateTime.Now;
+            // milSec = dt.Millisecond / 1000f;
+            // nowTime = (dt.Minute * 60) + dt.Second + milSec;
 
-            string position_x = transform.position.x.ToString("00.000000");
-            string position_y = transform.position.y.ToString("00.000000");
-            string position_z = transform.position.z.ToString("00.000000");
-            // string time = nowTime.ToString("0000.0000");
-            string time = nowTime.ToString("F3");
+            // string position_x = transform.position.x.ToString("00.000000");
+            // string position_y = transform.position.y.ToString("00.000000");
+            // string position_z = transform.position.z.ToString("00.000000");
+            // // string time = nowTime.ToString("0000.0000");
+            // string time = nowTime.ToString("F3");
 
-            string velocity_x = rigidbody.velocity.x.ToString("00.000000");
-            string velocity_y = rigidbody.velocity.y.ToString("00.000000");
-            string velocity_z = rigidbody.velocity.z.ToString("00.000000");
-            // Debug.Log(Time.time);
-            string data = "t" + time + "x" + position_x + "y" + position_y + "z" + position_z + "vx" + velocity_x + "vy" + velocity_y + "vz" + velocity_z;
+            // string velocity_x = rigidbody.velocity.x.ToString("00.000000");
+            // string velocity_y = rigidbody.velocity.y.ToString("00.000000");
+            // string velocity_z = rigidbody.velocity.z.ToString("00.000000");
+            // // Debug.Log(Time.time);
+            // string data = "t" + time + "x" + position_x + "y" + position_y + "z" + position_z + "vx" + velocity_x + "vy" + velocity_y + "vz" + velocity_z;
             
-            commUDP.send(data);
+            // commUDP.send(data);
         }
     }
 }

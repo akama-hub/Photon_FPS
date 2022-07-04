@@ -12,6 +12,7 @@ using UnityEngine;
 using Photon.Pun;
 using System;
 
+[AddComponentMenu("Photon Networking/Photon Transform View")]
 public class SelfSyncronize : MonoBehaviourPun, IPunObservable
 {
     private float m_Distance;
@@ -20,6 +21,8 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
     private Vector3 m_Direction;
     private Vector3 m_NetworkPosition;
     private Vector3 m_StoredPosition;
+    private Vector3 m_StoredPosition1;
+    private Vector3 m_StoredPosition2;
 
     private Quaternion m_NetworkRotation;
 
@@ -40,14 +43,19 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
     private Vector3 delayedPosition;
 
     private float lag;
-    // private float fixedDelay = 0.0364f;
-    // private float fixedDelay = 0.046f;
-    private float fixedDelay = 0.0974f;
+    // private float fixedDelay = 0.032f;
+    // private float fixedDelay = 0.064f;
+    // private float fixedDelay = 0.086f;
 
     [Tooltip("Indicates if localPosition and localRotation should be used. Scale ignores this setting, and always uses localScale to avoid issues with lossyScale.")]
     public bool m_UseLocal;
 
     bool m_firstTake = false;
+
+    private Vector3 m_Vel;
+    private float elapsedTime;
+
+    private bool isPositionUpdate = false;
 
     public void Awake()
     {
@@ -90,26 +98,28 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
 
         if (!this.photonView.IsMine)
         {
-            // dt = DateTime.Now;
+            dt = DateTime.Now;
 
-            // milSec = dt.Millisecond / 1000f;
-            // nowTime = (dt.Minute * 60) + dt.Second + milSec;
+            milSec = dt.Millisecond / 1000f;
+            nowTime = (dt.Minute * 60) + dt.Second + milSec;
 
-            // string position_x = delayedPosition.x.ToString("00.000000");
-            // string position_y = delayedPosition.y.ToString("00.000000");
-            // string position_z = delayedPosition.z.ToString("00.000000");
-            // // string time = Time.time.ToString("0000.0000");
-            // string time = nowTime.ToString("F3");
+            string position_x = delayedPosition.x.ToString("00.000000");
+            string position_y = delayedPosition.y.ToString("00.000000");
+            string position_z = delayedPosition.z.ToString("00.000000");
+            // string time = Time.time.ToString("0000.0000");
+            string time = nowTime.ToString("F3");
 
-            // string velocity_x = rb.velocity.x.ToString("00.000000");
-            // string velocity_y = rb.velocity.y.ToString("00.000000");
-            // string velocity_z = rb.velocity.z.ToString("00.000000");
-            // string lagging = lag.ToString("0000.0000");
+            string velocity_x = this.m_Vel.x.ToString("00.000000");
+            string velocity_y = this.m_Vel.y.ToString("00.000000");
+            string velocity_z = this.m_Vel.z.ToString("00.000000");
+            string lagging = this.lag.ToString("00.000000");
             // // Debug.Log(Time.time);
             // string data = "D" + "t" + time + "x" + position_x + "y" + position_y + "z" + position_z + "vx" + velocity_x + "vy" + velocity_y + "vz" + velocity_z + "l" + lagging;
+            // string data = "D" + "t" + time + "x" + position_x + "y" + position_y + "z" + position_z;
+            string data = "D" + "t" + time + "x" + position_x + "y" + position_y + "z" + position_z + "vx" + velocity_x + "vy" + velocity_y + "vz" + velocity_z + "l" + lagging;
             
             // // string data = "t" + time + "x" + position_x + "y" + position_y + "z" + position_z + "vx" + velocity_x + "vy" + velocity_y;
-            string data = "D" + "l" + lag.ToString("0000.0000");
+            // string data = "D" + "l" + this.lag.ToString("0000.0000");
             commUDPnotMine.send(data);
 
             string[] position = commUDPnotMine.rcvMsg.Split(',');
@@ -131,13 +141,35 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
                 }
                 else
                 {
-                    if(fixedDelay <= lag)
+                    if(this.isPositionUpdate)
                     {
-                        tr.position = Vector3.LerpUnclamped(delayedPosition, pos, lag/fixedDelay);
+                        // if(fixedDelay <= this.lag)
+                        // {
+                        //     tr.position = Vector3.LerpUnclamped(delayedPosition, pos, this.lag/fixedDelay);
+                        // }
+                        // else
+                        // {
+                        //     tr.position = Vector3.Lerp(delayedPosition, pos, this.lag/fixedDelay);
+                        // }
+                        tr.position = Vector3.LerpUnclamped(delayedPosition, pos, 1);
+                        this.isPositionUpdate = false;
                     }
                     else
                     {
-                        tr.position = Vector3.Lerp(delayedPosition, pos, lag/fixedDelay);
+                        // if(fixedDelay <= this.lag)
+                        // {
+                        //     tr.position = Vector3.LerpUnclamped(tr.position, pos, this.lag/fixedDelay);
+                        // }
+                        // else
+                        // {
+                        //     tr.position = Vector3.Lerp(tr.position, pos, this.lag/fixedDelay);
+                        // }
+                        
+                        // DRL
+                        // tr.position = Vector3.LerpUnclamped(tr.position, pos, 1);
+
+                        // DR
+                        tr.position = Vector3.LerpUnclamped(tr.position, tr.position + this.m_Vel * 1 / PhotonNetwork.SerializationRate, 1);
                     }
                     
                     tr.rotation = Quaternion.RotateTowards(tr.rotation, this.m_NetworkRotation, this.m_Angle * Time.deltaTime *  PhotonNetwork.SerializationRate);
@@ -148,6 +180,7 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
                 if (m_UseLocal)
                 {
                     tr.localPosition = Vector3.MoveTowards(tr.localPosition, this.m_NetworkPosition, this.m_Distance  * Time.deltaTime * PhotonNetwork.SerializationRate);
+                    // SerializationRate -> OnPhotonSerializeView が一秒間に何回呼ばれるか
                     tr.localRotation = Quaternion.RotateTowards(tr.localRotation, this.m_NetworkRotation, this.m_Angle * Time.deltaTime * PhotonNetwork.SerializationRate);
                 }
                 else
@@ -160,34 +193,37 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
                 }
             }
 
-            // dt = DateTime.Now;
+            dt = DateTime.Now;
 
-            // milSec = dt.Millisecond / 1000f;
-            // nowTime = (dt.Minute * 60) + dt.Second + milSec;
+            milSec = dt.Millisecond / 1000f;
+            nowTime = (dt.Minute * 60) + dt.Second + milSec;
 
-            // // string position_x = tr.position.x.ToString("00.000000");
-            // // string position_y = tr.position.y.ToString("00.000000");
-            // // string position_z = tr.position.z.ToString("00.000000");
-            // // // string time = Time.time.ToString("0000.0000");
-            // // string time = nowTime.ToString("F3");
+            // string position_x = tr.position.x.ToString("00.000000");
+            // string position_y = tr.position.y.ToString("00.000000");
+            // string position_z = tr.position.z.ToString("00.000000");
+            // string time = Time.time.ToString("0000.0000");
+            // string time = nowTime.ToString("F3");
 
-            // // string velocity_x = rb.velocity.x.ToString("00.000000");
-            // // string velocity_y = rb.velocity.y.ToString("00.000000");
-            // // string velocity_z = rb.velocity.z.ToString("00.000000");
-            // // // Debug.Log(Time.time);
-            // // string data = "t" + time + "x" + position_x + "y" + position_y + "z" + position_z + "vx" + velocity_x + "vy" + velocity_y + "vz" + velocity_z;
+            // string velocity_x = rb.velocity.x.ToString("00.000000");
+            // string velocity_y = rb.velocity.y.ToString("00.000000");
+            // string velocity_z = rb.velocity.z.ToString("00.000000");
+            // Debug.Log(Time.time);
+            // string data = "t" + time + "x" + position_x + "y" + position_y + "z" + position_z + "vx" + velocity_x + "vy" + velocity_y + "vz" + velocity_z;
+            // string data = "t" + time + "x" + position_x + "y" + position_y + "z" + position_z;
 
-            // position_x = tr.position.x.ToString("00.000000");
-            // position_y = tr.position.y.ToString("00.000000");
-            // position_z = tr.position.z.ToString("00.000000");
-            // time = nowTime.ToString("F3");
+            position_x = tr.position.x.ToString("00.000000");
+            position_y = tr.position.y.ToString("00.000000");
+            position_z = tr.position.z.ToString("00.000000");
+            time = nowTime.ToString("F3");
 
             // velocity_x = rb.velocity.x.ToString("00.000000");
             // velocity_y = rb.velocity.y.ToString("00.000000");
             // velocity_z = rb.velocity.z.ToString("00.000000");
+            // data = "P" + "t" + time + "x" + position_x + "y" + position_y + "z" + position_z;
+            data = "P" + "t" + time + "x" + position_x + "y" + position_y + "z" + position_z + "vx" + pos_x + "vy" + pos_y + "vz" + pos_z;
             // data = "P" + "t" + time + "x" + position_x + "y" + position_y + "z" + position_z + "vx" + velocity_x + "vy" + velocity_y + "vz" + velocity_z + "l" + lagging + "T" + Time.deltaTime.ToString("0.000000");
             // // string data = "t" + time + "x" + position_x + "y" + position_y + "z" + position_z + "vx" + velocity_x + "vy" + velocity_y;
-            // commUDPnotMine.send(data);
+            commUDPnotMine.send(data);
 
         }
         else
@@ -211,7 +247,9 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
             // string data = "t" + time + "x" + position_x + "y" + position_y + "z" + position_z + "vx" + velocity_x + "vy" + velocity_y;
             commUDPisMine.send(data);
 
-            
+            this.m_StoredPosition2 = this.m_StoredPosition1;
+            this.m_StoredPosition1 = tr.position;
+            elapsedTime += Time.deltaTime;
         }
     }
 
@@ -228,16 +266,25 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
                 {
                     this.m_Direction = tr.localPosition - this.m_StoredPosition;
                     this.m_StoredPosition = tr.localPosition;
+                    this.m_Vel = (this.m_StoredPosition1 - this.m_StoredPosition2) / elapsedTime;
+
                     stream.SendNext(tr.localPosition);
                     stream.SendNext(this.m_Direction);
+                    stream.SendNext(this.m_Vel);
+
+                    elapsedTime = 0f;
                 }
                 else
                 {
                     this.m_StoredPosition = tr.position;
                     this.m_Direction = tr.position - this.m_StoredPosition;
+                    this.m_Vel = (this.m_StoredPosition1 - this.m_StoredPosition2) / elapsedTime;
                     
-                    stream.SendNext(this.m_Direction);
                     stream.SendNext(tr.position);
+                    stream.SendNext(this.m_Direction);
+                    stream.SendNext(this.m_Vel);
+
+                    elapsedTime = 0f;
                 }
             }
 
@@ -257,8 +304,6 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
             {
                 stream.SendNext(tr.localScale);
             }
-
-            stream.SendNext(rb.velocity);
         }
         // Read
         else
@@ -267,6 +312,9 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
             {
                 this.delayedPosition = (Vector3)stream.ReceiveNext();
                 this.m_Direction = (Vector3)stream.ReceiveNext();
+                this.m_Vel = (Vector3)stream.ReceiveNext();
+
+                this.isPositionUpdate = true;
 
                 if (m_firstTake)
                 {
@@ -279,10 +327,10 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
                 }
                 else
                 {
-                    lag = Mathf.Abs((float)(PhotonNetwork.Time - info.SentServerTime));
-                    // Debug.Log("Lag: " + lag); //addition
+                    this.lag = Mathf.Abs((float)(PhotonNetwork.Time - info.SentServerTime));
+                    // Debug.Log("lag: " + this.lag); //addition
 
-                    this.m_NetworkPosition = this.delayedPosition + this.m_Direction * lag;
+                    this.m_NetworkPosition = this.delayedPosition + this.m_Direction * this.lag;
                     if (m_UseLocal)
                     {
                         this.m_Distance = Vector3.Distance(tr.localPosition, this.m_NetworkPosition);

@@ -43,8 +43,9 @@ def calculateLine(x1, x2, t1, t2):
 
 def main():
     motions = ["ohuku", "curb", "zigzag", "ohukuRandom"]
-    # motion = motions[0]
-    motion = motions[1]
+    motion = motions[0]
+    # motion = motions[1]
+    # motion = motions[2]
     # motion = motions[3]
 
     if motion == "ohuku":
@@ -56,11 +57,14 @@ def main():
     elif motion == "ohukuRandom":
         cpu_log = "Cpu_0608_1641.csv"
         player_log = "Player_0608_1641.csv"
+    elif motion == "zigzag":
+        cpu_log = "Cpu_0623_1312.csv"
+        player_log = "Player_0623_1312.csv"
 
     delay = 0.2
 
     log_date = datetime.now().strftime("%Y%m%d-%H:%M:%S")
-    log_dir = f'/mnt/HDD/Photon_FPS/DRLModels/{motion}/{log_date}'
+    log_dir = f'/mnt/HDD/Photon_FPS/DRLModels/{motion}/{log_date}_different_send'
 
     os.makedirs(log_dir, exist_ok=True)
 
@@ -167,7 +171,8 @@ def main():
     cpu_velocity = {}
     cpu_keys = []
 
-    with open(f'/mnt/HDD/Photon_FPS/Log/Lag0/{motion}/{cpu_log}') as f:
+    # with open(f'/mnt/HDD/Photon_FPS/Log/Lag0/{motion}/{cpu_log}') as f:
+    with open(f'../evaluate/EvaluateDiffLog/LagNone/{motion}/train/real_log_train.csv') as f:
         reader = csv.reader(f)
         for row in reader:
             row[0] = float(row[0])
@@ -182,7 +187,8 @@ def main():
     player_velocity = {}
     player_keys = []
 
-    with open(f'/mnt/HDD/Photon_FPS/Log/Lag0/{motion}/{player_log}') as f:
+    # with open(f'/mnt/HDD/Photon_FPS/Log/Lag0/{motion}/{player_log}') as f:
+    with open(f'../evaluate/EvaluateDiffLog/LagNone/{motion}/train/delayed_log_train.csv') as f:
         reader = csv.reader(f)
         for row in reader:
             row[0] = float(row[0])
@@ -191,7 +197,7 @@ def main():
             player_positions[row[0]] = [row[1], row[2], row[3]]
             player_velocity[row[0]] = [row[4], row[5], row[6]]
             # time, x, z, y
-            player_keys.append(float(row[0]))
+            player_keys.append(row[0])
 
     action = 0
     # 0->right 1->left
@@ -254,13 +260,52 @@ def main():
                     else:
                         ax, bx = calculateLine(cpu_positions[cpu_keys[cpu_index]][0], cpu_positions[cpu_keys[cpu_index-1]][0], cpu_keys[cpu_index], cpu_keys[cpu_index-1])
                         ay, by = calculateLine(cpu_positions[cpu_keys[cpu_index]][2], cpu_positions[cpu_keys[cpu_index-1]][2], cpu_keys[cpu_index], cpu_keys[cpu_index-1])
+                        cpu_index -= 1
                         break
 
                 if player_index >= player_length - n_frames or cpu_index >= cpu_length - n_frames:
                     break
                 
                 for i in range(n_frames):
-                    if cpu_velocity[cpu_keys[last_cpu_index+i]][0] != cpu_velocity[cpu_keys[last_cpu_index+i-1]][0] or cpu_velocity[cpu_keys[last_cpu_index+i]][2] != cpu_velocity[cpu_keys[last_cpu_index+i-1]][2]: #fixed
+                    if cpu_velocity[cpu_keys[last_cpu_index+i]][0] > 0 and cpu_velocity[cpu_keys[last_cpu_index+i]][2] == 0:
+                        pre_action = 1
+                    elif cpu_velocity[cpu_keys[last_cpu_index+i]][0] < 0 and cpu_velocity[cpu_keys[last_cpu_index+i]][2] == 0:
+                        pre_action = 2
+                    elif cpu_velocity[cpu_keys[last_cpu_index+i]][0] == 0 and cpu_velocity[cpu_keys[last_cpu_index+i]][2] > 0:
+                        pre_action = 3
+                    elif cpu_velocity[cpu_keys[last_cpu_index+i]][0] == 0 and cpu_velocity[cpu_keys[last_cpu_index+i]][2] < 0:
+                        pre_action = 4
+                    elif cpu_velocity[cpu_keys[last_cpu_index+i]][0] < 0 and cpu_velocity[cpu_keys[last_cpu_index+i]][2] > 0:
+                        pre_action = 5
+                    elif cpu_velocity[cpu_keys[last_cpu_index+i]][0] < 0 and cpu_velocity[cpu_keys[last_cpu_index+i]][2] < 0:
+                        pre_action = 7
+                    elif cpu_velocity[cpu_keys[last_cpu_index+i]][0] > 0 and cpu_velocity[cpu_keys[last_cpu_index+i]][2] > 0:
+                        pre_action = 6
+                    elif cpu_velocity[cpu_keys[last_cpu_index+i]][0] > 0 and cpu_velocity[cpu_keys[last_cpu_index+i]][2] < 0:
+                        pre_action = 8
+                    else:
+                        pre_action = 0
+
+                    if cpu_velocity[cpu_keys[last_cpu_index+i-1]][0] > 0 and cpu_velocity[cpu_keys[last_cpu_index+i-1]][2] == 0:
+                        next_action = 1
+                    elif cpu_velocity[cpu_keys[last_cpu_index+i-1]][0] < 0 and cpu_velocity[cpu_keys[last_cpu_index+i-1]][2] == 0:
+                        next_action = 2
+                    elif cpu_velocity[cpu_keys[last_cpu_index+i-1]][0] == 0 and cpu_velocity[cpu_keys[last_cpu_index+i-1]][2] > 0:
+                        next_action = 3
+                    elif cpu_velocity[cpu_keys[last_cpu_index+i-1]][0] == 0 and cpu_velocity[cpu_keys[last_cpu_index+i-1]][2] < 0:
+                        next_action = 4
+                    elif cpu_velocity[cpu_keys[last_cpu_index+i-1]][0] < 0 and cpu_velocity[cpu_keys[last_cpu_index+i-1]][2] > 0:
+                        next_action = 5
+                    elif cpu_velocity[cpu_keys[last_cpu_index+i-1]][0] < 0 and cpu_velocity[cpu_keys[last_cpu_index+i-1]][2] < 0:
+                        next_action = 7
+                    elif cpu_velocity[cpu_keys[last_cpu_index+i-1]][0] > 0 and cpu_velocity[cpu_keys[last_cpu_index+i-1]][2] > 0:
+                        next_action = 6
+                    elif cpu_velocity[cpu_keys[last_cpu_index+i-1]][0] > 0 and cpu_velocity[cpu_keys[last_cpu_index+i-1]][2] < 0:
+                        next_action = 8
+                    else:
+                        next_action = 0
+
+                    if pre_action != next_action:
                         actual_change_frame = i
                         break
                     else:
@@ -280,8 +325,8 @@ def main():
                         change_reward = 0
                     
 
-                move_xdir = cpu_velocity[cpu_keys[last_cpu_index+actual_change_frame]][0]
-                move_ydir = cpu_velocity[cpu_keys[last_cpu_index+actual_change_frame]][2] #fixed
+                move_xdir = cpu_velocity[cpu_keys[last_cpu_index+actual_change_frame+1]][0]
+                move_ydir = cpu_velocity[cpu_keys[last_cpu_index+actual_change_frame+1]][2] #fixed
 
                 if move_xdir > 0 and move_ydir == 0:
                     actual_action = 1

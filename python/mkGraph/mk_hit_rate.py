@@ -22,9 +22,10 @@ for motion in motions:
     Lag = [0, 10, 25] # Photon lag simulation gui paramater(ms)
 
     if motion == "ohuku":
-        hit_count = np.array([1, 0, 0])
-        DR_hit_count = np.array([27, 11, 0])
-        proposed_hit_count = np.array([44, 33, 24])
+        hit_count = np.array([2, 0, 0])
+        DR_hit_count = np.array([50, 33, 3])
+        MAADR_hit_count = np.array([49, 30, 0])
+        proposed_hit_count = np.array([44, 33, 25])
 
     elif motion == "ohukuRandom":
         hit_count = np.array([2, 0, 0])

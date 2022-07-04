@@ -180,45 +180,45 @@ def main():
     vel_y = np.zeros(4)
     t = np.zeros(4)
 
-    # delays = [25, 37, 50, 75, 100]
-
-    # delay = delays[0]*2*0.001
-    # delay = delays[1]*2*0.001
-    # delay = delays[2]*2*0.001
-
-    # delay = 0.0364 # 0
-    # delay = 0.046 #10
-    delay = 0.0974 # 25
-
-    frame_delay = round(delay/0.017)
-
-    motions = ["ohuku", "curb", "zigzag", "ohukuRandom"]
-    # motion = motions[0]
-    # motion = motions[1]
-    motion = motions[3]
-
-    # ubuntu garellia
-    if motion == "ohuku":
-        model = "20220611-13:52:07"
-    elif motion == "curb":
-        model = "Cpu_0613_2047.csv"
-    elif motion == "ohukuRandom":
-        model = "20220611-13:50:55"
-
-    model_dir =f'../../DRLModels/{motion}/{model}'
-
-    evaluate_dir = f"../evaluate/{motion}"
-    os.makedirs(evaluate_dir, exist_ok=True)
-
-    # home pc
-    # model_dir =f'../../DRLModels/{motion}/'
-
     parser = ArgumentParser()
-    parser.add_argument("-model", type=int)
+    parser.add_argument("-m", "--motion", type=str)
+    parser.add_argument("-l", "--latency", type=int)
     # parser.add_argument("-change_model", type=int)
     # parser.add_argument("-act_model", type=int)
 
     args = parser.parse_args()
+
+    # ubuntu garellia
+    if args.motion == "ohuku":
+        model = "20220611-13:52:07"
+        model_num = 2201
+    elif args.motion == "curb":
+        model = "Cpu_0613_2047.csv"
+        model_num = 9701
+    elif args.motion == "ohukuRandom":
+        model = "20220611-13:50:55"
+        model_num = 3301
+    elif args.motion == "zigzag":
+        model = "20220623-13:17:15"
+        model_num = 9901
+
+    if args.latency == 0:
+        delay = 0.032
+    elif args.latency == 10:
+        delay = 0.064
+    elif args.latency == 25:
+        delay = 0.086
+
+    frame_delay = round(delay/0.017)
+
+
+    model_dir =f'../../DRLModels/{args.motion}/{model}'
+
+    evaluate_dir = f"../evaluate/EvaluateDiffLog/Lag{args.latency}/{args.motion}/Proposed2"
+    os.makedirs(evaluate_dir, exist_ok=True)
+
+    # home pc
+    # model_dir =f'../../DRLModels/{motion}/'
 
     logging.basicConfig(level=20)
 
@@ -300,7 +300,7 @@ def main():
         batch_accumulator="mean",
         phi=phi,
     )
-    change_agent.load(f'{model_dir}/change_model{args.model}')
+    change_agent.load(f'{model_dir}/change_model{model_num}')
 
     act_agent = agents.CategoricalDoubleDQN(
         act_q_func,
@@ -316,7 +316,7 @@ def main():
         batch_accumulator="mean",
         phi=phi,
     )
-    act_agent.load(f'{model_dir}/act_model{args.model}')
+    act_agent.load(f'{model_dir}/act_model{model_num}')
 
     n_input = 20
 
@@ -414,7 +414,7 @@ def main():
                 vel_y[0] = float(velocity_z)
                 t[0] = float(send_time)
 
-                obs = [t[0], pos_x[0], pos_y[0], t[1], pos_x[1], pos_y[1], t[2], pos_x[2], pos_y[2], t[3], pos_x[3], pos_y[3]]
+                obs = [t[0], pos_x[0], pos_y[0], vel_x[0], vel_y[0], t[1], pos_x[1], pos_y[1], vel_x[1], vel_y[1], t[2], pos_x[2], pos_y[2], vel_x[2], vel_y[2], t[3], pos_x[3], pos_y[3], vel_x[3], vel_y[3]]
                 
                 action = act_agent.act(obs)
                 n_frames_change = change_agent.act(obs)
@@ -589,6 +589,10 @@ def main():
                 #     writer = csv.writer(f, lineterminator='\n')
                 #     writer.writerow([send_time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z])
                     # writer.writerow([send_time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z, predict_x])
+
+                with open(f"{evaluate_dir}/real_log.csv", 'a') as f:
+                    writer = csv.writer(f, lineterminator='\n')
+                    writer.writerow([float(send_time), float(position_x), float(position_y), float(position_z)])
 
                 # end = time.time()
                 # exe_time = end - start

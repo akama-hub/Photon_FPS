@@ -164,7 +164,7 @@ public class SyncroPlayerController : MonoBehaviourPunCallbacks
 
         }
         else{
-            Debug.Log("CPU is not found");
+            // Debug.Log("CPU is not found");
         }
     }
  

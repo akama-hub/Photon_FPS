@@ -10007,9 +10007,9 @@ GameObject:
   - component: {fileID: 9052330830578195365}
   - component: {fileID: 1059975163492561329}
   - component: {fileID: 2800641200246099210}
-  - component: {fileID: 1711303819600851777}
+  - component: {fileID: -3265413453968849566}
   m_Layer: 8
-  m_Name: MAADRSyncroObserver 1
+  m_Name: DRLSyncroObserver
   m_TagString: Observer
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -10167,7 +10167,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d94c09358f9f61a42a55e6439121af2a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &1711303819600851777
+--- !u!114 &-3265413453968849566
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -10176,12 +10176,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 9052330830578195375}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b199bc332193f5ef3a96251fed706fb1, type: 3}
+  m_Script: {fileID: 11500000, guid: 139980b19edf15c0aae34d86cdd45c5c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_SynchronizePosition: 1
   m_SynchronizeRotation: 1
   m_SynchronizeScale: 0
+  m_UseLocal: 1
 --- !u!1 &9052330830624708241
 GameObject:
   m_ObjectHideFlags: 0
