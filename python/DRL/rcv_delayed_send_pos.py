@@ -408,9 +408,11 @@ def main():
                     lag += data
             # print(send_time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z)
             # position_x = "00000020"
+
+            # print("time to Send Python from Unity: ", time.time() - float(send_time))
             
             if Dflag == "delay":
-                rcv_data = [float(position_x), float(position_y), float(position_z), float(velocity_x), float(velocity_y), float(velocity_z), float(send_time), float(lag)]
+                rcv_data = [float(position_x), float(position_y), float(position_z), float(velocity_x), float(velocity_y), float(velocity_z), float(send_time), float(lag), time.time()]
                 if cnt < 4:
                     pos_x[0] = rcv_data[0]
                     pos_y[0] = rcv_data[2]

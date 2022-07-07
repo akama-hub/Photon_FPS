@@ -131,11 +131,18 @@ if __name__ == '__main__' :
                 if flag == "velocity_z":
                     velocity_z += data
 
+            now_dt = datetime.now()
+            nowTime = now_dt.minute * 60 + now_dt.second + now_dt.microsecond/1000000
+            print("Python now: ", nowTime)
+            print("unity noe: ", send_time)
+            print("time to Send Python from Unity: ", nowTime - float(send_time))
+
             # with open(f"{log_dir}/{turminal}_0_{log_date}" + ".csv", 'a') as f:
             # with open(f"{log_dir}/{turminal}_{log_date}.csv", 'a') as f:
-            with open(f"{evaluate_dir}/real_log2.csv", 'a') as f:
-                writer = csv.writer(f, lineterminator='\n')
-                writer.writerow([send_time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z])
+
+            # with open(f"{evaluate_dir}/real_log2.csv", 'a') as f:
+            #     writer = csv.writer(f, lineterminator='\n')
+            #     writer.writerow([send_time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z])
     
         except KeyboardInterrupt:
             print ('\n . . .\n')
