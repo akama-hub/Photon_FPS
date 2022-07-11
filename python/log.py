@@ -78,6 +78,10 @@ if __name__ == '__main__' :
         try:
 
             cli_data, cli_addr = cli_sock.recvfrom(M_SIZE)
+
+            now_dt = datetime.now()
+            nowTime = now_dt.minute * 60 + now_dt.second + now_dt.microsecond/1000000
+            print("Python now: ", nowTime)
             # clidata = time00000000x00000000y00000000z00000000
             #　負の値を取るとーも一文字になるので注意
             cli_str_data = cli_data.decode("utf-8")
@@ -131,10 +135,10 @@ if __name__ == '__main__' :
                 if flag == "velocity_z":
                     velocity_z += data
 
-            now_dt = datetime.now()
-            nowTime = now_dt.minute * 60 + now_dt.second + now_dt.microsecond/1000000
-            print("Python now: ", nowTime)
-            print("unity noe: ", send_time)
+            # now_dt = datetime.now()
+            # nowTime = now_dt.minute * 60 + now_dt.second + now_dt.microsecond/1000000
+            # print("Python now: ", nowTime)
+            print("unity now: ", send_time)
             print("time to Send Python from Unity: ", nowTime - float(send_time))
 
             # with open(f"{log_dir}/{turminal}_0_{log_date}" + ".csv", 'a') as f:

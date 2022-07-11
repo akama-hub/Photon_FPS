@@ -213,6 +213,9 @@ def main():
     elif args.latency == 25:
         delay = 0.086
 
+    Processing_delay = 0.02
+    # DRLの処理時間が17[ms]
+
     frame_delay = round(delay/0.017)
 
 
@@ -443,8 +446,8 @@ def main():
                     ##########################
                     fps = t[0] - t[1]
                     if fps != 0:
-                        # DRLの処理時間が17[ms]
-                        frame_delay = round((rcv_data[7] + 0.017)/ fps)
+                        
+                        frame_delay = round((rcv_data[7] + Processing_delay)/ fps)
                         # frame_delay = round(rcv_data[7]/ fps)
                     else:
                         pass

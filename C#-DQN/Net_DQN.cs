@@ -132,9 +132,11 @@ class Net_DQN
             float[,] h1 = Relu(z1);
             float[,] q = Add(Dot(h1, w2), b2);
 
+            // 誤差
             float[,] d = new float[q.GetLength(0), q.GetLength(1)];
             for (int i = 0; i < s.GetLength(0); i++)
             {
+                // 二条誤差のほうが良い？
                 d[i, a_idx[i]] = q[i, a_idx[i]] - q_target[i];
                 if (d[i, a_idx[i]] < -1)
                     d[i, a_idx[i]] = -1;

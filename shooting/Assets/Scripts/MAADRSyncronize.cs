@@ -119,11 +119,11 @@ public class MAADRSyncronize : MonoBehaviourPun, IPunObservable
             milSec = dt.Millisecond / 1000f;
             nowTime = (dt.Minute * 60) + dt.Second + milSec;
 
-            string position_x = delayedPosition.x.ToString("00.000000");
-            string position_y = delayedPosition.y.ToString("00.000000");
-            string position_z = delayedPosition.z.ToString("00.000000");
+            string position_x = tr.position.x.ToString("00.000000");
+            string position_y = tr.position.y.ToString("00.000000");
+            string position_z = tr.position.z.ToString("00.000000");
             // // string time = Time.time.ToString("0000.0000");
-            string time = nowTime.ToString("F3");
+            string time = nowTime.ToString("F4");
 
             // string velocity_x = rb.velocity.x.ToString("00.000000");
             // string velocity_y = rb.velocity.y.ToString("00.000000");
@@ -140,35 +140,8 @@ public class MAADRSyncronize : MonoBehaviourPun, IPunObservable
             string[] position = commUDPnotMine.rcvMsg.Split(',');
             // Debug.Log(commUDP.rcvMsg);
 
-            if(commUDPnotMine.rcvMsg != "ini"){
-                // Debug.Log("Estimating");
-
-                pos_x = float.Parse(position[0]);
-                pos_y = float.Parse(position[1]);
-                pos_z = float.Parse(position[2]);
-
-                pos = new Vector3 (pos_x, pos_y, pos_z);
-
-                if (m_UseLocal)
-                {
-                    tr.localPosition = Vector3.MoveTowards(tr.localPosition, this.m_NetworkPosition, this.m_Distance  * Time.deltaTime * PhotonNetwork.SerializationRate);
-                    tr.localRotation = Quaternion.RotateTowards(tr.localRotation, this.m_NetworkRotation, this.m_Angle * Time.deltaTime * PhotonNetwork.SerializationRate);
-                }
-                else
-                {
-                    if(fixedDelay <= lag)
-                    {
-                        tr.position = Vector3.LerpUnclamped(delayedPosition, pos, lag/fixedDelay);
-                    }
-                    else
-                    {
-                        tr.position = Vector3.Lerp(delayedPosition, pos, lag/fixedDelay);
-                    }
-                    
-                    tr.rotation = Quaternion.RotateTowards(tr.rotation, this.m_NetworkRotation, this.m_Angle * Time.deltaTime *  PhotonNetwork.SerializationRate);
-                    // Debug.Log((this.m_NetworkPosition - tr.position) + pos);
-                }
-            }
+            if(commUDPnotMine.rcvMsg != "ini")
+            { }
             else
             {
                 if (m_UseLocal)
@@ -179,7 +152,7 @@ public class MAADRSyncronize : MonoBehaviourPun, IPunObservable
                 }
                 else
                 {
-                    Debug.Log(this.isPositionUpdate);
+                    // Debug.Log(this.isPositionUpdate);
                     if(this.isPositionUpdate)
                     {
                         if(this.m_Accel == Vector3.zero)

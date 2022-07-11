@@ -21,6 +21,7 @@ namespace Matr
             }
 
         }
+        // 行列の内積   
         public static float[,] Dot(  float[,] a,   float[,] b)
         {
             float[,] c = new float[a.GetLength(0), b.GetLength(1)];
@@ -73,6 +74,7 @@ namespace Matr
             }
             return a;
         }
+        // Reluの逆伝播
         public static float[,] DerRelu(  float[,] a,   float[,] z)
         {
             for (int i = 0; i < a.GetLength(0); i++)
