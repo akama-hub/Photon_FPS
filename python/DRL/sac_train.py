@@ -162,43 +162,13 @@ def main():
     # Set a random seed used in PFRL.
     utils.set_random_seed(0)
 
-    num_envs = 1
-    seed = 0
     # Set different random seeds for different subprocesses.
     # If seed=0 and processes=4, subprocess seeds are [0, 1, 2, 3].
     # If seed=1 and processes=4, subprocess seeds are [4, 5, 6, 7].
-    process_seeds = np.arange(num_envs) + seed * num_envs
-    assert process_seeds.max() < 2**32
+    process_seeds = np.arange(8) + 0 * 8
+    assert process_seeds.max() < 2 ** 32
 
-    def make_env(process_idx, test):
-        env = gym.make("Hopper-v2")
-        # Unwrap TimiLimit wrapper
-        assert isinstance(env, gym.wrappers.TimeLimit)
-        env = env.env
-        # Use different random seeds for train and test envs
-        process_seed = int(process_seeds[process_idx])
-        env_seed = 2**32 - 1 - process_seed if test else process_seed
-        env.seed(env_seed)
-        # Cast observations to float32 because our model uses float32
-        env = pfrl.wrappers.CastObservationToFloat32(env)
-        # Normalize action space to [-1, 1]^n
-        env = pfrl.wrappers.NormalizeActionSpace(env) + 1
-        return env
-
-    def make_batch_env(test):
-        return pfrl.envs.MultiprocessVectorEnv(
-            [
-                functools.partial(make_env, idx, test)
-                for idx, env in enumerate(range(num_envs))
-            ]
-        )
-
-    sample_env = make_env(process_idx=0, test=False)
-    timestep_limit = sample_env.spec.max_episode_steps
-    obs_space = sample_env.observation_space
-    action_space = sample_env.action_space
-
-    obs_size = obs_space.low.size
+    action_space = Box(low=0.0, high=1.0, shape=(1,))
     action_size = action_space.low.size
 
     def squashed_diagonal_gaussian_head(x):
@@ -215,7 +185,7 @@ def main():
         )
 
     policy = nn.Sequential(
-        nn.Linear(obs_size, 256),
+        nn.Linear(n_dim_obs, 256),
         nn.ReLU(),
         nn.Linear(256, 256),
         nn.ReLU(),
@@ -231,7 +201,7 @@ def main():
     def make_q_func_with_optimizer():
         q_func = nn.Sequential(
             pfrl.nn.ConcatObsAndAction(),
-            nn.Linear(obs_size + action_size, 256),
+            nn.Linear(n_dim_obs + action_size, 256),
             nn.ReLU(),
             nn.Linear(256, 256),
             nn.ReLU(),
@@ -261,9 +231,9 @@ def main():
         q_func2_optimizer,
         rbuf,
         gamma = 0.99,
-        gpu=0,
-        replay_start_size=10000,
-        minibatch_size=100,
+        gpu=1,
+        replay_start_size=1000,
+        minibatch_size=256,
         update_interval=1,
         phi=lambda x: x,
         soft_update_tau=5e-3,
@@ -355,7 +325,7 @@ def main():
                 obs = [last_time[0], last_position_x[0], last_position_y[0], last_velocity_x[0], last_velocity_y[0], last_time[1], last_position_x[1], last_position_y[1], last_velocity_x[1], last_velocity_y[1], last_time[2], last_position_x[2], last_position_y[2], last_velocity_x[2], last_velocity_y[2], last_time[3], last_position_x[3], last_position_y[3], last_velocity_x[3], last_velocity_y[3]]
 
                 action = act_agent.act(obs)
-                change_second = change_agent.batch_act(obs)
+                change_second = change_agent.act(obs)
 
                 player_index = player_keys.index(key)
                 predict_point = key+delay
@@ -386,7 +356,7 @@ def main():
                     else:
                         actual_change_second = 0
 
-                change_second = change_second * 0.1 # [0, 2] * 0.1 -> 0.2sまで
+                change_second = change_second * 0.2 # [0, 1] * 0.2 -> 0.2sまで
                 change_reward = abs(actual_change_second - change_second)
 
                 max_R_action += 1
@@ -399,7 +369,7 @@ def main():
                 done = False
                 reset = False
 
-                change_agent.batch_observe(obs, change_reward, done, reset)
+                change_agent.observe(obs, change_reward, done, reset)
                 act_agent.observe(obs, action_reward, done, reset)
 
                 with open(f'{log_dir}/check.csv', 'a') as f:
