@@ -21,7 +21,6 @@ import logging
 import skimage.color, skimage.transform
 
 from gym.spaces import Box
-import gym
 
 import os
 from datetime import datetime
@@ -63,6 +62,101 @@ def get_action_num(x, y):
         else:
             action = 6
     return action
+
+class SACQFunc(nn.Module):
+    def __init__(self, obs_size, action_size):
+        super().__init__()
+
+        q_func = nn.Sequential(
+            pfrl.nn.ConcatObsAndAction(),
+            nn.Linear(obs_size + action_size, 256),
+            nn.ReLU(),
+            nn.Linear(256, 256),
+            nn.ReLU(),
+            nn.Linear(256, 1),
+        )
+        torch.nn.init.xavier_uniform_(self.q_func[1].weight)
+        torch.nn.init.xavier_uniform_(self.q_func[3].weight)
+        torch.nn.init.xavier_uniform_(self.q_func[5].weight)
+
+    def forward(self, x):
+        cnn_feature = self.cnn(x[0])
+        return self.q_func((cnn_feature, x[1]))
+
+def create_sac_agent():
+    action_space = Box(low=0.0, high=1.0, shape=(1,))
+    action_size = action_space.low.size
+    n_obs = 20
+
+    def squashed_diagonal_gaussian_head(x):
+        assert x.shape[-1] == action_size * 2
+        mean, log_scale = torch.chunk(x, 2, dim=1)
+        log_scale = torch.clamp(log_scale, -20.0, 2.0)
+        var = torch.exp(log_scale * 2)
+        base_distribution = distributions.Independent(
+            distributions.Normal(loc=mean, scale=torch.sqrt(var)), 1
+        )
+        # cache_size=1 is required for numerical stability
+        return distributions.transformed_distribution.TransformedDistribution(
+            base_distribution, [distributions.transforms.TanhTransform(cache_size=1)]
+        )
+
+    policy = nn.Sequential(
+        nn.Linear(n_obs, 256),
+        nn.ReLU(),
+        nn.Linear(256, 256),
+        nn.ReLU(),
+        nn.Linear(256, action_size * 2),
+        Lambda(squashed_diagonal_gaussian_head),
+    )
+    torch.nn.init.xavier_uniform_(policy[0].weight)
+    torch.nn.init.xavier_uniform_(policy[2].weight)
+    torch.nn.init.xavier_uniform_(policy[4].weight, gain=1.0)
+    policy_optimizer = torch.optim.Adam(policy.parameters(), lr=3e-4)
+
+    def make_q_func_with_optimizer():
+        q_func = SACQFunc(n_obs + action_size, action_size)
+        q_func_optimizer = torch.optim.Adam(q_func.parameters(), lr=3e-4)
+        return q_func, q_func_optimizer
+
+    q_func1, q_func1_optimizer = make_q_func_with_optimizer()
+    q_func2, q_func2_optimizer = make_q_func_with_optimizer()
+
+    rbuf = replay_buffers.ReplayBuffer(10 ** 6)
+    # betasteps = 10**6 - 1000 // 4
+    # rbuf = replay_buffers.PrioritizedReplayBuffer(
+    #         10**6, betasteps=betasteps
+    #     )
+
+    def burnin_action_func():
+        """Select random actions until model is updated one or more times."""
+        return np.random.uniform(action_space.low, action_space.high).astype(np.float32)
+
+    # Hyperparameters in http://arxiv.org/abs/1802.09477
+    agent = pfrl.agents.SoftActorCritic(
+        policy,
+        q_func1,
+        q_func2,
+        policy_optimizer,
+        q_func1_optimizer,
+        q_func2_optimizer,
+        rbuf,
+        gamma = 0.99,
+        gpu=1,
+        replay_start_size=1000,
+        minibatch_size=256,
+        update_interval=1,
+        phi=lambda x: x,
+        soft_update_tau=5e-3,
+        max_grad_norm=None,
+        # batch_states=pfrl.utils.batch_states.batch_states,
+        burnin_action_func=burnin_action_func,
+        initial_temperature=1.0,
+        entropy_target=-action_size,
+        temperature_optimizer_lr=3e-4,
+        act_deterministically=True,
+    )
+    return agent
 
 def main():
     motions = ["ohuku", "curb", "zigzag", "ohukuRandom"]
@@ -168,83 +262,7 @@ def main():
     process_seeds = np.arange(8) + 0 * 8
     assert process_seeds.max() < 2 ** 32
 
-    action_space = Box(low=0.0, high=1.0, shape=(1,))
-    action_size = action_space.low.size
-
-    def squashed_diagonal_gaussian_head(x):
-        assert x.shape[-1] == action_size * 2
-        mean, log_scale = torch.chunk(x, 2, dim=1)
-        log_scale = torch.clamp(log_scale, -20.0, 2.0)
-        var = torch.exp(log_scale * 2)
-        base_distribution = distributions.Independent(
-            distributions.Normal(loc=mean, scale=torch.sqrt(var)), 1
-        )
-        # cache_size=1 is required for numerical stability
-        return distributions.transformed_distribution.TransformedDistribution(
-            base_distribution, [distributions.transforms.TanhTransform(cache_size=1)]
-        )
-
-    policy = nn.Sequential(
-        nn.Linear(n_dim_obs, 256),
-        nn.ReLU(),
-        nn.Linear(256, 256),
-        nn.ReLU(),
-        nn.Linear(256, action_size * 2),
-        Lambda(squashed_diagonal_gaussian_head),
-    )
-
-    torch.nn.init.xavier_uniform_(policy[0].weight)
-    torch.nn.init.xavier_uniform_(policy[2].weight)
-    torch.nn.init.xavier_uniform_(policy[4].weight, gain=1.0)
-    policy_optimizer = torch.optim.Adam(policy.parameters(), lr=3e-4)
-
-    def make_q_func_with_optimizer():
-        q_func = nn.Sequential(
-            pfrl.nn.ConcatObsAndAction(),
-            nn.Linear(n_dim_obs + action_size, 256),
-            nn.ReLU(),
-            nn.Linear(256, 256),
-            nn.ReLU(),
-            nn.Linear(256, 1),
-        )
-        torch.nn.init.xavier_uniform_(q_func[1].weight)
-        torch.nn.init.xavier_uniform_(q_func[3].weight)
-        torch.nn.init.xavier_uniform_(q_func[5].weight)
-        q_func_optimizer = torch.optim.Adam(q_func.parameters(), lr=3e-4)
-        return q_func, q_func_optimizer
-
-    q_func1, q_func1_optimizer = make_q_func_with_optimizer()
-    q_func2, q_func2_optimizer = make_q_func_with_optimizer()
-
-    rbuf = replay_buffers.ReplayBuffer(10**6)
-
-    def burnin_action_func():
-        """Select random actions until model is updated one or more times."""
-        return np.random.uniform(action_space.low, action_space.high).astype(np.float32)
-
-    change_agent = agents.SoftActorCritic(
-        policy,
-        q_func1,
-        q_func2,
-        policy_optimizer,
-        q_func1_optimizer,
-        q_func2_optimizer,
-        rbuf,
-        gamma = 0.99,
-        gpu=1,
-        replay_start_size=1000,
-        minibatch_size=256,
-        update_interval=1,
-        phi=lambda x: x,
-        soft_update_tau=5e-3,
-        max_grad_norm=None,
-        batch_states=pfrl.utils.batch_states.batch_states,
-        burnin_action_func=burnin_action_func,
-        initial_temperature=1.0,
-        entropy_target=-action_size,
-        temperature_optimizer_lr=3e-4,
-        act_deterministically=True,
-    )
+    change_agent = create_sac_agent()
 
     n_input = 20
     episodes = 10001
@@ -351,7 +369,7 @@ def main():
                     pre_action = get_action_num(cpu_velocity[cpu_keys[last_cpu_index+i-1]][0], cpu_velocity[cpu_keys[last_cpu_index+i-1]][2])
 
                     if pre_action != actual_action:
-                        actual_change_second = [last_cpu_index+i] - cpu_keys[last_cpu_index]
+                        actual_change_second = cpu_keys[last_cpu_index+i] - cpu_keys[last_cpu_index]
                         break
                     else:
                         actual_change_second = 0
