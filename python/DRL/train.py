@@ -164,7 +164,6 @@ def main():
 
     num_envs = 1
     seed = 0
-    env = "Hopper-v2"
     # Set different random seeds for different subprocesses.
     # If seed=0 and processes=4, subprocess seeds are [0, 1, 2, 3].
     # If seed=1 and processes=4, subprocess seeds are [4, 5, 6, 7].
@@ -172,7 +171,7 @@ def main():
     assert process_seeds.max() < 2**32
 
     def make_env(process_idx, test):
-        env = gym.make(env)
+        env = gym.make("Hopper-v2")
         # Unwrap TimiLimit wrapper
         assert isinstance(env, gym.wrappers.TimeLimit)
         env = env.env
@@ -336,7 +335,6 @@ def main():
         for key in player_keys:
             action_reward = 0
             change_reward = 0
-            actual_change_frame = 0
             actual_action = 0
 
             last_position_x = np.roll(last_position_x, 1)
