@@ -158,7 +158,41 @@ public class TestDRLSyncronize : MonoBehaviourPun, IPunObservable
                 tr.rotation = Quaternion.RotateTowards(tr.rotation, this.m_NetworkRotation, this.m_Angle * Time.deltaTime *  PhotonNetwork.SerializationRate);
 
             else
-            {            }
+            {
+                if(this.m_Accel == Vector3.zero)
+                {
+                    pos = tr.position + this.m_Vel / PhotonNetwork.SerializationRate;
+                }
+                else if(this.m_Accel == this.m_StoredAccel)
+                {
+                    pos = tr.position + this.m_Vel / PhotonNetwork.SerializationRate + (this.m_Accel * Mathf.Pow(1 / PhotonNetwork.SerializationRate, 2) / 2);
+                }
+                else
+                {
+                    normV = this.m_Vel.magnitude;
+                    crossV =  Vector3.Cross(this.m_Vel, this.m_Accel);
+                    normcrossV = crossV.magnitude; 
+                    k = normcrossV / Mathf.Pow(normV, 3);
+                    if(k == 0f)
+                    {
+                        pos = tr.position + this.m_Vel / PhotonNetwork.SerializationRate + (this.m_Accel * Mathf.Pow(1 / PhotonNetwork.SerializationRate, 2) / 2);
+                    }
+                    else
+                    {
+                        alpha = k * Mathf.Pow(normV, 2) * this.m_Vel / normV;
+
+                        pos = tr.position + this.m_Vel / PhotonNetwork.SerializationRate + (alpha * Mathf.Pow(1 / PhotonNetwork.SerializationRate, 2) / 2);
+                    }
+                }
+
+                // Debug.Log(pos);
+                tr.position = Vector3.LerpUnclamped(tr.position, pos, 1); 
+                // Debug.Log(tr.position);
+            }
+
+            tr.rotation = Quaternion.RotateTowards(tr.rotation, this.m_NetworkRotation, this.m_Angle * Time.deltaTime *  PhotonNetwork.SerializationRate);
+
+            this.m_StoredAccel = this.m_Accel;
 
             dt = DateTime.Now;
 

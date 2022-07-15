@@ -342,80 +342,12 @@ def main():
             # clidata = time00000000x00000000y00000000z00000000
             #　負の値を取るとーも一文字になるので注意
             cli_str_data = cli_data.decode("utf-8")
-            send_time = ""
-            position_x = ""
-            position_y = ""
-            position_z = ""
-            velocity_x = ""
-            velocity_y = ""
-            velocity_z = ""
-            flag = "first"
-
-            Dflag = "first"
-            lag = ""
-
-            # print("recieving data: ", cli_data)
-            for data in cli_str_data:
-                if data == "D" and Dflag == "first":
-                    Dflag = "delay"
-                    # print("dalay log")
-                    continue
-                elif data == "P" and Dflag == "first":
-                    Dflag = "predict"
-                    # print("predict log")
-                    continue
-
-                if data == "t" and flag == "first":
-                    flag = "time"
-                    continue
-                elif data == "x":
-                    if flag == "time":
-                        flag = "position_x"
-                    elif flag == "velocity":
-                        flag = "velocity_x"
-                    continue
-                elif data == "y":
-                    if flag == "position_x":
-                        flag = "position_y"
-                    elif flag == "velocity":
-                        flag = "velocity_y"
-                    continue
-                elif data == "z":
-                    if flag == "position_y":
-                        flag = "position_z"
-                    elif flag == "velocity":
-                        flag = "velocity_z"
-                    continue
-                elif data == "v":
-                    flag = "velocity"
-                    continue
-                elif data == "l":
-                    flag = "lag"
-                    continue
-
-                if flag == "time":
-                    send_time += data
-                if flag == "position_x":
-                    position_x += data
-                if flag == "position_y":
-                    position_y += data
-                if flag == "position_z":
-                    position_z += data
-                if flag == "velocity_x":
-                    velocity_x += data
-                if flag == "velocity_y":
-                    velocity_y += data
-                if flag == "velocity_z":
-                    velocity_z += data
-                if flag == "lag":
-                    lag += data
-            # print(send_time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z)
-            # position_x = "00000020"
-
+            data_list = cli_str_data.split(",")
             # print("time to Send Python from Unity: ", time.time() - float(send_time))
-            
-            if Dflag == "delay":
-                rcv_data = [float(position_x), float(position_y), float(position_z), float(velocity_x), float(velocity_y), float(velocity_z), float(send_time), float(lag), time.time()]
+
+            if data_list [0] == "D":
+                data_list = data_list.pop(0)
+                rcv_data = [float(data) for data in data_list]
                 if cnt < 4:
                     pos_x[0] = rcv_data[0]
                     pos_y[0] = rcv_data[2]
@@ -598,39 +530,21 @@ def main():
 
                     last_action = action
                     
-                    data = str(predict_x) + "," + position_y + "," + str(predict_y) 
-                    # print("send message: ", data)
+                    data = str(predict_x) + "," + rcv_data[1] + "," + str(predict_y) 
 
                     predict_data = data.encode("utf-8")
-                    # print(predict_data)
-                    # print("Unity client", cli_data, data)
-                    # print("Unity client", cli_data)
                     unity_sock.sendto(predict_data, unity_addr)
 
-
-                    # with open(f'{evaluate_dir}/no_delay_log.csv', 'a') as f:
-                    # with open(f'{evaluate_dir}/no_delay_log_lerpumclamped2.csv', 'a') as f:
-                    # with open(f'{evaluate_dir}/no_delay_log_interpolate.csv', 'a') as f:
-                    # with open(f'{evaluate_dir}/no_delay_log_lerp2.csv', 'a') as f:
-                    #     writer = csv.writer(f, lineterminator='\n')
-                    #     writer.writerow([send_time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z])
-                        # writer.writerow([send_time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z, predict_x])
 
                     with open(f'{evaluate_dir}/delayed_log2.csv', 'a') as f:
                         writer = csv.writer(f, lineterminator='\n')
                         writer.writerow(rcv_data)
 
-                    # end = time.time()
-                    # exe_time = end - start
-                    # print(start, end, exe_time) #0.003
-
-            elif Dflag == "predict":
+            elif data_list [0] == "P":
                 with open(f'{evaluate_dir}/predict_log2.csv', 'a') as f:
                     writer = csv.writer(f, lineterminator='\n')
-                    # writer.writerow([send_time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z, lag, frame_time])
-                    writer.writerow([float(send_time), float(position_x), float(position_y), float(position_z), float(velocity_x), float(velocity_y), float(velocity_z)])
-
-            print(time.time() - start)
+                    data_list = data_list.pop(0)
+                    writer.writerow(float(data) for data in data_list)
     
         except KeyboardInterrupt:
             print ('\n . . .\n')

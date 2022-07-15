@@ -221,33 +221,28 @@ public class DRLSyncronize : MonoBehaviourPun, IPunObservable
             milSec = dt.Millisecond / 1000f;
             nowTime = (dt.Minute * 60) + dt.Second + milSec;
 
-            string position_x = delayedPosition.x.ToString("00.000000");
-            string position_y = delayedPosition.y.ToString("00.000000");
-            string position_z = delayedPosition.z.ToString("00.000000");
-            // string time = Time.time.ToString("0000.0000");
-            string time = nowTime.ToString("F3");
+            string position_x = delayedPosition.x.ToString("F6");
+            string position_y = delayedPosition.y.ToString("F6");
+            string position_z = delayedPosition.z.ToString("F6");
+            string time = nowTime.ToString("F4");
 
-            string velocity_x = this.m_Vel.x.ToString("00.000000");
-            string velocity_y = this.m_Vel.y.ToString("00.000000");
-            string velocity_z = this.m_Vel.z.ToString("00.000000");
-            string lagging = this.lag.ToString("00.000000");
-            // // Debug.Log(Time.time);
-            // string data = "D" + "t" + time + "x" + position_x + "y" + position_y + "z" + position_z + "vx" + velocity_x + "vy" + velocity_y + "vz" + velocity_z + "l" + lagging;
-            // string data = "D" + "t" + time + "x" + position_x + "y" + position_y + "z" + position_z;
-            string data = "D" + "t" + time + "x" + position_x + "y" + position_y + "z" + position_z + "vx" + velocity_x + "vy" + velocity_y + "vz" + velocity_z + "l" + lagging;
+            string velocity_x = this.m_Vel.x.ToString("F6");
+            string velocity_y = this.m_Vel.y.ToString("F6");
+            string velocity_z = this.m_Vel.z.ToString("F6");
+            string lagging = this.lag.ToString("F6");
             
-            // // string data = "t" + time + "x" + position_x + "y" + position_y + "z" + position_z + "vx" + velocity_x + "vy" + velocity_y;
-            // string data = "D" + "l" + this.lag.ToString("0000.0000");
+            string data = "D" + "," + time + "," + position_x + "," + position_y + "," + position_z + "," + velocity_x + "," + velocity_y + "," + velocity_z + "," + lagging;
+            
             commUDPnotMine.send(data);
 
-            string[] position = commUDPnotMine.rcvMsg.Split(',');
+            string[] rcvData = commUDPnotMine.rcvMsg.Split(',');
             // Debug.Log(commUDP.rcvMsg);
 
             if(commUDPnotMine.rcvMsg != "ini"){
                 // Debug.Log("Estimating");
 
-                Action = int.Parse(position[0]);
-                ChangeFrame = int.Parse(position[1]);
+                Action = int.Parse(rcvData[0]);
+                ChangeFrame = int.Parse(rcvData[1]);
 
                 ChangeTime = ChangeFrame * Time.deltaTime;
 
