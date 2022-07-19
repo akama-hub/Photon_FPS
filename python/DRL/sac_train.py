@@ -1,10 +1,11 @@
 from __future__ import print_function
 import argparse
+from turtle import forward
 
 import numpy as np
 from numpy.lib.function_base import diff
 import torch
-from torch import distributions, nn
+from torch import distributions, float32, float64, nn
 
 import pfrl
 from pfrl import agents, explorers, replay_buffers, utils
@@ -67,7 +68,15 @@ class SACQFunc(nn.Module):
     def __init__(self, obs_size, action_size):
         super().__init__()
 
-        q_func = nn.Sequential(
+        self.policy = nn.Sequential(
+            nn.Linear(obs_size, 256),
+            nn.ReLU(),
+            nn.Linear(256, 256),
+            nn.ReLU(),
+            nn.Linear(256, action_size * 2),
+        )
+
+        self.q_func = nn.Sequential(
             pfrl.nn.ConcatObsAndAction(),
             nn.Linear(obs_size + action_size, 256),
             nn.ReLU(),
@@ -80,8 +89,8 @@ class SACQFunc(nn.Module):
         torch.nn.init.xavier_uniform_(self.q_func[5].weight)
 
     def forward(self, x):
-        cnn_feature = self.cnn(x[0])
-        return self.q_func((cnn_feature, x[1]))
+        feature = self.policy(x[0])
+        return self.q_func(feature, x[1])
 
 def create_sac_agent():
     action_space = Box(low=0.0, high=1.0, shape=(1,))
@@ -142,7 +151,7 @@ def create_sac_agent():
         q_func2_optimizer,
         rbuf,
         gamma = 0.99,
-        gpu=1,
+        gpu=0,
         replay_start_size=1000,
         minibatch_size=256,
         update_interval=1,
@@ -387,7 +396,8 @@ def main():
                 done = False
                 reset = False
 
-                change_agent.observe(obs, change_reward, done, reset)
+                # change_agent.observe(np.array(obs, dtype=float32), change_reward, done, reset)
+                change_agent.observe(torch.tensor(obs, dtype=float32), change_reward, done, reset)
                 act_agent.observe(obs, action_reward, done, reset)
 
                 with open(f'{log_dir}/check.csv', 'a') as f:
@@ -396,7 +406,7 @@ def main():
         done = True
         reset = True
 
-        change_agent.observe(obs, change_reward, done, reset)
+        change_agent.observe(torch.tensor(obs, dtype=float32), change_reward, done, reset)
         act_agent.observe(obs, action_reward, done, reset)
 
         print("Episode finished!")
