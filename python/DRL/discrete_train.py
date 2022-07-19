@@ -60,10 +60,13 @@ def main():
         cpu_log = "Cpu_0623_1312.csv"
         player_log = "Player_0623_1312.csv"
 
-    delay = 0.2
+    parser = ArgumentParser()
+    parser.add_argument("-ms", "--milisecond", type=int)
+
+    args = parser.parse_args()
 
     log_date = datetime.now().strftime("%Y%m%d-%H:%M:%S")
-    log_dir = f'/mnt/HDD/Photon_FPS/DRLModels/{motion}/{log_date}_different_send'
+    log_dir = f'/mnt/HDD/Photon_FPS/DRLModels/Discrete_per_{args.milisecond}ms/{motion}/{log_date}_different_send'
 
     os.makedirs(log_dir, exist_ok=True)
 
@@ -74,15 +77,10 @@ def main():
 
     n_delay = 150 # milisecond
 
-    parser = ArgumentParser()
-    parser.add_argument("-ms", "--milisecond", type=int)
-
-    args = parser.parse_args()
-
     n_dim_obs = 20
     n_actions = 9
-    n_frames = n_delay / args.milisecond
-    assert type(n_frames) == int
+    n_frames = int(n_delay / args.milisecond)
+    assert n_delay % args.milisecond == 0
     n_atoms = 51
     v_max = 10
     v_min = -10
@@ -256,7 +254,7 @@ def main():
                 change_second = change_agent.act(obs)
 
                 player_index = player_keys.index(key)
-                predict_point = key+delay
+                predict_point = key + 0.15 #150ms
                 last_cpu_index = cpu_index
                 
                 while True:
@@ -318,19 +316,7 @@ def main():
                     else:
                         actual_change_second = 0
 
-                if actual_change_second == 0:
-                    max_R_change += 1
-                    if actual_change_second == change_second:
-                        change_reward = 1
-                    else:
-                        change_reward = 0
-                else:
-                    max_R_change += 3
-                    if actual_change_second == change_second:
-                        change_reward = 3
-                    else:
-                        change_reward = 0
-                    
+                change_reward = abs(actual_change_second - (change_second * args.milisecond / 1000))
 
                 move_xdir = cpu_velocity[cpu_keys[last_cpu_index+actual_change_frame+1]][0]
                 move_ydir = cpu_velocity[cpu_keys[last_cpu_index+actual_change_frame+1]][2] #fixed
@@ -361,7 +347,7 @@ def main():
                     action_reward = 1
 
                 action_R += action_reward
-                change_R += change_reward
+                change_R -= change_reward
 
                 done = False
                 reset = False
