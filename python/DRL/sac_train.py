@@ -373,12 +373,13 @@ def main():
                     break
                 
                 for i in range(10):
-                    actual_action = get_action_num(cpu_velocity[cpu_keys[last_cpu_index+i]][0], cpu_velocity[cpu_keys[last_cpu_index+i]][2])
-
                     pre_action = get_action_num(cpu_velocity[cpu_keys[last_cpu_index+i-1]][0], cpu_velocity[cpu_keys[last_cpu_index+i-1]][2])
 
-                    if pre_action != actual_action:
+                    next_action = get_action_num(cpu_velocity[cpu_keys[last_cpu_index+i]][0], cpu_velocity[cpu_keys[last_cpu_index+i]][2])
+
+                    if pre_action != next_action:
                         actual_change_second = cpu_keys[last_cpu_index+i] - cpu_keys[last_cpu_index]
+                        actual_action = next_action
                         break
                     else:
                         actual_change_second = 0

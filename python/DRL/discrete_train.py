@@ -40,6 +40,30 @@ def calculateLine(x1, x2, t1, t2):
         b = x1 - a * t1
     return a, b
 
+def get_action_num(x, y):
+    if x > 0:
+        if y == 0:
+            action = 0
+        elif y > 0:
+            action = 1
+        else:
+            action = 7
+    if x < 0:
+        if y == 0:
+            action = 4
+        elif y > 0:
+            action = 3
+        else:
+            action = 5
+    if x == 0:
+        if y == 0:
+            action = 8
+        elif y > 0:
+            action = 2
+        else:
+            action = 6
+    return action
+
 def main():
     motions = ["ohuku", "curb", "zigzag", "ohukuRandom"]
     motion = motions[0]
@@ -263,8 +287,8 @@ def main():
                     elif cpu_keys[cpu_index] < predict_point:
                         cpu_index += 1
                     else:
-                        ax, bx = calculateLine(cpu_positions[cpu_keys[cpu_index]][0], cpu_positions[cpu_keys[cpu_index-1]][0], cpu_keys[cpu_index], cpu_keys[cpu_index-1])
-                        ay, by = calculateLine(cpu_positions[cpu_keys[cpu_index]][2], cpu_positions[cpu_keys[cpu_index-1]][2], cpu_keys[cpu_index], cpu_keys[cpu_index-1])
+                        # ax, bx = calculateLine(cpu_positions[cpu_keys[cpu_index]][0], cpu_positions[cpu_keys[cpu_index-1]][0], cpu_keys[cpu_index], cpu_keys[cpu_index-1])
+                        # ay, by = calculateLine(cpu_positions[cpu_keys[cpu_index]][2], cpu_positions[cpu_keys[cpu_index-1]][2], cpu_keys[cpu_index], cpu_keys[cpu_index-1])
                         cpu_index -= 1
                         break
 
@@ -272,74 +296,18 @@ def main():
                     break
                 
                 for i in range(n_frames):
-                    if cpu_velocity[cpu_keys[last_cpu_index+i]][0] > 0 and cpu_velocity[cpu_keys[last_cpu_index+i]][2] == 0:
-                        pre_action = 1
-                    elif cpu_velocity[cpu_keys[last_cpu_index+i]][0] < 0 and cpu_velocity[cpu_keys[last_cpu_index+i]][2] == 0:
-                        pre_action = 2
-                    elif cpu_velocity[cpu_keys[last_cpu_index+i]][0] == 0 and cpu_velocity[cpu_keys[last_cpu_index+i]][2] > 0:
-                        pre_action = 3
-                    elif cpu_velocity[cpu_keys[last_cpu_index+i]][0] == 0 and cpu_velocity[cpu_keys[last_cpu_index+i]][2] < 0:
-                        pre_action = 4
-                    elif cpu_velocity[cpu_keys[last_cpu_index+i]][0] < 0 and cpu_velocity[cpu_keys[last_cpu_index+i]][2] > 0:
-                        pre_action = 5
-                    elif cpu_velocity[cpu_keys[last_cpu_index+i]][0] < 0 and cpu_velocity[cpu_keys[last_cpu_index+i]][2] < 0:
-                        pre_action = 7
-                    elif cpu_velocity[cpu_keys[last_cpu_index+i]][0] > 0 and cpu_velocity[cpu_keys[last_cpu_index+i]][2] > 0:
-                        pre_action = 6
-                    elif cpu_velocity[cpu_keys[last_cpu_index+i]][0] > 0 and cpu_velocity[cpu_keys[last_cpu_index+i]][2] < 0:
-                        pre_action = 8
-                    else:
-                        pre_action = 0
+                    pre_action = get_action_num(cpu_velocity[cpu_keys[last_cpu_index+i-1]][0], cpu_velocity[cpu_keys[last_cpu_index+i-1]][2])
 
-                    if cpu_velocity[cpu_keys[last_cpu_index+i-1]][0] > 0 and cpu_velocity[cpu_keys[last_cpu_index+i-1]][2] == 0:
-                        next_action = 1
-                    elif cpu_velocity[cpu_keys[last_cpu_index+i-1]][0] < 0 and cpu_velocity[cpu_keys[last_cpu_index+i-1]][2] == 0:
-                        next_action = 2
-                    elif cpu_velocity[cpu_keys[last_cpu_index+i-1]][0] == 0 and cpu_velocity[cpu_keys[last_cpu_index+i-1]][2] > 0:
-                        next_action = 3
-                    elif cpu_velocity[cpu_keys[last_cpu_index+i-1]][0] == 0 and cpu_velocity[cpu_keys[last_cpu_index+i-1]][2] < 0:
-                        next_action = 4
-                    elif cpu_velocity[cpu_keys[last_cpu_index+i-1]][0] < 0 and cpu_velocity[cpu_keys[last_cpu_index+i-1]][2] > 0:
-                        next_action = 5
-                    elif cpu_velocity[cpu_keys[last_cpu_index+i-1]][0] < 0 and cpu_velocity[cpu_keys[last_cpu_index+i-1]][2] < 0:
-                        next_action = 7
-                    elif cpu_velocity[cpu_keys[last_cpu_index+i-1]][0] > 0 and cpu_velocity[cpu_keys[last_cpu_index+i-1]][2] > 0:
-                        next_action = 6
-                    elif cpu_velocity[cpu_keys[last_cpu_index+i-1]][0] > 0 and cpu_velocity[cpu_keys[last_cpu_index+i-1]][2] < 0:
-                        next_action = 8
-                    else:
-                        next_action = 0
+                    next_action = get_action_num(cpu_velocity[cpu_keys[last_cpu_index+i]][0], cpu_velocity[cpu_keys[last_cpu_index+i]][2])
 
                     if pre_action != next_action:
                         actual_change_second = cpu_keys[last_cpu_index+i] - cpu_keys[last_cpu_index]
+                        actual_action = next_action
                         break
                     else:
                         actual_change_second = 0
 
-                change_reward = abs(actual_change_second - (change_second * args.milisecond / 1000))
-
-                move_xdir = cpu_velocity[cpu_keys[last_cpu_index+actual_change_frame+1]][0]
-                move_ydir = cpu_velocity[cpu_keys[last_cpu_index+actual_change_frame+1]][2] #fixed
-
-                if move_xdir > 0 and move_ydir == 0:
-                    actual_action = 1
-                elif move_xdir < 0 and move_ydir == 0:
-                    actual_action = 2
-                elif move_xdir == 0 and move_ydir > 0:
-                    actual_action = 3
-                elif move_xdir == 0 and move_ydir < 0:
-                    actual_action = 4
-                elif move_xdir < 0 and move_ydir > 0:
-                    actual_action = 5
-                elif move_xdir < 0 and move_ydir < 0:
-                    actual_action = 7
-                elif move_xdir > 0 and move_ydir > 0:
-                    actual_action = 6
-                elif move_xdir > 0 and move_ydir < 0:
-                    actual_action = 8
-                else:
-                    actual_action = 0
-                
+                change_reward = abs(actual_change_second - (change_second * args.milisecond / 1000))               
 
                 max_R_action += 1
                         
