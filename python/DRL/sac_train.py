@@ -63,109 +63,7 @@ def get_action_num(x, y):
         else:
             action = 6
     return action
-
-class SACQFunc(nn.Module):
-    def __init__(self, obs_size, action_size):
-        super().__init__()
-
-        self.policy = nn.Sequential(
-            nn.Linear(obs_size, 256),
-            nn.ReLU(),
-            nn.Linear(256, 256),
-            nn.ReLU(),
-            nn.Linear(256, action_size * 2),
-        )
-
-        self.q_func = nn.Sequential(
-            pfrl.nn.ConcatObsAndAction(),
-            nn.Linear(obs_size + action_size, 256),
-            nn.ReLU(),
-            nn.Linear(256, 256),
-            nn.ReLU(),
-            nn.Linear(256, 1),
-        )
-        torch.nn.init.xavier_uniform_(self.q_func[1].weight)
-        torch.nn.init.xavier_uniform_(self.q_func[3].weight)
-        torch.nn.init.xavier_uniform_(self.q_func[5].weight)
-
-    def forward(self, x):
-        feature = self.policy(x[0])
-        return self.q_func(feature, x[1])
-
-def create_sac_agent():
-    action_space = Box(low=0.0, high=1.0, shape=(1,))
-    action_size = action_space.low.size
-    n_obs = 20
-
-    def squashed_diagonal_gaussian_head(x):
-        assert x.shape[-1] == action_size * 2
-        mean, log_scale = torch.chunk(x, 2, dim=1)
-        log_scale = torch.clamp(log_scale, -20.0, 2.0)
-        var = torch.exp(log_scale * 2)
-        base_distribution = distributions.Independent(
-            distributions.Normal(loc=mean, scale=torch.sqrt(var)), 1
-        )
-        # cache_size=1 is required for numerical stability
-        return distributions.transformed_distribution.TransformedDistribution(
-            base_distribution, [distributions.transforms.TanhTransform(cache_size=1)]
-        )
-
-    policy = nn.Sequential(
-        nn.Linear(n_obs, 256),
-        nn.ReLU(),
-        nn.Linear(256, 256),
-        nn.ReLU(),
-        nn.Linear(256, action_size * 2),
-        Lambda(squashed_diagonal_gaussian_head),
-    )
-    torch.nn.init.xavier_uniform_(policy[0].weight)
-    torch.nn.init.xavier_uniform_(policy[2].weight)
-    torch.nn.init.xavier_uniform_(policy[4].weight, gain=1.0)
-    policy_optimizer = torch.optim.Adam(policy.parameters(), lr=3e-4)
-
-    def make_q_func_with_optimizer():
-        q_func = SACQFunc(n_obs + action_size, action_size)
-        q_func_optimizer = torch.optim.Adam(q_func.parameters(), lr=3e-4)
-        return q_func, q_func_optimizer
-
-    q_func1, q_func1_optimizer = make_q_func_with_optimizer()
-    q_func2, q_func2_optimizer = make_q_func_with_optimizer()
-
-    rbuf = replay_buffers.ReplayBuffer(10 ** 6)
-    # betasteps = 10**6 - 1000 // 4
-    # rbuf = replay_buffers.PrioritizedReplayBuffer(
-    #         10**6, betasteps=betasteps
-    #     )
-
-    def burnin_action_func():
-        """Select random actions until model is updated one or more times."""
-        return np.random.uniform(action_space.low, action_space.high).astype(np.float32)
-
-    # Hyperparameters in http://arxiv.org/abs/1802.09477
-    agent = pfrl.agents.SoftActorCritic(
-        policy,
-        q_func1,
-        q_func2,
-        policy_optimizer,
-        q_func1_optimizer,
-        q_func2_optimizer,
-        rbuf,
-        gamma = 0.99,
-        gpu=0,
-        replay_start_size=1000,
-        minibatch_size=256,
-        update_interval=1,
-        phi=lambda x: x,
-        soft_update_tau=5e-3,
-        max_grad_norm=None,
-        # batch_states=pfrl.utils.batch_states.batch_states,
-        burnin_action_func=burnin_action_func,
-        initial_temperature=1.0,
-        entropy_target=-action_size,
-        temperature_optimizer_lr=3e-4,
-        act_deterministically=True,
-    )
-    return agent
+    
 
 def main():
     motions = ["ohuku", "curb", "zigzag", "ohukuRandom"]
@@ -190,7 +88,7 @@ def main():
     delay = 0.2
 
     log_date = datetime.now().strftime("%Y%m%d-%H:%M:%S")
-    log_dir = f'/mnt/HDD/Photon_FPS/DRLModels/getAction/{motion}/{log_date}_different_send'
+    log_dir = f'/mnt/HDD/Photon_FPS/DRLModels/get_delay_ms/{motion}/{log_date}'
 
     os.makedirs(log_dir, exist_ok=True)
 
@@ -262,6 +160,9 @@ def main():
         phi=phi,
     )
 
+    # obs_size = 5
+    obs_size = 20
+
     # Set a random seed used in PFRL.
     utils.set_random_seed(0)
 
@@ -271,9 +172,91 @@ def main():
     process_seeds = np.arange(8) + 0 * 8
     assert process_seeds.max() < 2 ** 32
 
-    change_agent = create_sac_agent()
+    action_space = Box(low=0.0, high=1.0, shape=(1,))
+    action_size = action_space.low.size
+
+    def squashed_diagonal_gaussian_head(x):
+        assert x.shape[-1] == action_size * 2
+        mean, log_scale = torch.chunk(x, 2, dim=1)
+        log_scale = torch.clamp(log_scale, -20.0, 2.0)
+        var = torch.exp(log_scale * 2)
+        base_distribution = distributions.Independent(
+            distributions.Normal(loc=mean, scale=torch.sqrt(var)), 1
+        )
+        # cache_size=1 is required for numerical stability
+        return distributions.transformed_distribution.TransformedDistribution(
+            base_distribution, [distributions.transforms.TanhTransform(cache_size=1)]
+        )
+    
+    policy = nn.Sequential(
+        nn.Linear(obs_size, 256),
+        nn.ReLU(),
+        nn.Linear(256, 256),
+        nn.ReLU(),
+        nn.Linear(256, action_size * 2),
+        Lambda(squashed_diagonal_gaussian_head),
+    )
+    torch.nn.init.xavier_uniform_(policy[0].weight)
+    torch.nn.init.xavier_uniform_(policy[2].weight)
+    torch.nn.init.xavier_uniform_(policy[4].weight, gain=1.0)
+    policy_optimizer = torch.optim.Adam(policy.parameters(), lr=3e-4)
+
+    def make_q_func_with_optimizer():
+        q_func = nn.Sequential(
+            pfrl.nn.ConcatObsAndAction(),
+            nn.Linear(obs_size + action_size, 256),
+            nn.ReLU(),
+            nn.Linear(256, 256),
+            nn.ReLU(),
+            nn.Linear(256, 1),
+        )
+        torch.nn.init.xavier_uniform_(q_func[1].weight)
+        torch.nn.init.xavier_uniform_(q_func[3].weight)
+        torch.nn.init.xavier_uniform_(q_func[5].weight)
+
+        q_func_optimizer = torch.optim.Adam(q_func.parameters(), lr=3e-4)
+        return q_func, q_func_optimizer
+
+    q_func1, q_func1_optimizer = make_q_func_with_optimizer()
+    q_func2, q_func2_optimizer = make_q_func_with_optimizer()
+
+    rbuf = replay_buffers.ReplayBuffer(10 ** 6)
+    # betasteps = 10**6 - 1000 // 4
+    # rbuf = replay_buffers.PrioritizedReplayBuffer(
+    #         10**6, betasteps=betasteps
+    #     )
+
+    def burnin_action_func():
+        """Select random actions until model is updated one or more times."""
+        return np.random.uniform(action_space.low, action_space.high).astype(np.float32)
+
+    # Hyperparameters in http://arxiv.org/abs/1802.09477
+    change_agent = pfrl.agents.SoftActorCritic(
+        policy,
+        q_func1,
+        q_func2,
+        policy_optimizer,
+        q_func1_optimizer,
+        q_func2_optimizer,
+        rbuf,
+        gamma = 0.99,
+        gpu=0,
+        replay_start_size=1000,
+        minibatch_size=256,
+        update_interval=1,
+        phi=lambda x: x,
+        soft_update_tau=5e-3,
+        max_grad_norm=None,
+        # batch_states=pfrl.utils.batch_states.batch_states,
+        burnin_action_func=burnin_action_func,
+        initial_temperature=1.0,
+        entropy_target=-action_size,
+        temperature_optimizer_lr=3e-4,
+        act_deterministically=True,
+    )
 
     n_input = 20
+    n_past = 4
     episodes = 10001
 
     cpu_positions = {}
@@ -314,8 +297,8 @@ def main():
     cpu_length = len(cpu_keys)
 
     for episode in range(episodes):
-        # obs4steps = np.zeros((n_past, n_input), dtype=np.float32)
-        obs = np.zeros(n_input, dtype=np.float32)
+        # obs4steps = np.zeros((n_past, obs_size), dtype=np.float32)
+        # obs = np.zeros(n_input, dtype=np.float32)
         action_R = 0
         change_R = 0
         max_R_action = 0
@@ -346,13 +329,19 @@ def main():
             last_velocity_x[0] = player_velocity[key][0]
             last_velocity_y[0] = player_velocity[key][2]
 
+            # obs4steps = np.roll(obs4steps, 1, axis=0)
+            # obs4steps[0] = np.array([last_time[0], last_position_x[0], last_position_y[0], last_velocity_x[0], last_velocity_y[0]])
+
             if player_keys.index(key) < 4:
                 continue
             else:
                 obs = [last_time[0], last_position_x[0], last_position_y[0], last_velocity_x[0], last_velocity_y[0], last_time[1], last_position_x[1], last_position_y[1], last_velocity_x[1], last_velocity_y[1], last_time[2], last_position_x[2], last_position_y[2], last_velocity_x[2], last_velocity_y[2], last_time[3], last_position_x[3], last_position_y[3], last_velocity_x[3], last_velocity_y[3]]
+                np_obs = np.array([last_time[0], last_position_x[0], last_position_y[0], last_velocity_x[0], last_velocity_y[0], last_time[1], last_position_x[1], last_position_y[1], last_velocity_x[1], last_velocity_y[1], last_time[2], last_position_x[2], last_position_y[2], last_velocity_x[2], last_velocity_y[2], last_time[3], last_position_x[3], last_position_y[3], last_velocity_x[3], last_velocity_y[3]], dtype=np.float32)
 
                 action = act_agent.act(obs)
-                change_second = change_agent.act(obs)
+                change_second = change_agent.act(np_obs)[0]
+                # change_second = change_agent.act(obs)
+                # change_second = change_agent.act(obs4steps)
 
                 player_index = player_keys.index(key)
                 predict_point = key+delay
@@ -385,20 +374,22 @@ def main():
                         actual_change_second = 0
 
                 change_second = change_second * 0.2 # [0, 1] * 0.2 -> 0.2sまで
-                change_reward = abs(actual_change_second - change_second)
+                change_reward = - abs(actual_change_second - change_second)
+                # print("Reward: ", change_reward)
 
                 max_R_action += 1
                 if actual_action == action:
                     action_reward = 1
 
                 action_R += action_reward
-                change_R -= change_reward
+                change_R += change_reward
 
                 done = False
                 reset = False
 
-                # change_agent.observe(np.array(obs, dtype=float32), change_reward, done, reset)
-                change_agent.observe(torch.tensor(obs, dtype=float32), change_reward, done, reset)
+                # change_agent.observe(obs4steps, change_reward, done, reset)
+                change_agent.observe(np_obs, change_reward, done, reset)
+                # change_agent.observe(torch.tensor(obs, dtype=float32), change_reward, done, reset)
                 act_agent.observe(obs, action_reward, done, reset)
 
                 with open(f'{log_dir}/check.csv', 'a') as f:
@@ -407,7 +398,8 @@ def main():
         done = True
         reset = True
 
-        change_agent.observe(torch.tensor(obs, dtype=float32), change_reward, done, reset)
+        # change_agent.observe(torch.tensor(obs, dtype=float32), change_reward, done, reset)
+        change_agent.observe(np_obs, change_reward, done, reset)
         act_agent.observe(obs, action_reward, done, reset)
 
         print("Episode finished!")
