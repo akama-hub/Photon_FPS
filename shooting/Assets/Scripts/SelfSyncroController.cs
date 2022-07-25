@@ -39,6 +39,8 @@ public class SelfSyncroController : MonoBehaviourPunCallbacks
     void Start()
     {
         if(photonView.IsMine){
+            Application.targetFrameRate = 30; // 30fpsに設定
+
             // commUDP.init(int型の送信用ポート番号, int型の送信先ポート番号, int型の受信用ポート番号);
             // commUDP.init(50032, 50030, 50031);
 

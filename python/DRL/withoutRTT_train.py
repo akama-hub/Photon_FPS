@@ -41,6 +41,30 @@ def calculateLine(x1, x2, t1, t2):
         b = x1 - a * t1
     return a, b
 
+def get_action_num(x, y):
+    if x > 0:
+        if y == 0:
+            action = 0
+        elif y > 0:
+            action = 1
+        else:
+            action = 7
+    if x < 0:
+        if y == 0:
+            action = 4
+        elif y > 0:
+            action = 3
+        else:
+            action = 5
+    if x == 0:
+        if y == 0:
+            action = 8
+        elif y > 0:
+            action = 2
+        else:
+            action = 6
+    return action
+
 def main():
     motions = ["ohuku", "curb", "zigzag", "ohukuRandom"]
     motion = motions[0]
@@ -48,20 +72,7 @@ def main():
     # motion = motions[2]
     # motion = motions[3]
 
-    if motion == "ohuku":
-        cpu_log = "Cpu_0608_1646.csv"
-        player_log = "Player_0608_1646.csv"
-    elif motion == "curb":
-        cpu_log = "Cpu_0613_2047.csv"
-        player_log = "Player_0613_2047.csv"
-    elif motion == "ohukuRandom":
-        cpu_log = "Cpu_0608_1641.csv"
-        player_log = "Player_0608_1641.csv"
-    elif motion == "zigzag":
-        cpu_log = "Cpu_0623_1312.csv"
-        player_log = "Player_0623_1312.csv"
-
-    delay = 0.2
+    delay = 0.15
 
     log_date = datetime.now().strftime("%Y%m%d-%H:%M:%S")
     log_dir = f'/mnt/HDD/Photon_FPS/DRLModels/{motion}/{log_date}_different_send'
@@ -172,23 +183,8 @@ def main():
     cpu_keys = []
 
     # with open(f'/mnt/HDD/Photon_FPS/Log/Lag0/{motion}/{cpu_log}') as f:
-    with open(f'../evaluate/EvaluateDiffLog/LagNone/{motion}/train/real_log_train.csv') as f:
-        reader = csv.reader(f)
-        for row in reader:
-            row[0] = float(row[0])
-            for k in range(1, 7):
-                row[k] = float(row[k])
-            cpu_positions[row[0]] = [row[1], row[2], row[3]]
-            cpu_velocity[row[0]] = [row[4], row[5], row[6]]
-            # time, x, z, y
-            cpu_keys.append(float(row[0]))
-
-    player_positions = {}
-    player_velocity = {}
-    player_keys = []
-
-    # with open(f'/mnt/HDD/Photon_FPS/Log/Lag0/{motion}/{player_log}') as f:
-    with open(f'../evaluate/EvaluateDiffLog/LagNone/{motion}/train/delayed_log_train.csv') as f:
+    # with open(f'../evaluate/EvaluateDiffLog/LagNone/{motion}/train/real_log_train.csv') as f:
+    with open(f'../train_data/Fixed30FPS/Lag25/{motion}/Real_log.csv') as f:
         reader = csv.reader(f)
         for row in reader:
             row[0] = float(row[0])
@@ -198,6 +194,33 @@ def main():
             player_velocity[row[0]] = [row[4], row[5], row[6]]
             # time, x, z, y
             player_keys.append(row[0])
+
+    player_positions = {}
+    player_velocity = {}
+    player_keys = []
+
+    # with open(f'/mnt/HDD/Photon_FPS/Log/Lag0/{motion}/{player_log}') as f:
+    # with open(f'../evaluate/EvaluateDiffLog/LagNone/{motion}/train/delayed_log_train.csv') as f:
+        # reader = csv.reader(f)
+        # for row in reader:
+            # row[0] = float(row[0])
+            # for k in range(1, 7):
+            #     row[k] = float(row[k])
+            # cpu_positions[row[0]] = [row[1], row[2], row[3]]
+            # cpu_velocity[row[0]] = [row[4], row[5], row[6]]
+            # # time, x, z, y
+            # cpu_keys.append(row[0])
+    with open(f'../train_data/Fixed30FPS/Lag25/{motion}/Delayed_log.csv') as f:
+        reader = csv.reader(f)
+        for row in reader:
+            row[1] = float(row[1])
+            for k in range(2, 7):
+                row[k] = float(row[k])
+            if row[9] == "true":
+                cpu_positions[row[1]] = [row[2], row[3], row[4]]
+                cpu_velocity[row[1]] = [row[5], row[6], row[7]]
+                # time, x, z, y
+                cpu_keys.append(row[1])
 
     action = 0
     # 0->right 1->left
@@ -211,8 +234,12 @@ def main():
         obs = np.zeros(n_input, dtype=np.float32)
         action_R = 0
         change_R = 0
+        change1 = 0
+        change2 = 0
         max_R_action = 0
         max_R_change = 0
+        max_change1 = 0
+        max_change2 = 0
 
         last_position_x = np.zeros(4)
         last_position_y = np.zeros(4)
@@ -240,7 +267,7 @@ def main():
             last_velocity_x[0] = player_velocity[key][0]
             last_velocity_y[0] = player_velocity[key][2]
 
-            if player_keys.index(key) < 4:
+            if player_keys.index(key) < 8:
                 continue
             else:
                 obs = [last_time[0], last_position_x[0], last_position_y[0], last_velocity_x[0], last_velocity_y[0], last_time[1], last_position_x[1], last_position_y[1], last_velocity_x[1], last_velocity_y[1], last_time[2], last_position_x[2], last_position_y[2], last_velocity_x[2], last_velocity_y[2], last_time[3], last_position_x[3], last_position_y[3], last_velocity_x[3], last_velocity_y[3]]
@@ -258,98 +285,45 @@ def main():
                     elif cpu_keys[cpu_index] < predict_point:
                         cpu_index += 1
                     else:
-                        ax, bx = calculateLine(cpu_positions[cpu_keys[cpu_index]][0], cpu_positions[cpu_keys[cpu_index-1]][0], cpu_keys[cpu_index], cpu_keys[cpu_index-1])
-                        ay, by = calculateLine(cpu_positions[cpu_keys[cpu_index]][2], cpu_positions[cpu_keys[cpu_index-1]][2], cpu_keys[cpu_index], cpu_keys[cpu_index-1])
+                        # ax, bx = calculateLine(cpu_positions[cpu_keys[cpu_index]][0], cpu_positions[cpu_keys[cpu_index-1]][0], cpu_keys[cpu_index], cpu_keys[cpu_index-1])
+                        # ay, by = calculateLine(cpu_positions[cpu_keys[cpu_index]][2], cpu_positions[cpu_keys[cpu_index-1]][2], cpu_keys[cpu_index], cpu_keys[cpu_index-1])
                         cpu_index -= 1
                         break
 
                 if player_index >= player_length - n_frames or cpu_index >= cpu_length - n_frames:
                     break
                 
-                for i in range(n_frames):
-                    if cpu_velocity[cpu_keys[last_cpu_index+i]][0] > 0 and cpu_velocity[cpu_keys[last_cpu_index+i]][2] == 0:
-                        pre_action = 1
-                    elif cpu_velocity[cpu_keys[last_cpu_index+i]][0] < 0 and cpu_velocity[cpu_keys[last_cpu_index+i]][2] == 0:
-                        pre_action = 2
-                    elif cpu_velocity[cpu_keys[last_cpu_index+i]][0] == 0 and cpu_velocity[cpu_keys[last_cpu_index+i]][2] > 0:
-                        pre_action = 3
-                    elif cpu_velocity[cpu_keys[last_cpu_index+i]][0] == 0 and cpu_velocity[cpu_keys[last_cpu_index+i]][2] < 0:
-                        pre_action = 4
-                    elif cpu_velocity[cpu_keys[last_cpu_index+i]][0] < 0 and cpu_velocity[cpu_keys[last_cpu_index+i]][2] > 0:
-                        pre_action = 5
-                    elif cpu_velocity[cpu_keys[last_cpu_index+i]][0] < 0 and cpu_velocity[cpu_keys[last_cpu_index+i]][2] < 0:
-                        pre_action = 7
-                    elif cpu_velocity[cpu_keys[last_cpu_index+i]][0] > 0 and cpu_velocity[cpu_keys[last_cpu_index+i]][2] > 0:
-                        pre_action = 6
-                    elif cpu_velocity[cpu_keys[last_cpu_index+i]][0] > 0 and cpu_velocity[cpu_keys[last_cpu_index+i]][2] < 0:
-                        pre_action = 8
-                    else:
-                        pre_action = 0
+                for i in range(10):
+                    pre_action = get_action_num(cpu_velocity[cpu_keys[last_cpu_index+i-1]][0], cpu_velocity[cpu_keys[last_cpu_index+i-1]][2])
 
-                    if cpu_velocity[cpu_keys[last_cpu_index+i-1]][0] > 0 and cpu_velocity[cpu_keys[last_cpu_index+i-1]][2] == 0:
-                        next_action = 1
-                    elif cpu_velocity[cpu_keys[last_cpu_index+i-1]][0] < 0 and cpu_velocity[cpu_keys[last_cpu_index+i-1]][2] == 0:
-                        next_action = 2
-                    elif cpu_velocity[cpu_keys[last_cpu_index+i-1]][0] == 0 and cpu_velocity[cpu_keys[last_cpu_index+i-1]][2] > 0:
-                        next_action = 3
-                    elif cpu_velocity[cpu_keys[last_cpu_index+i-1]][0] == 0 and cpu_velocity[cpu_keys[last_cpu_index+i-1]][2] < 0:
-                        next_action = 4
-                    elif cpu_velocity[cpu_keys[last_cpu_index+i-1]][0] < 0 and cpu_velocity[cpu_keys[last_cpu_index+i-1]][2] > 0:
-                        next_action = 5
-                    elif cpu_velocity[cpu_keys[last_cpu_index+i-1]][0] < 0 and cpu_velocity[cpu_keys[last_cpu_index+i-1]][2] < 0:
-                        next_action = 7
-                    elif cpu_velocity[cpu_keys[last_cpu_index+i-1]][0] > 0 and cpu_velocity[cpu_keys[last_cpu_index+i-1]][2] > 0:
-                        next_action = 6
-                    elif cpu_velocity[cpu_keys[last_cpu_index+i-1]][0] > 0 and cpu_velocity[cpu_keys[last_cpu_index+i-1]][2] < 0:
-                        next_action = 8
-                    else:
-                        next_action = 0
+                    next_action = get_action_num(cpu_velocity[cpu_keys[last_cpu_index+i]][0], cpu_velocity[cpu_keys[last_cpu_index+i]][2])
 
                     if pre_action != next_action:
                         actual_change_frame = i
+                        actual_action = next_action
                         break
                     else:
                         actual_change_frame = 0
+                        actual_action = next_action
 
                 if actual_change_frame == 0:
                     max_R_change += 1
+                    max_change1 += 1
                     if actual_change_frame == n_frames_change:
                         change_reward = 1
+                        change1 += 1
                     else:
                         change_reward = 0
                 else:
                     max_R_change += 3
+                    max_change2 += 1
                     if actual_change_frame == n_frames_change:
                         change_reward = 3
+                        change2 += 1
                     else:
                         change_reward = 0
-                    
-
-                move_xdir = cpu_velocity[cpu_keys[last_cpu_index+actual_change_frame+1]][0]
-                move_ydir = cpu_velocity[cpu_keys[last_cpu_index+actual_change_frame+1]][2] #fixed
-
-                if move_xdir > 0 and move_ydir == 0:
-                    actual_action = 1
-                elif move_xdir < 0 and move_ydir == 0:
-                    actual_action = 2
-                elif move_xdir == 0 and move_ydir > 0:
-                    actual_action = 3
-                elif move_xdir == 0 and move_ydir < 0:
-                    actual_action = 4
-                elif move_xdir < 0 and move_ydir > 0:
-                    actual_action = 5
-                elif move_xdir < 0 and move_ydir < 0:
-                    actual_action = 7
-                elif move_xdir > 0 and move_ydir > 0:
-                    actual_action = 6
-                elif move_xdir > 0 and move_ydir < 0:
-                    actual_action = 8
-                else:
-                    actual_action = 0
                 
-
                 max_R_action += 1
-                        
                 if actual_action == action:
                     action_reward = 1
 
@@ -373,13 +347,16 @@ def main():
 
         print("Episode finished!")
         print("Episode: ", episode)
-        print(f"total reward: {max_R_action}, {action_R}, {max_R_change}, {change_R}")
+        print(f"total action reward: {action_R} / {max_R_action}")
+        print(f"total change reward: {change_R} / {max_R_change}")
+        print(f"successing point: {change1} / {max_change1}")
+        print(f"changing point: {change2} / {max_change2}")
         print("=====================")
 
         with open(f'{log_dir}/result.csv', 'a') as f:
             f.write(f'{episode + 1}, {max_R_action}, {action_R}, {max_R_change}, {change_R}\n')
 
-        if episode % 100 == 0 and episode > 2000:
+        if episode % 500 == 0 and episode >= 2000:
             change_agent.save(f"{log_dir}/change_model{episode+1}")
             act_agent.save(f"{log_dir}/act_model{episode+1}")
 

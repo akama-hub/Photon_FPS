@@ -25,12 +25,14 @@ if __name__ == '__main__' :
 
     # motion = "ohuku"
     # motion = "ohukuRandom"
-    motion = "zigzag"
+    # motion = "zigzag"
 
     # log_dir = f'../Log/Lag{args.latency}/{motion}'
     # os.makedirs(log_dir, exist_ok=True)
-    evaluate_dir = f"evaluate/EvaluateDiffLog/Lag{args.latency}/{args.motion}/{args.scheme}"
-    os.makedirs(evaluate_dir, exist_ok=True)
+    # evaluate_dir = f"evaluate/EvaluateDiffLog/Fixed30FPS/Lag{args.latency}/{args.motion}/{args.scheme}"
+    # os.makedirs(evaluate_dir, exist_ok=True)
+    train_dir = f'train_data/Fixed30FPS/Lag{args.latency}/{args.motion}'
+    os.makedirs(train_dir, exist_ok=True)
     
 
     # log_date = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
@@ -62,9 +64,11 @@ if __name__ == '__main__' :
 
     turminal = ""
     if unity_port == 50001 or unity_port == 50024:
-        turminal = "Player"
+        turminal = "Real"
     elif unity_port == 50011 or unity_port == 50031:
-        turminal = "Cpu"
+        turminal = "Predict"
+    elif unity_port == 50021:
+        turminal = "Delayed"
 
     pos_x = np.array([])
     pos_y = np.array([])
@@ -78,75 +82,37 @@ if __name__ == '__main__' :
         try:
 
             cli_data, cli_addr = cli_sock.recvfrom(M_SIZE)
-
-            now_dt = datetime.now()
-            nowTime = now_dt.minute * 60 + now_dt.second + now_dt.microsecond/1000000
-            print("Python now: ", nowTime)
-            # clidata = time00000000x00000000y00000000z00000000
-            #　負の値を取るとーも一文字になるので注意
-            cli_str_data = cli_data.decode("utf-8")
-            send_time = ""
-            position_x = ""
-            position_y = ""
-            position_z = ""
-            velocity_x = ""
-            velocity_y = ""
-            velocity_z = ""
-            flag = "first"
-
             print("recieving data: ", cli_data)
-            for data in cli_str_data:
-                if data == "t" and flag == "first":
-                    flag = "time"
-                    continue
-                elif data == "x":
-                    if flag == "time":
-                        flag = "position_x"
-                    elif flag == "velocity":
-                        flag = "velocity_x"
-                    continue
-                elif data == "y":
-                    if flag == "position_x":
-                        flag = "position_y"
-                    elif flag == "velocity":
-                        flag = "velocity_y"
-                    continue
-                elif data == "z":
-                    if flag == "position_y":
-                        flag = "position_z"
-                    elif flag == "velocity":
-                        flag = "velocity_z"
-                    continue
-                elif data == "v":
-                    flag = "velocity"
-                    continue
-                if flag == "time":
-                    send_time += data
-                if flag == "position_x":
-                    position_x += data
-                if flag == "position_y":
-                    position_y += data
-                if flag == "position_z":
-                    position_z += data
-                if flag == "velocity_x":
-                    velocity_x += data
-                if flag == "velocity_y":
-                    velocity_y += data
-                if flag == "velocity_z":
-                    velocity_z += data
 
             # now_dt = datetime.now()
             # nowTime = now_dt.minute * 60 + now_dt.second + now_dt.microsecond/1000000
             # print("Python now: ", nowTime)
-            print("unity now: ", send_time)
-            print("time to Send Python from Unity: ", nowTime - float(send_time))
+            # clidata = time00000000x00000000y00000000z00000000
+            #　負の値を取るとーも一文字になるので注意
+
+            cli_str_data = cli_data.decode("utf-8")
+            rcv_data = cli_str_data.split(',')
+
+            # now_dt = datetime.now()
+            # nowTime = now_dt.minute * 60 + now_dt.second + now_dt.microsecond/1000000
+            # print("Python now: ", nowTime)
+            # print("unity now: ", send_time)
+            # print("time to Send Python from Unity: ", nowTime - float(send_time))
 
             # with open(f"{log_dir}/{turminal}_0_{log_date}" + ".csv", 'a') as f:
             # with open(f"{log_dir}/{turminal}_{log_date}.csv", 'a') as f:
-
-            # with open(f"{evaluate_dir}/real_log2.csv", 'a') as f:
-            #     writer = csv.writer(f, lineterminator='\n')
-            #     writer.writerow([send_time, position_x, position_y, position_z, velocity_x, velocity_y, velocity_z])
+            
+            if turminal == "Real":
+                # with open(f'{evaluate_dir}/{turminal}_log.csv', 'a') as f:
+                with open(f'{train_dir}/{turminal}_log.csv', 'a') as f:
+                    writer = csv.writer(f, lineterminator='\n')
+                    writer.writerow([float(data) for data in rcv_data])
+            else:
+                # with open(f'{evaluate_dir}/{turminal}_log.csv', 'a') as f:
+                with open(f'{train_dir}/{turminal}_log.csv', 'a') as f:
+                    writer = csv.writer(f, lineterminator='\n')
+                    # writer.writerow([float(rcv_data[i]) for i in range(1, len(rcv_data))])
+                    writer.writerow(rcv_data)
     
         except KeyboardInterrupt:
             print ('\n . . .\n')

@@ -31,6 +31,8 @@ public class SyncroPlayerController : MonoBehaviourPunCallbacks
     private void Start()
     {
         if(photonView.IsMine){
+            Application.targetFrameRate = 30; // 30fpsに設定
+
             mainCamera = Camera.main.gameObject;// Main Camera(Game Object) の取得
 
             GameState.canShoot = true;
