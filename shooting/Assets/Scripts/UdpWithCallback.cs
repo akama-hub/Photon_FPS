@@ -24,16 +24,13 @@ namespace forudpwithCB
         public string rcvMsg = "ini";//受信メッセージ格納用
         private System.Threading.Thread rcvThread; //受信用スレッド
         private bool callback = false;
+
         // public static UDP instance;
-        public UDP()
+        public UDPWithCallback()
         //コンストラクタ(初期化用、インストラクタを生成したときに最初に実行される)
         {
         }
-        // private void Awake(){
-        //     if(instance == null){
-        //         instance = this;
-        //     }
-        // }
+        
         public bool init(int port_snd, int port_to, int port_rcv, bool cb)
         //UDP設定（送受信用ポートを開きつつ受信用スレッドを生成）
         {

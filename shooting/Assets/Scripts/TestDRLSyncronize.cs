@@ -31,8 +31,8 @@ public class TestDRLSyncronize : MonoBehaviourPun, IPunObservable
     public bool m_SynchronizeScale = false;
 
     private forudp.UDP commUDPisMine = new forudp.UDP();
-    // private forudp.UDP commUDPnotMine = new forudp.UDP();
-    private forudpwithCB.UDP commUDPnotMine = new forudpwithCB.UDP();
+    private forudp.UDP commUDPnotMine = new forudp.UDP();
+    // private forudpwithCB.UDP commUDPnotMine = new forudpwithCB.UDP();
 
     private DateTime dt;
     private float nowTime, beforeTime;
@@ -84,7 +84,8 @@ public class TestDRLSyncronize : MonoBehaviourPun, IPunObservable
         }
         else{
             // commUDP.init(int型の送信用ポート番号, int型の送信先ポート番号, int型の受信用ポート番号);
-            commUDPnotMine.init(50025, 50026, 50021, callback);
+            // commUDPnotMine.init(50025, 50026, 50021, callback);
+            commUDPnotMine.init(50025, 50026, 50021);
             //UDP受信開始
             commUDPnotMine.start_receive();
         }
@@ -153,9 +154,10 @@ public class TestDRLSyncronize : MonoBehaviourPun, IPunObservable
 
                 delay = (nowTime - beforeTime) + lag;
 
-                tr.position = Vector3.LerpUnclamped(delayedPosition, pos, delay/(lag + ProcessingDelay));
+                tr.position = Vector3.LerpUnclamped(delayedPosition, pos, (delay/(lag + ProcessingDelay)));
 
                 tr.rotation = Quaternion.RotateTowards(tr.rotation, this.m_NetworkRotation, this.m_Angle * Time.deltaTime *  PhotonNetwork.SerializationRate);
+            }
 
             else
             {
