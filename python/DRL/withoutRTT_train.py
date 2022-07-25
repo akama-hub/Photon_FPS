@@ -67,8 +67,8 @@ def get_action_num(x, y):
 
 def main():
     motions = ["ohuku", "curb", "zigzag", "ohukuRandom"]
-    motion = motions[0]
-    # motion = motions[1]
+    # motion = motions[0]
+    motion = motions[1]
     # motion = motions[2]
     # motion = motions[3]
 
@@ -190,10 +190,10 @@ def main():
             row[0] = float(row[0])
             for k in range(1, 7):
                 row[k] = float(row[k])
-            player_positions[row[0]] = [row[1], row[2], row[3]]
-            player_velocity[row[0]] = [row[4], row[5], row[6]]
+            cpu_positions[row[0]] = [row[1], row[2], row[3]]
+            cpu_velocity[row[0]] = [row[4], row[5], row[6]]
             # time, x, z, y
-            player_keys.append(row[0])
+            cpu_keys.append(row[0])
 
     player_positions = {}
     player_velocity = {}
@@ -217,10 +217,10 @@ def main():
             for k in range(2, 7):
                 row[k] = float(row[k])
             if row[9] == "true":
-                cpu_positions[row[1]] = [row[2], row[3], row[4]]
-                cpu_velocity[row[1]] = [row[5], row[6], row[7]]
+                player_positions[row[1]] = [row[2], row[3], row[4]]
+                player_velocity[row[1]] = [row[5], row[6], row[7]]
                 # time, x, z, y
-                cpu_keys.append(row[1])
+                player_keys.append(row[1])
 
     action = 0
     # 0->right 1->left
