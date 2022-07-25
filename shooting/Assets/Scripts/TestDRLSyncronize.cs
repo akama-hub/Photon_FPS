@@ -31,8 +31,8 @@ public class TestDRLSyncronize : MonoBehaviourPun, IPunObservable
     public bool m_SynchronizeScale = false;
 
     private forudp.UDP commUDPisMine = new forudp.UDP();
-    private forudp.UDP commUDPnotMine = new forudp.UDP();
-    // private forudpwithCB.UDP commUDPnotMine = new forudpwithCB.UDP();
+    // private forudp.UDP commUDPnotMine = new forudp.UDP();
+    private forudpwithCB.UdpWithCallback commUDPnotMine = new forudpwithCB.UdpWithCallback();
 
     private DateTime dt;
     private float nowTime, beforeTime;
@@ -57,6 +57,10 @@ public class TestDRLSyncronize : MonoBehaviourPun, IPunObservable
 
     private Vector3 m_Vel;
     private Vector3 m_StoredVel;
+    private Vector3 m_Accel;
+    private Vector3 m_StoredAccel;
+
+    private Vector3 pos;
 
     private float elapsedTime;
 
@@ -66,6 +70,15 @@ public class TestDRLSyncronize : MonoBehaviourPun, IPunObservable
     private int recieveSequenceNumber = 0;
     private bool callback = false;
 
+    private float normV;
+    private Vector3 crossV;
+    private float normcrossV; 
+    private float k;
+    private Vector3 alpha;
+
+    private float delay;
+    private string data;
+    
     public void Awake()
     {
         m_StoredPosition = transform.localPosition;
@@ -84,8 +97,8 @@ public class TestDRLSyncronize : MonoBehaviourPun, IPunObservable
         }
         else{
             // commUDP.init(int型の送信用ポート番号, int型の送信先ポート番号, int型の受信用ポート番号);
-            // commUDPnotMine.init(50025, 50026, 50021, callback);
-            commUDPnotMine.init(50025, 50026, 50021);
+            commUDPnotMine.init(50025, 50026, 50021, callback);
+            // commUDPnotMine.init(50025, 50026, 50021);
             //UDP受信開始
             commUDPnotMine.start_receive();
         }

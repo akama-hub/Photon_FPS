@@ -15,7 +15,7 @@ using System.Text;
 using System.Threading;
 namespace forudpwithCB
 {
-    public class UDPWithCallback
+    public class UdpWithCallback
     {   
         private UdpClient udpForSend; //送信用クライアント
         private string remoteHost = "localhost";//送信先のIPアドレス
@@ -26,7 +26,7 @@ namespace forudpwithCB
         private bool callback = false;
 
         // public static UDP instance;
-        public UDPWithCallback()
+        public UdpWithCallback()
         //コンストラクタ(初期化用、インストラクタを生成したときに最初に実行される)
         {
         }

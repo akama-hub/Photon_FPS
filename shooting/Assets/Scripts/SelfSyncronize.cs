@@ -31,7 +31,7 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
     public bool m_SynchronizeScale = false;
 
     private forudp.UDP commUDPisMine = new forudp.UDP();
-    private forudp.UDP commUDPnotMine = new forudpwithCB.UDP();
+    private forudpwithCB.UdpWithCallback commUDPnotMine = new forudpwithCB.UdpWithCallback();
 
     private bool callback = false;
 
@@ -44,6 +44,13 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
     private float pos_x, pos_y, pos_z;
     private Vector3 delayedPosition;
 
+    private Vector3 m_Vel;
+    private Vector3 m_StoredVel;
+    private Vector3 m_Accel;
+    private Vector3 m_StoredAccel;
+
+    private Vector3 pos;
+
     private float lag;
     private float processingDelay = 0.02f;
 
@@ -52,10 +59,14 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
 
     bool m_firstTake = false;
 
-    private Vector3 m_Vel;
     private float elapsedTime;
-
     private bool isPositionUpdate = false;
+
+    private float normV;
+    private Vector3 crossV;
+    private float normcrossV; 
+    private float k;
+    private Vector3 alpha;
 
     public void Awake()
     {
@@ -122,20 +133,72 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
                 string[] position = commUDPnotMine.rcvMsg.Split(',');
                 // Debug.Log(commUDP.rcvMsg);
 
-                pos_x = float.Parse(position[0]);
-                pos_y = float.Parse(position[1]);
-                pos_z = float.Parse(position[2]);
-
-                Vector3 pos = new Vector3 (pos_x, pos_y, pos_z);
+                action = float.Parse(position[0]);
+                change_second = float.Parse(position[1]);
 
                 if(this.isPositionUpdate)
                 {
-                    tr.position = Vector3.LerpUnclamped(delayedPosition, pos, 1);
+                    if(this.m_Accel == Vector3.zero)
+                    {
+                        pos = delayedPosition + this.m_Vel * change_second;
+                    }
+                    else if(this.m_Accel == this.m_StoredAccel)
+                    {
+                        pos = delayedPosition + this.m_Vel * lag + (this.m_Accel * Mathf.Pow(lag, 2) / 2);
+                    }
+                    else
+                    {
+                        normV = this.m_Vel.magnitude;
+                        crossV =  Vector3.Cross(this.m_Vel, this.m_Accel);
+                        normcrossV = crossV.magnitude; 
+                        k = normcrossV / Mathf.Pow(normV, 3);
+                        if(k == 0f)
+                        {
+                            pos = delayedPosition + this.m_Vel * lag + (this.m_Accel * Mathf.Pow(lag, 2)/ 2);
+                        }
+                        else
+                        {
+                            alpha = k * Mathf.Pow(normV, 2) * this.m_Vel / normV;
+
+                            pos = delayedPosition + this.m_Vel * lag + (alpha * Mathf.Pow(lag, 2) / 2);
+                        }
+                    }
+                    
+                    tr.position = Vector3.LerpUnclamped(delayedPosition, pos, 1); 
                     this.isPositionUpdate = false;
+
                 }
                 else
                 {
-                    tr.position = Vector3.LerpUnclamped(tr.position, pos, 1);
+                    if(this.m_Accel == Vector3.zero)
+                    {
+                        pos = tr.position + this.m_Vel / PhotonNetwork.SerializationRate;
+                    }
+                    else if(this.m_Accel == this.m_StoredAccel)
+                    {
+                        pos = tr.position + this.m_Vel / PhotonNetwork.SerializationRate + (this.m_Accel * Mathf.Pow(1 / PhotonNetwork.SerializationRate, 2) / 2);
+                    }
+                    else
+                    {
+                        normV = this.m_Vel.magnitude;
+                        crossV =  Vector3.Cross(this.m_Vel, this.m_Accel);
+                        normcrossV = crossV.magnitude; 
+                        k = normcrossV / Mathf.Pow(normV, 3);
+                        if(k == 0f)
+                        {
+                            pos = tr.position + this.m_Vel / PhotonNetwork.SerializationRate + (this.m_Accel * Mathf.Pow(1 / PhotonNetwork.SerializationRate, 2) / 2);
+                        }
+                        else
+                        {
+                            alpha = k * Mathf.Pow(normV, 2) * this.m_Vel / normV;
+
+                            pos = tr.position + this.m_Vel / PhotonNetwork.SerializationRate + (alpha * Mathf.Pow(1 / PhotonNetwork.SerializationRate, 2) / 2);
+                        }
+                    }
+
+                    // Debug.Log(pos);
+                    tr.position = Vector3.LerpUnclamped(tr.position, pos, 1); 
+                    // Debug.Log(tr.position);
                 }
 
                 callback = false;
