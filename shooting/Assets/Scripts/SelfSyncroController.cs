@@ -39,7 +39,7 @@ public class SelfSyncroController : MonoBehaviourPunCallbacks
     void Start()
     {
         if(photonView.IsMine){
-            Application.targetFrameRate = 30; // 30fpsに設定
+            // Application.targetFrameRate = 30; // 30fpsに設定
 
             // commUDP.init(int型の送信用ポート番号, int型の送信先ポート番号, int型の受信用ポート番号);
             // commUDP.init(50032, 50030, 50031);
@@ -91,7 +91,7 @@ public class SelfSyncroController : MonoBehaviourPunCallbacks
             // curb moovment 加速あり
             else if(motion == "curb"){
                 if(isRight){
-                    // 2
+                    // 4
                     if(isBack){
                         if(this.rigidbody.velocity.z <= 0){
                             z = 1/Mathf.Sqrt(2);
@@ -116,7 +116,7 @@ public class SelfSyncroController : MonoBehaviourPunCallbacks
                             noX = true;
                         }
                     }
-                    // 1
+                    // 0
                     else if(noZ){
                         if(this.rigidbody.velocity.z < 0){
                             x = this.rigidbody.velocity.x + LinearAccel;
@@ -142,7 +142,7 @@ public class SelfSyncroController : MonoBehaviourPunCallbacks
                             isBack = true;
                         }
                     }
-                    // 8
+                    // 7
                     else{
                         if(this.rigidbody.velocity.x == 0){
                             x = 1/Mathf.Sqrt(2);
@@ -168,7 +168,7 @@ public class SelfSyncroController : MonoBehaviourPunCallbacks
                     }
                 }
                 else if(noX){
-                    //3
+                    // 2
                     if(isBack){
                         if(this.rigidbody.velocity.x > 0){
                             x = 0;
@@ -185,7 +185,7 @@ public class SelfSyncroController : MonoBehaviourPunCallbacks
                             isBack = true;
                         }
                     }
-                    // 7
+                    // 5
                     else{
                         if(this.rigidbody.velocity.x < 0){
                             x = 0;
@@ -210,7 +210,7 @@ public class SelfSyncroController : MonoBehaviourPunCallbacks
                     }
                 }
                 else{
-                    // 5
+                    // 3
                     if(noZ){
                         if(this.rigidbody.velocity.z > 0){
                             z = 0;
@@ -228,7 +228,7 @@ public class SelfSyncroController : MonoBehaviourPunCallbacks
                             isRight = false;
                         }
                     }
-                    // 4
+                    // 6
                     else if(isBack){
                         if(this.rigidbody.velocity.x == 0){
                             x = 1/Mathf.Sqrt(2);
@@ -253,7 +253,7 @@ public class SelfSyncroController : MonoBehaviourPunCallbacks
                             isBack = false;
                         }
                     }
-                    // 6
+                    // 1
                     else{
                         if(this.rigidbody.velocity.z == 0){
                             z = -1/Mathf.Sqrt(2);

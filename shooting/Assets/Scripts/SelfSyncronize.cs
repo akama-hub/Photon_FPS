@@ -72,11 +72,15 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
     private float change_second;
     private string data;
 
+    private float distance;
+    private Ray ray;
+    private RaycastHit hit;
+
     public void Awake()
     {
         Application.targetFrameRate = 30; // 30fpsに設定
-        PhotonNetwork.SendRate = 120; // メッセージの送信頻度(回/s)
-        PhotonNetwork.SerializationRate = 90; // OnPhotonSerializeView()を一秒間に何度呼ぶか
+        PhotonNetwork.SendRate = 60; // メッセージの送信頻度(回/s)
+        PhotonNetwork.SerializationRate = 30; // OnPhotonSerializeView()を一秒間に何度呼ぶか
 
         m_StoredPosition = transform.localPosition;
         m_NetworkPosition = Vector3.zero;
@@ -87,7 +91,6 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
     void Start()
     {
         rb = this.GetComponent<Rigidbody>();
-
         if(photonView.IsMine){
             // commUDP.init(int型の送信用ポート番号, int型の送信先ポート番号, int型の受信用ポート番号);
             commUDPisMine.init(50023, 50020, 50024);
@@ -121,6 +124,52 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
 
             milSec = dt.Millisecond / 1000f;
             nowTime = (dt.Minute * 60) + dt.Second + milSec;
+            
+            if(m_Vel.x > 0){
+                if(m_Vel.z == 0){
+                    // Rayの作成
+                    ray = new Ray(transform.position, Vector3.right);
+                }
+                else if (m_Vel.z > 0){
+                    ray = new Ray(transform.position, new Vector3 (1, 0, 1));
+                }
+                else{
+                    ray = new Ray(transform.position, new Vector3 (1, 0, -1));
+                }
+                
+            }
+            else if(m_Vel.x == 0){
+                if(m_Vel.z > 0){
+                    ray = new Ray(transform.position, new Vector3 (0, 0, 1));
+                }
+                else if (m_Vel.z < 0){
+                    ray = new Ray(transform.position, new Vector3 (0, 0, -1));
+                }
+                else{
+                    ray = new Ray(transform.position, new Vector3 (1, 0, 0));
+                }
+            }
+            else{
+                if(m_Vel.z == 0){
+                    // Rayの作成
+                    ray = new Ray(transform.position, Vector3.left);
+                }
+                else if (m_Vel.z > 0){
+                    ray = new Ray(transform.position, new Vector3 (-1, 0, 1));
+                }
+                else{
+                    ray = new Ray(transform.position, new Vector3 (-1, 0, -1));
+                }
+            }
+            // Debug.DrawRay(ray.origin, ray.direction * 10, Color.red, 5, false);
+
+            if (Physics.Raycast(ray, out hit)) // もしRayを投射して何らかのコライダーに衝突したら
+            {
+                // string name = hit.collider.gameObject.name; // 衝突した相手オブジェクトの名前を取得
+                distance = hit.distance;
+                // Debug.Log(name); // コンソールに表示
+                // Debug.Log(distance);
+            }
 
             string position_x = delayedPosition.x.ToString("F6");
             string position_y = delayedPosition.y.ToString("F6");
@@ -131,14 +180,15 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
             string velocity_y = this.m_Vel.y.ToString("F6");
             string velocity_z = this.m_Vel.z.ToString("F6");
             string lagging = this.lag.ToString("F6");
+            string targetDisttance = distance.ToString("F6");
             
             // string data = "D" + "," + time + "," + position_x + "," + position_y + "," + position_z + "," + velocity_x + "," + velocity_y + "," + velocity_z + "," + lagging;
             if(isPositionUpdate){
-                data = "D" + "," + time + "," + position_x + "," + position_y + "," + position_z + "," + velocity_x + "," + velocity_y + "," + velocity_z + "," + lagging + "," + "true";
+                data = "D" + "," + time + "," + position_x + "," + position_y + "," + position_z + "," + velocity_x + "," + velocity_y + "," + velocity_z + "," + lagging + "," + targetDisttance + "," + "true";
             }
             else
             {
-                data = "D" + "," + time + "," + position_x + "," + position_y + "," + position_z + "," + velocity_x + "," + velocity_y + "," + velocity_z + "," + lagging + "," + "false";
+                data = "D" + "," + time + "," + position_x + "," + position_y + "," + position_z + "," + velocity_x + "," + velocity_y + "," + velocity_z + "," + lagging + "," + targetDisttance + "," + "false";
             }
             
             commUDPnotMine.send(data);

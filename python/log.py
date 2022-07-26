@@ -31,15 +31,13 @@ if __name__ == '__main__' :
     # os.makedirs(log_dir, exist_ok=True)
     # evaluate_dir = f"evaluate/EvaluateDiffLog/Fixed30FPS/Lag{args.latency}/{args.motion}/{args.scheme}"
     # os.makedirs(evaluate_dir, exist_ok=True)
-    train_dir = f'train_data/Fixed30FPS/Lag{args.latency}/{args.motion}'
+    train_dir = f'train_data/Fixed30FPS_SendRate60/Lag{args.latency}/{args.motion}'
     os.makedirs(train_dir, exist_ok=True)
     
 
     # log_date = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
     # windowsでは:をファイル名につけてはいけない？？
     log_date = datetime.now().strftime("%m%d_%H%M")
-    # # log_dir = f'/mnt/HDD/akama/Unity/movement_data/accel/ohuku'
-    # log_dir = f'/mnt/HDD/akama/Unity/movement_data/accel/zigzag'
 
     M_SIZE = 1024
     host = '127.0.0.1' 
@@ -99,20 +97,10 @@ if __name__ == '__main__' :
             # print("unity now: ", send_time)
             # print("time to Send Python from Unity: ", nowTime - float(send_time))
 
-            # with open(f"{log_dir}/{turminal}_0_{log_date}" + ".csv", 'a') as f:
-            # with open(f"{log_dir}/{turminal}_{log_date}.csv", 'a') as f:
-            
-            if turminal == "Real":
-                # with open(f'{evaluate_dir}/{turminal}_log.csv', 'a') as f:
-                with open(f'{train_dir}/{turminal}_log.csv', 'a') as f:
-                    writer = csv.writer(f, lineterminator='\n')
-                    writer.writerow([float(data) for data in rcv_data])
-            else:
-                # with open(f'{evaluate_dir}/{turminal}_log.csv', 'a') as f:
-                with open(f'{train_dir}/{turminal}_log.csv', 'a') as f:
-                    writer = csv.writer(f, lineterminator='\n')
-                    # writer.writerow([float(rcv_data[i]) for i in range(1, len(rcv_data))])
-                    writer.writerow(rcv_data)
+            with open(f'{train_dir}/{turminal}_log.csv', 'a') as f:
+                writer = csv.writer(f, lineterminator='\n')
+                # writer.writerow([float(rcv_data[i]) for i in range(1, len(rcv_data))])
+                writer.writerow(rcv_data)
     
         except KeyboardInterrupt:
             print ('\n . . .\n')

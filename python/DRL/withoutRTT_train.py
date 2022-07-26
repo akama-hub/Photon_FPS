@@ -1,5 +1,6 @@
 from __future__ import print_function
 import argparse
+from turtle import distance
 
 import numpy as np
 from numpy.lib.function_base import diff
@@ -84,7 +85,8 @@ def main():
     # Set a random seed used in PFRL.
     utils.set_random_seed(0)
 
-    n_dim_obs = 20
+    # n_dim_obs = 20
+    n_dim_obs = 21
     n_actions = 9
     n_frames = 10
     n_atoms = 51
@@ -198,6 +200,7 @@ def main():
     player_positions = {}
     player_velocity = {}
     player_keys = []
+    distance = {}
 
     # with open(f'/mnt/HDD/Photon_FPS/Log/Lag0/{motion}/{player_log}') as f:
     # with open(f'../evaluate/EvaluateDiffLog/LagNone/{motion}/train/delayed_log_train.csv') as f:
@@ -216,10 +219,11 @@ def main():
             row[1] = float(row[1])
             for k in range(2, 7):
                 row[k] = float(row[k])
-            if row[9] == "true":
+            if row[10] == "true":
                 player_positions[row[1]] = [row[2], row[3], row[4]]
                 player_velocity[row[1]] = [row[5], row[6], row[7]]
                 # time, x, z, y
+                distance[row[1]] = float(row[9])
                 player_keys.append(row[1])
 
     action = 0
@@ -270,7 +274,7 @@ def main():
             if player_keys.index(key) < 8:
                 continue
             else:
-                obs = [last_time[0], last_position_x[0], last_position_y[0], last_velocity_x[0], last_velocity_y[0], last_time[1], last_position_x[1], last_position_y[1], last_velocity_x[1], last_velocity_y[1], last_time[2], last_position_x[2], last_position_y[2], last_velocity_x[2], last_velocity_y[2], last_time[3], last_position_x[3], last_position_y[3], last_velocity_x[3], last_velocity_y[3]]
+                obs = [last_time[0], last_position_x[0], last_position_y[0], last_velocity_x[0], last_velocity_y[0], last_time[1], last_position_x[1], last_position_y[1], last_velocity_x[1], last_velocity_y[1], last_time[2], last_position_x[2], last_position_y[2], last_velocity_x[2], last_velocity_y[2], last_time[3], last_position_x[3], last_position_y[3], last_velocity_x[3], last_velocity_y[3], distance[key]]
 
                 action = act_agent.act(obs)
                 n_frames_change = change_agent.act(obs)
@@ -315,10 +319,10 @@ def main():
                     else:
                         change_reward = 0
                 else:
-                    max_R_change += 3
+                    max_R_change += 10
                     max_change2 += 1
                     if actual_change_frame == n_frames_change:
-                        change_reward = 3
+                        change_reward = 10
                         change2 += 1
                     else:
                         change_reward = 0

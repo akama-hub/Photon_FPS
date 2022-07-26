@@ -8,6 +8,10 @@ TagManager:
   - Bullet
   - Observer
   - Estimate
+  - Wall_R
+  - Wall_L
+  - Wall_U
+  - Wall_D
   layers:
   - Default
   - TransparentFX
