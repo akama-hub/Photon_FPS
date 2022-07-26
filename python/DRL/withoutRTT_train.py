@@ -68,15 +68,15 @@ def get_action_num(x, y):
 
 def main():
     motions = ["ohuku", "curb", "zigzag", "ohukuRandom"]
-    # motion = motions[0]
-    motion = motions[1]
+    motion = motions[0]
+    # motion = motions[1]
     # motion = motions[2]
     # motion = motions[3]
 
     delay = 0.15
 
     log_date = datetime.now().strftime("%Y%m%d-%H:%M:%S")
-    log_dir = f'/mnt/HDD/Photon_FPS/DRLModels/{motion}/{log_date}_different_send'
+    log_dir = f'/mnt/HDD/Photon_FPS/DRLModels/{motion}/{log_date}_SendRate60'
 
     os.makedirs(log_dir, exist_ok=True)
 
@@ -186,7 +186,7 @@ def main():
 
     # with open(f'/mnt/HDD/Photon_FPS/Log/Lag0/{motion}/{cpu_log}') as f:
     # with open(f'../evaluate/EvaluateDiffLog/LagNone/{motion}/train/real_log_train.csv') as f:
-    with open(f'../train_data/Fixed30FPS/Lag25/{motion}/Real_log.csv') as f:
+    with open(f'../train_data/Fixed30FPS_SendRate60/Lag25/{motion}/Real_log.csv') as f:
         reader = csv.reader(f)
         for row in reader:
             row[0] = float(row[0])
@@ -213,7 +213,8 @@ def main():
             # cpu_velocity[row[0]] = [row[4], row[5], row[6]]
             # # time, x, z, y
             # cpu_keys.append(row[0])
-    with open(f'../train_data/Fixed30FPS/Lag25/{motion}/Delayed_log.csv') as f:
+    # with open(f'../train_data/Fixed30FPS/Lag25/{motion}/Delayed_log.csv') as f:
+    with open(f'../train_data/Fixed30FPS_SendRate60/Lag25/{motion}/Delayed_log.csv') as f:
         reader = csv.reader(f)
         for row in reader:
             row[1] = float(row[1])
