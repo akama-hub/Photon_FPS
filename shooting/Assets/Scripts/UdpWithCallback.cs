@@ -13,6 +13,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System;
 namespace forudpwithCB
 {
     public class UdpWithCallback
@@ -23,7 +24,10 @@ namespace forudpwithCB
         private UdpClient udpForReceive; //受信用クライアント
         public string rcvMsg = "ini";//受信メッセージ格納用
         private System.Threading.Thread rcvThread; //受信用スレッド
-        private bool callback = false;
+        // private bool callback = false;
+        private float rcvTime = 0.0f;
+        private DateTime dt;
+        private float milSec;
 
         // public static UDP instance;
         public UdpWithCallback()
@@ -31,8 +35,9 @@ namespace forudpwithCB
         {
         }
         
-        public bool init(int port_snd, int port_to, int port_rcv, bool cb)
+        // public bool init(int port_snd, int port_to, int port_rcv, bool cb)
         //UDP設定（送受信用ポートを開きつつ受信用スレッドを生成）
+        public bool init(int port_snd, int port_to, int port_rcv, float rcv_time)
         {
             try
             {
@@ -44,7 +49,8 @@ namespace forudpwithCB
                 //受信用ポート
                 rcvThread = new System.Threading.Thread(new System.Threading.ThreadStart(receive)); 
                 //受信スレッド生成
-                callback = cb;
+                // callback = cb;
+                rcvTime = rcv_time;
                 return true;
             }
             catch
@@ -74,7 +80,10 @@ namespace forudpwithCB
                 {
                     byte[] rcvBytes = udpForReceive.Receive(ref remoteEP);
                     Interlocked.Exchange(ref rcvMsg, Encoding.ASCII.GetString(rcvBytes));
-                    callback = true;
+                    // callback = true;
+                    dt = DateTime.Now;
+                    milSec = dt.Millisecond / 1000f;
+                    rcvTime = (dt.Minute * 60) + dt.Second + milSec;
                 }
                 catch { }
             }

@@ -33,11 +33,14 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
     private forudp.UDP commUDPisMine = new forudp.UDP();
     private forudpwithCB.UdpWithCallback commUDPnotMine = new forudpwithCB.UdpWithCallback();
 
-    private bool callback = false;
+    // private bool callback = false;
+    private float rcvTime = 0.0f;
 
     private DateTime dt;
     private float nowTime;
     private float milSec;
+
+    private float delayedTime;
     
     private Rigidbody rb;
 
@@ -76,6 +79,8 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
     private Ray ray;
     private RaycastHit hit;
 
+    private string position_x, position_y, position_z ,time, velocity_x, velocity_y ,velocity_z ,lagging ,targetDistance;
+
     public void Awake()
     {
         Application.targetFrameRate = 30; // 30fpsに設定
@@ -97,7 +102,7 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
         }
         else{
             // commUDP.init(int型の送信用ポート番号, int型の送信先ポート番号, int型の受信用ポート番号);
-            commUDPnotMine.init(50025, 50026, 50021, callback);
+            commUDPnotMine.init(50025, 50026, 50021, rcvTime);
             //UDP受信開始
             commUDPnotMine.start_receive();
         }
@@ -120,153 +125,20 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
 
         if (!this.photonView.IsMine)
         {
-            dt = DateTime.Now;
-
-            milSec = dt.Millisecond / 1000f;
-            nowTime = (dt.Minute * 60) + dt.Second + milSec;
-            
-            if(m_Vel.x > 0){
-                if(m_Vel.z == 0){
-                    // Rayの作成
-                    ray = new Ray(transform.position, Vector3.right);
-                }
-                else if (m_Vel.z > 0){
-                    ray = new Ray(transform.position, new Vector3 (1, 0, 1));
-                }
-                else{
-                    ray = new Ray(transform.position, new Vector3 (1, 0, -1));
-                }
-                
-            }
-            else if(m_Vel.x == 0){
-                if(m_Vel.z > 0){
-                    ray = new Ray(transform.position, new Vector3 (0, 0, 1));
-                }
-                else if (m_Vel.z < 0){
-                    ray = new Ray(transform.position, new Vector3 (0, 0, -1));
-                }
-                else{
-                    ray = new Ray(transform.position, new Vector3 (1, 0, 0));
-                }
-            }
-            else{
-                if(m_Vel.z == 0){
-                    // Rayの作成
-                    ray = new Ray(transform.position, Vector3.left);
-                }
-                else if (m_Vel.z > 0){
-                    ray = new Ray(transform.position, new Vector3 (-1, 0, 1));
-                }
-                else{
-                    ray = new Ray(transform.position, new Vector3 (-1, 0, -1));
-                }
-            }
-            // Debug.DrawRay(ray.origin, ray.direction * 10, Color.red, 5, false);
-
-            if (Physics.Raycast(ray, out hit)) // もしRayを投射して何らかのコライダーに衝突したら
-            {
-                // string name = hit.collider.gameObject.name; // 衝突した相手オブジェクトの名前を取得
-                distance = hit.distance;
-                // Debug.Log(name); // コンソールに表示
-                // Debug.Log(distance);
-            }
-
-            string position_x = delayedPosition.x.ToString("F6");
-            string position_y = delayedPosition.y.ToString("F6");
-            string position_z = delayedPosition.z.ToString("F6");
-            string time = nowTime.ToString("F4");
-
-            string velocity_x = this.m_Vel.x.ToString("F6");
-            string velocity_y = this.m_Vel.y.ToString("F6");
-            string velocity_z = this.m_Vel.z.ToString("F6");
-            string lagging = this.lag.ToString("F6");
-            string targetDisttance = distance.ToString("F6");
-            
-            // string data = "D" + "," + time + "," + position_x + "," + position_y + "," + position_z + "," + velocity_x + "," + velocity_y + "," + velocity_z + "," + lagging;
-            if(isPositionUpdate){
-                data = "D" + "," + time + "," + position_x + "," + position_y + "," + position_z + "," + velocity_x + "," + velocity_y + "," + velocity_z + "," + lagging + "," + targetDisttance + "," + "true";
-            }
-            else
-            {
-                data = "D" + "," + time + "," + position_x + "," + position_y + "," + position_z + "," + velocity_x + "," + velocity_y + "," + velocity_z + "," + lagging + "," + targetDisttance + "," + "false";
-            }
-            
-            commUDPnotMine.send(data);
-
-            if(callback)
+            Debug.Log(rcvTime);
+            if(rcvTime > delayedTime)
             {
                 string[] position = commUDPnotMine.rcvMsg.Split(',');
                 // Debug.Log(commUDP.rcvMsg);
 
-                action = int.Parse(position[0]);
-                change_second = float.Parse(position[1]);
+                pos_x = float.Parse(position[0]);
+                pos_y = float.Parse(position[1]);
+                pos_z = float.Parse(position[2]);
 
-                if(this.isPositionUpdate)
-                {
-                    if(this.m_Accel == Vector3.zero)
-                    {
-                        pos = delayedPosition + this.m_Vel * change_second;
-                    }
-                    else if(this.m_Accel == this.m_StoredAccel)
-                    {
-                        pos = delayedPosition + this.m_Vel * lag + (this.m_Accel * Mathf.Pow(lag, 2) / 2);
-                    }
-                    else
-                    {
-                        normV = this.m_Vel.magnitude;
-                        crossV =  Vector3.Cross(this.m_Vel, this.m_Accel);
-                        normcrossV = crossV.magnitude; 
-                        k = normcrossV / Mathf.Pow(normV, 3);
-                        if(k == 0f)
-                        {
-                            pos = delayedPosition + this.m_Vel * lag + (this.m_Accel * Mathf.Pow(lag, 2)/ 2);
-                        }
-                        else
-                        {
-                            alpha = k * Mathf.Pow(normV, 2) * this.m_Vel / normV;
-
-                            pos = delayedPosition + this.m_Vel * lag + (alpha * Mathf.Pow(lag, 2) / 2);
-                        }
-                    }
-                    
-                    tr.position = Vector3.LerpUnclamped(delayedPosition, pos, 1); 
-                    this.isPositionUpdate = false;
-
-                }
-                else
-                {
-                    if(this.m_Accel == Vector3.zero)
-                    {
-                        pos = tr.position + this.m_Vel / PhotonNetwork.SerializationRate;
-                    }
-                    else if(this.m_Accel == this.m_StoredAccel)
-                    {
-                        pos = tr.position + this.m_Vel / PhotonNetwork.SerializationRate + (this.m_Accel * Mathf.Pow(1 / PhotonNetwork.SerializationRate, 2) / 2);
-                    }
-                    else
-                    {
-                        normV = this.m_Vel.magnitude;
-                        crossV =  Vector3.Cross(this.m_Vel, this.m_Accel);
-                        normcrossV = crossV.magnitude; 
-                        k = normcrossV / Mathf.Pow(normV, 3);
-                        if(k == 0f)
-                        {
-                            pos = tr.position + this.m_Vel / PhotonNetwork.SerializationRate + (this.m_Accel * Mathf.Pow(1 / PhotonNetwork.SerializationRate, 2) / 2);
-                        }
-                        else
-                        {
-                            alpha = k * Mathf.Pow(normV, 2) * this.m_Vel / normV;
-
-                            pos = tr.position + this.m_Vel / PhotonNetwork.SerializationRate + (alpha * Mathf.Pow(1 / PhotonNetwork.SerializationRate, 2) / 2);
-                        }
-                    }
-
-                    // Debug.Log(pos);
-                    tr.position = Vector3.LerpUnclamped(tr.position, pos, 1); 
-                    // Debug.Log(tr.position);
-                }
-
-                callback = false;
+                Vector3 pos = new Vector3 (pos_x, pos_y, pos_z);
+                tr.position = Vector3.LerpUnclamped(tr.position, pos, 1); 
+                this.isPositionUpdate = false;
+                // callback = false;
             }
             else
             {
@@ -363,16 +235,16 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
             milSec = dt.Millisecond / 1000f;
             nowTime = (dt.Minute * 60) + dt.Second + milSec;
 
-            string position_x = tr.position.x.ToString("00.000000");
-            string position_y = tr.position.y.ToString("00.000000");
-            string position_z = tr.position.z.ToString("00.000000");
-            string time = nowTime.ToString("F4");
+            position_x = tr.position.x.ToString("00.000000");
+            position_y = tr.position.y.ToString("00.000000");
+            position_z = tr.position.z.ToString("00.000000");
+            time = nowTime.ToString("F4");
 
-            string velocity_x = rb.velocity.x.ToString("00.000000");
-            string velocity_y = rb.velocity.y.ToString("00.000000");
-            string velocity_z = rb.velocity.z.ToString("00.000000");
+            velocity_x = rb.velocity.x.ToString("00.000000");
+            velocity_y = rb.velocity.y.ToString("00.000000");
+            velocity_z = rb.velocity.z.ToString("00.000000");
             // Debug.Log(Time.time);
-            string data = time + "," + position_x + "," + position_y + "," + position_z + "," + velocity_x + "," + velocity_y + "," + velocity_z;
+            data = time + "," + position_x + "," + position_y + "," + position_z + "," + velocity_x + "," + velocity_y + "," + velocity_z;
 
             commUDPisMine.send(data);
 
@@ -473,6 +345,71 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
                     {
                         this.m_Distance = Vector3.Distance(tr.position, this.m_NetworkPosition);
                     }
+
+                    dt = DateTime.Now;
+                    milSec = dt.Millisecond / 1000f;
+                    delayedTime = (dt.Minute * 60) + dt.Second + milSec;
+                    
+                    if(m_Vel.x > 0){
+                        if(m_Vel.z == 0){
+                            // Rayの作成
+                            ray = new Ray(transform.position, Vector3.right);
+                        }
+                        else if (m_Vel.z > 0){
+                            ray = new Ray(transform.position, new Vector3 (1, 0, 1));
+                        }
+                        else{
+                            ray = new Ray(transform.position, new Vector3 (1, 0, -1));
+                        }
+                        
+                    }
+                    else if(m_Vel.x == 0){
+                        if(m_Vel.z > 0){
+                            ray = new Ray(transform.position, new Vector3 (0, 0, 1));
+                        }
+                        else if (m_Vel.z < 0){
+                            ray = new Ray(transform.position, new Vector3 (0, 0, -1));
+                        }
+                        else{
+                            ray = new Ray(transform.position, new Vector3 (1, 0, 0));
+                        }
+                    }
+                    else{
+                        if(m_Vel.z == 0){
+                            // Rayの作成
+                            ray = new Ray(transform.position, Vector3.left);
+                        }
+                        else if (m_Vel.z > 0){
+                            ray = new Ray(transform.position, new Vector3 (-1, 0, 1));
+                        }
+                        else{
+                            ray = new Ray(transform.position, new Vector3 (-1, 0, -1));
+                        }
+                    }
+                    // Debug.DrawRay(ray.origin, ray.direction * 10, Color.red, 5, false);
+
+                    if (Physics.Raycast(ray, out hit)) // もしRayを投射して何らかのコライダーに衝突したら
+                    {
+                        // string name = hit.collider.gameObject.name; // 衝突した相手オブジェクトの名前を取得
+                        distance = hit.distance;
+                        // Debug.Log(name); // コンソールに表示
+                        // Debug.Log(distance);
+                    }
+
+                    position_x = delayedPosition.x.ToString("F6");
+                    position_y = delayedPosition.y.ToString("F6");
+                    position_z = delayedPosition.z.ToString("F6");
+                    time = delayedTime.ToString("F4");
+
+                    velocity_x = this.m_Vel.x.ToString("F6");
+                    velocity_y = this.m_Vel.y.ToString("F6");
+                    velocity_z = this.m_Vel.z.ToString("F6");
+                    lagging = this.lag.ToString("F6");
+                    targetDistance = distance.ToString("F6");
+
+                    data = "D" + "," + time + "," + position_x + "," + position_y + "," + position_z + "," + velocity_x + "," + velocity_y + "," + velocity_z + "," + lagging + "," + targetDistance + "," + "true";
+
+                    commUDPnotMine.send(data);
                 }
 
             }
