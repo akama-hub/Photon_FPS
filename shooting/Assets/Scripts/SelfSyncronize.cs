@@ -34,7 +34,6 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
     private forudpwithCB.UdpWithCallback commUDPnotMine = new forudpwithCB.UdpWithCallback();
 
     // private bool callback = false;
-    private float rcvTime = 0.0f;
 
     private DateTime dt;
     private float nowTime;
@@ -81,6 +80,8 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
 
     private string position_x, position_y, position_z ,time, velocity_x, velocity_y ,velocity_z ,lagging ,targetDistance;
 
+    private float sendTime, recieveTime, Rtt;
+
     public void Awake()
     {
         Application.targetFrameRate = 30; // 30fpsに設定
@@ -102,7 +103,7 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
         }
         else{
             // commUDP.init(int型の送信用ポート番号, int型の送信先ポート番号, int型の受信用ポート番号);
-            commUDPnotMine.init(50025, 50026, 50021, rcvTime);
+            commUDPnotMine.init(50025, 50026, 50021);
             //UDP受信開始
             commUDPnotMine.start_receive();
         }
@@ -125,8 +126,8 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
 
         if (!this.photonView.IsMine)
         {
-            Debug.Log(rcvTime);
-            if(rcvTime > delayedTime)
+            // Debug.Log(commUDPnotMine.rcvTime.ToString("F6") + ", " + delayedTime.ToString("F6"));
+            if(commUDPnotMine.rcvTime > delayedTime)
             {
                 string[] position = commUDPnotMine.rcvMsg.Split(',');
                 // Debug.Log(commUDP.rcvMsg);
@@ -225,7 +226,7 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
             // data = "P" + "t" + time + "x" + position_x + "y" + position_y + "z" + position_z;
             data = "P" + "," + time + "," + position_x + "," + position_y + "," + position_z + "," + pos_x + "," + pos_y + "," + pos_z;
 
-            // commUDPnotMine.send(data);
+            commUDPnotMine.send(data);
 
         }
         else
@@ -240,11 +241,12 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
             position_z = tr.position.z.ToString("00.000000");
             time = nowTime.ToString("F4");
 
-            velocity_x = rb.velocity.x.ToString("00.000000");
-            velocity_y = rb.velocity.y.ToString("00.000000");
-            velocity_z = rb.velocity.z.ToString("00.000000");
+            // velocity_x = rb.velocity.x.ToString("00.000000");
+            // velocity_y = rb.velocity.y.ToString("00.000000");
+            // velocity_z = rb.velocity.z.ToString("00.000000");
             // Debug.Log(Time.time);
-            data = time + "," + position_x + "," + position_y + "," + position_z + "," + velocity_x + "," + velocity_y + "," + velocity_z;
+            // data = time + "," + position_x + "," + position_y + "," + position_z + "," + velocity_x + "," + velocity_y + "," + velocity_z;
+            data = time + "," + position_x + "," + position_y + "," + position_z;
 
             commUDPisMine.send(data);
 
@@ -284,10 +286,15 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
                     this.m_Vel = (this.m_StoredPosition1 - this.m_StoredPosition2) / elapsedTime;
                     this.m_Accel = (this.m_Vel - this.m_StoredVel) / elapsedTime;
 
+                    dt = DateTime.Now;
+                    milSec = dt.Millisecond / 1000f;
+                    this.sendTime = (dt.Minute * 60) + dt.Second + milSec;
+
                     stream.SendNext(tr.position);
                     stream.SendNext(this.m_Direction);
                     stream.SendNext(this.m_Vel);
                     stream.SendNext(this.m_Accel);
+                    stream.SendNext(this.sendTime);
 
                     elapsedTime = 0f;
                 }
@@ -319,6 +326,7 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
                 this.m_Direction = (Vector3)stream.ReceiveNext();
                 this.m_Vel = (Vector3)stream.ReceiveNext();
                 this.m_Accel = (Vector3)stream.ReceiveNext();
+                this.sendTime = (float)stream.ReceiveNext();
 
                 this.isPositionUpdate = true;
 
@@ -349,6 +357,8 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
                     dt = DateTime.Now;
                     milSec = dt.Millisecond / 1000f;
                     delayedTime = (dt.Minute * 60) + dt.Second + milSec;
+
+                    this.Rtt = delayedTime - this.sendTime;
                     
                     if(m_Vel.x > 0){
                         if(m_Vel.z == 0){
@@ -407,7 +417,7 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
                     lagging = this.lag.ToString("F6");
                     targetDistance = distance.ToString("F6");
 
-                    data = "D" + "," + time + "," + position_x + "," + position_y + "," + position_z + "," + velocity_x + "," + velocity_y + "," + velocity_z + "," + lagging + "," + targetDistance + "," + "true";
+                    data = "D" + "," + time + "," + position_x + "," + position_y + "," + position_z + "," + velocity_x + "," + velocity_y + "," + velocity_z + "," + lagging + "," + targetDistance + "," + Rtt.ToString("F6") + "," + commUDPnotMine.rcvTime.ToString("F6") + "," + "true";
 
                     commUDPnotMine.send(data);
                 }

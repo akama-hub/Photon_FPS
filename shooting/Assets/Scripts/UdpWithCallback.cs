@@ -25,7 +25,7 @@ namespace forudpwithCB
         public string rcvMsg = "ini";//受信メッセージ格納用
         private System.Threading.Thread rcvThread; //受信用スレッド
         // private bool callback = false;
-        private float rcvTime = 0.0f;
+        public float rcvTime;
         private DateTime dt;
         private float milSec;
 
@@ -37,7 +37,7 @@ namespace forudpwithCB
         
         // public bool init(int port_snd, int port_to, int port_rcv, bool cb)
         //UDP設定（送受信用ポートを開きつつ受信用スレッドを生成）
-        public bool init(int port_snd, int port_to, int port_rcv, float rcv_time)
+        public bool init(int port_snd, int port_to, int port_rcv)
         {
             try
             {
@@ -50,7 +50,6 @@ namespace forudpwithCB
                 rcvThread = new System.Threading.Thread(new System.Threading.ThreadStart(receive)); 
                 //受信スレッド生成
                 // callback = cb;
-                rcvTime = rcv_time;
                 return true;
             }
             catch

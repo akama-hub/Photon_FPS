@@ -97,8 +97,14 @@ if __name__ == '__main__' :
             # print("unity now: ", send_time)
             # print("time to Send Python from Unity: ", nowTime - float(send_time))
 
-            if args.scheme == "DR" or args.scheme == "MAADR":
+            if args.scheme == "DR" or args.scheme == "MAADR" :
                 with open(f'{evaluate_dir}/{turminal}_log.csv', 'a') as f:
+                    writer = csv.writer(f, lineterminator='\n')
+                    # writer.writerow([float(rcv_data[i]) for i in range(1, len(rcv_data))])
+                    writer.writerow(rcv_data)
+
+            elif args.scheme == "DRL_distance":
+                with open(f'{evaluate_dir}/Real_log.csv', 'a') as f:
                     writer = csv.writer(f, lineterminator='\n')
                     # writer.writerow([float(rcv_data[i]) for i in range(1, len(rcv_data))])
                     writer.writerow(rcv_data)
