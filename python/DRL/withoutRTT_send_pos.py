@@ -536,7 +536,7 @@ def main():
                                 predict_x = pos_x[1] + nonlinear_move(frame_delay - n_frames_change , 0, 1)
                                 predict_y = pos_y[1] + nonlinear_move(frame_delay - n_frames_change , 0, -1)
 
-                    last_action = action
+                    last_action = get_action_num(vel_x[0], vel_y[0])
                     
                     data = str(predict_x) + "," + rcv_data[3] + "," + str(predict_y) 
                     # print("send message: ", data)

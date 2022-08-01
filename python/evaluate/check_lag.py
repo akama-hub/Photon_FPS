@@ -1,27 +1,20 @@
-import csv
 import numpy as np
-from argparse import ArgumentParser
+import csv
+import math
+import statistics
 
-parser = ArgumentParser()
-parser.add_argument("-l", type=int)
+delay = []
+# second0 = 0
+lags = [0, 20, 40]
 
-args = parser.parse_args()
+for lag in lags:
+    with open(f"chamfer/Fixed30FPS_SendRate60_RTT/Lag{lag}/ohuku/DRL_distance/Delayed_log.csv")as f:
+        reader = csv.reader(f)
+        for row in reader:
+            delay.append(float(row[8]))
 
-motions = ["ohuku", "curb", "zigzag", "ohukuRandom"]
-motion = motions[0]
-# motion = motions[1]
-# motion = motions[3]
-
-evaluate_dir = f"{motion}"
-
-lag = np.array([])
-with open(f'{evaluate_dir}/check_lag{args.l}.csv') as f:
-    reader = csv.reader(f)
-    for row in reader:
-        lag = np.append(lag, float(row[0]))
-
-avg = np.average(lag)
-var = np.var(lag)
-
-print("Average: ", avg)
-print("Variance: ", var)
+    print("delay avg.: ", sum(delay) / len(delay))
+    print("minimum: ", min(delay))
+    print("maximum: ", max(delay))
+    print("variance: ", statistics.variance(delay))
+            
