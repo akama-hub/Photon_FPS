@@ -31,8 +31,8 @@ public class SelfSyncroController : MonoBehaviourPunCallbacks
     // private float nowTime;
     // private float milSec;
 
-    // private string motion = "ohuku";
-    private string motion = "curb";
+    private string motion = "ohuku";
+    // private string motion = "curb";
     // private string motion = "zigzag";
     
     // Start is called before the first frame update
