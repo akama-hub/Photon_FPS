@@ -367,8 +367,8 @@ def get_chamfer_distance(key, keys, index, position1, position2):
                 return index-1, diff
 
 def main():
-    motions = ["ohuku", "curb", "zigzag", "ohukuRandom"]
-    motion = motions[0]
+    # motions = ["ohuku", "curb", "zigzag", "ohukuRandom"]
+    # motion = motions[0]
     # motion = motions[1]
     # motion = motions[2]
     # motion = motions[3]
@@ -494,17 +494,15 @@ def main():
     n_input = 20
 
     cpu_positions = {}
-    cpu_velocity = {}
     cpu_keys = []
 
-    with open(f'../train_data/Fixed30FPS_SendRate60/Lag25/{motion}/Real_log.csv') as f:
+    with open(f'../train_data/Fixed30FPS_SendRate60/Lag{args.latency}/{args.motion}/Real_log.csv') as f:
         reader = csv.reader(f)
         for row in reader:
             row[0] = float(row[0])
-            for k in range(1, 7):
+            for k in range(4):
                 row[k] = float(row[k])
             cpu_positions[row[0]] = [row[1], row[2], row[3]]
-            cpu_velocity[row[0]] = [row[4], row[5], row[6]]
             # time, x, z, y
             cpu_keys.append(row[0])
 
@@ -514,19 +512,23 @@ def main():
     distance = {}
     lag = {}
 
-    with open(f'../train_data/Fixed30FPS_SendRate60/Lag25/{motion}/Delayed_log.csv') as f:
+    cnt = 0
+
+    with open(f'../train_data/Fixed30FPS_SendRate60/Lag{args.latency}/{args.motion}/Delayed_log.csv') as f:
         reader = csv.reader(f)
         for row in reader:
             row[1] = float(row[1])
             for k in range(2, 7):
                 row[k] = float(row[k])
-            if row[10] == "true":
-                player_positions[row[1]] = [row[2], row[3], row[4]]
-                player_velocity[row[1]] = [row[5], row[6], row[7]]
-                # time, x, z, y
-                distance[row[1]] = float(row[9])
-                lag[row[1]] = float(row[8])
-                player_keys.append(row[1])
+            
+            if row[0] == "D":
+                if row[12] == "true":
+                    player_positions[row[1]] = [row[2], row[3], row[4]]
+                    player_velocity[row[1]] = [row[5], row[6], row[7]]
+                    # time, x, z, y
+                    distance[row[1]] = float(row[9])
+                    lag[row[1]] = float(row[8])
+                    player_keys.append(row[1])
 
     action = 0
     n_frames_change = 0
@@ -589,64 +591,9 @@ def main():
             delay = lag[key] + 0.033
             frame_delay = round(delay/fps)
 
-            last_action = get_action_num((last_velocity_x[1], last_velocity_y[1]))
+            last_action = get_action_num(last_velocity_x[1], last_velocity_y[1])
 
             predict_x, predict_y = estimate(frame_delay, n_frames_change, action, last_action, last_velocity_x, last_velocity_y, last_position_x, last_position_y)
-
-            player_index = player_keys.index(key)
-            predict_point = key+delay
-            last_cpu_index = cpu_index
-            
-            while True:
-                if cpu_keys[cpu_index] == predict_point:
-                    break
-                elif cpu_keys[cpu_index] < predict_point:
-                    cpu_index += 1
-                else:
-                    # ax, bx = calculateLine(cpu_positions[cpu_keys[cpu_index]][0], cpu_positions[cpu_keys[cpu_index-1]][0], cpu_keys[cpu_index], cpu_keys[cpu_index-1])
-                    # ay, by = calculateLine(cpu_positions[cpu_keys[cpu_index]][2], cpu_positions[cpu_keys[cpu_index-1]][2], cpu_keys[cpu_index], cpu_keys[cpu_index-1])
-                    cpu_index -= 1
-                    break
-
-            if player_index >= player_length - n_frames or cpu_index >= cpu_length - n_frames:
-                break
-            
-            for i in range(10):
-                pre_action = get_action_num(cpu_velocity[cpu_keys[last_cpu_index+i-1]][0], cpu_velocity[cpu_keys[last_cpu_index+i-1]][2])
-
-                next_action = get_action_num(cpu_velocity[cpu_keys[last_cpu_index+i]][0], cpu_velocity[cpu_keys[last_cpu_index+i]][2])
-
-                if pre_action != next_action:
-                    actual_change_frame = i
-                    actual_action = next_action
-                    break
-                else:
-                    actual_change_frame = 0
-                    actual_action = next_action
-
-            if actual_change_frame == 0:
-                max_R_change += 1
-                max_change1 += 1
-                if actual_change_frame == n_frames_change:
-                    change_reward = 1
-                    change1 += 1
-                else:
-                    change_reward = 0
-            else:
-                max_R_change += 10
-                max_change2 += 1
-                if actual_change_frame == n_frames_change:
-                    change_reward = 10
-                    change2 += 1
-                else:
-                    change_reward = 0
-            
-            max_R_action += 1
-            if actual_action == action:
-                action_reward = 1
-
-            action_R += action_reward
-            change_R += change_reward
 
             with open(f"{evaluate_dir}/Predict_log.csv", "a") as f:
                 writer = csv.writer(f, lineterminator='\n')
@@ -654,12 +601,6 @@ def main():
 
             predict_pos[key] = [predict_x, player_positions[key][1], predict_y]
             predict_key.append(key)
-
-    print(f"total action reward: {action_R} / {max_R_action}")
-    print(f"total change reward: {change_R} / {max_R_change}")
-    print(f"successing point: {change1} / {max_change1}")
-    print(f"changing point: {change2} / {max_change2}")
-    print("=====================")
 
     estimate_length = len(predict_key)
     estimate_diff = 0
@@ -678,14 +619,11 @@ def main():
     real_count = 0
     cpu_index = 0
     
-    for key in player_keys:
-        if key < predict_key[0]:
-            continue
-        else:
-            if cpu_length - cpu_index > 10:
-                cpu_index, diff = get_chamfer_distance(key, cpu_keys, cpu_index, predict_pos, cpu_positions)
-                real_diff += diff
-                real_count += 1
+    for key in predict_key:
+        if cpu_length - cpu_index > 10:
+            cpu_index, diff = get_chamfer_distance(key, cpu_keys, cpu_index, predict_pos, cpu_positions)
+            real_diff += diff
+            real_count += 1
     
     chamfer = ((estimate_diff/estimate_count) + (real_diff/real_count)) / 2
 
