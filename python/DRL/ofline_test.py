@@ -33,6 +33,8 @@ from PIL import Image
 
 import torch.nn.functional as F
 
+import math
+
 linear_speed = 0.02
 nonlinear_speed = linear_speed * math.sqrt(2) / 2
 #0.014142
@@ -337,6 +339,33 @@ def estimate(frame_delay, n_frames_change, action, last_action, vel_x, vel_y, po
 
     return predict_x, predict_y
 
+def get_chamfer_distance(key, keys, index, position1, position2):
+    while True:
+        if key > keys[index]:
+            index += 1
+        elif key == keys[index]:
+            diff_x = abs(position1[key][0] - position2[keys[index]][0])
+            diff_y = abs(position1[key][1] - position2[keys[index]][1])
+            diff_z = abs(position1[key][2] - position2[keys[index]][2])
+
+            diff = math.sqrt(diff_x**2 + diff_y**2 + diff_z**2)
+            return index, diff
+        else:
+            if key - keys[index] <= key - keys[index-1]:
+                diff_x = abs(position1[key][0] - position2[keys[index]][0])
+                diff_y = abs(position1[key][1] - position2[keys[index]][1])
+                diff_z = abs(position1[key][2] - position2[keys[index]][2])
+
+                diff = math.sqrt(diff_x**2 + diff_y**2 + diff_z**2)
+                return index, diff
+            else:
+                diff_x = abs(position1[key][0] - position2[keys[index-1]][0])
+                diff_y = abs(position1[key][1] - position2[keys[index-1]][1])
+                diff_z = abs(position1[key][2] - position2[keys[index-1]][2])
+
+                diff = math.sqrt(diff_x**2 + diff_y**2 + diff_z**2)
+                return index-1, diff
+
 def main():
     motions = ["ohuku", "curb", "zigzag", "ohukuRandom"]
     motion = motions[0]
@@ -523,6 +552,12 @@ def main():
     last_time = np.zeros(4)
 
     cpu_index = 0
+    estimate_index = 0
+
+    predict_pos = {}
+    predict_key = []
+    
+    diff = 0
 
     for key in player_keys:
         action_reward = 0
@@ -617,11 +652,45 @@ def main():
                 writer = csv.writer(f, lineterminator='\n')
                 writer.writerow([key, predict_x, predict_y])
 
+            predict_pos[key] = [predict_x, player_positions[key][1], predict_y]
+            predict_key.append(key)
+
     print(f"total action reward: {action_R} / {max_R_action}")
     print(f"total change reward: {change_R} / {max_R_change}")
     print(f"successing point: {change1} / {max_change1}")
     print(f"changing point: {change2} / {max_change2}")
     print("=====================")
+
+    estimate_length = len(predict_key)
+    estimate_diff = 0
+    estimate_count = 0
+    
+    for key in cpu_keys:
+        if key < predict_key[0]:
+            continue
+        else:
+            if estimate_length - estimate_index > 10:
+                estimate_index, diff = get_chamfer_distance(key, predict_key, estimate_index, cpu_positions, predict_pos)
+                estimate_diff += diff
+                estimate_count += 1
+        
+    real_diff = 0
+    real_count = 0
+    cpu_index = 0
+    
+    for key in player_keys:
+        if key < predict_key[0]:
+            continue
+        else:
+            if cpu_length - cpu_index > 10:
+                cpu_index, diff = get_chamfer_distance(key, cpu_keys, cpu_index, predict_pos, cpu_positions)
+                real_diff += diff
+                real_count += 1
+    
+    chamfer = ((estimate_diff/estimate_count) + (real_diff/real_count)) / 2
+
+    print("Chamfer Distance [m]: ", chamfer)
+    
 
 if __name__ == "__main__":
     main()
