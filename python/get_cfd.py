@@ -1,3 +1,4 @@
+from operator import contains
 import numpy as np
 import csv
 import math
@@ -12,29 +13,33 @@ except_count = 0
 # second0 = 0
 
 log_file = "evaluate/chamfer/Fixed30FPS_SendRate60_RTT/Lag20/ohuku/DRL_distance/Delayed_log.csv"
-cfd = {}
+cnt = {}
 key = []
 
 with open(log_file)as f:
     reader = csv.reader(f)
     for row in reader:
-        lag = float(row[1])
+        lag = float(row[8])
         if lag in key:
-            cfd[lag] += 1
+            cnt[lag] += 1
         else:
-            cfd[lag] = 1
+            cnt[lag] = 1
             key.append(lag)
 
-np_lag = np.sort(np.array(lag))
-np_cfd = np.array([cfd[key] for key in np_lag])
+np_lag = np.sort(np.array(key))
+np_cnt = np.array([cnt[key] for key in np_lag])
 
-plt.plot(np_lag, np_cfd)
+plt.plot(np_lag, np_cnt)
+
+np_cfd = np.array([np_cnt[0]])
+for i in range(1, len(np_cnt)):
+    np_cnt[i] = np_cnt[i] + np_cnt[i-1]
+    np_cfd = np.append(np_cfd, np_cnt[i])
+
+# print(np_cfd)
+
+
+# plt.plot(np_lag, np_cfd)
 plt.show()
 
-# print("lag avg.: ", sum(fps) / len(fps))
-# print("minimum: ", min(fps))
-# print("maximum: ", max(fps))
-# print("variance: ", statistics.variance(fps))
-# # print("0 count: ", second0)
-# print("Except count: ", except_count)
         
