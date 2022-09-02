@@ -141,92 +141,111 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
                 this.isPositionUpdate = false;
                 // callback = false;
             }
+            ///////// MAADR ////////
+            // else
+            // {
+            //     if(this.isPositionUpdate)
+            //     {
+            //         if(this.m_Accel == Vector3.zero)
+            //         {
+            //             pos = delayedPosition + this.m_Vel * lag;
+            //         }
+            //         else if(this.m_Accel == this.m_StoredAccel)
+            //         {
+            //             pos = delayedPosition + this.m_Vel * lag + (this.m_Accel * Mathf.Pow(lag, 2) / 2);
+            //         }
+            //         else
+            //         {
+            //             normV = this.m_Vel.magnitude;
+            //             crossV =  Vector3.Cross(this.m_Vel, this.m_Accel);
+            //             normcrossV = crossV.magnitude; 
+            //             k = normcrossV / Mathf.Pow(normV, 3);
+            //             if(k == 0f)
+            //             {
+            //                 pos = delayedPosition + this.m_Vel * lag + (this.m_Accel * Mathf.Pow(lag, 2)/ 2);
+            //             }
+            //             else
+            //             {
+            //                 alpha = k * Mathf.Pow(normV, 2) * this.m_Vel / normV;
+
+            //                 pos = delayedPosition + this.m_Vel * lag + (alpha * Mathf.Pow(lag, 2) / 2);
+            //             }
+            //         }
+                    
+            //         tr.position = Vector3.LerpUnclamped(delayedPosition, pos, 1); 
+            //         this.isPositionUpdate = false;
+
+            //     }
+            //     else
+            //     {
+            //         if(this.m_Accel == Vector3.zero)
+            //         {
+            //             pos = tr.position + this.m_Vel / PhotonNetwork.SerializationRate;
+            //         }
+            //         else if(this.m_Accel == this.m_StoredAccel)
+            //         {
+            //             pos = tr.position + this.m_Vel / PhotonNetwork.SerializationRate + (this.m_Accel * Mathf.Pow(1 / PhotonNetwork.SerializationRate, 2) / 2);
+            //         }
+            //         else
+            //         {
+            //             normV = this.m_Vel.magnitude;
+            //             crossV =  Vector3.Cross(this.m_Vel, this.m_Accel);
+            //             normcrossV = crossV.magnitude; 
+            //             k = normcrossV / Mathf.Pow(normV, 3);
+            //             if(k == 0f)
+            //             {
+            //                 pos = tr.position + this.m_Vel / PhotonNetwork.SerializationRate + (this.m_Accel * Mathf.Pow(1 / PhotonNetwork.SerializationRate, 2) / 2);
+            //             }
+            //             else
+            //             {
+            //                 alpha = k * Mathf.Pow(normV, 2) * this.m_Vel / normV;
+
+            //                 pos = tr.position + this.m_Vel / PhotonNetwork.SerializationRate + (alpha * Mathf.Pow(1 / PhotonNetwork.SerializationRate, 2) / 2);
+            //             }
+            //         }
+
+            //         // Debug.Log(pos);
+            //         tr.position = Vector3.LerpUnclamped(tr.position, pos, 1); 
+            //         // Debug.Log(tr.position);
+            //     }
+            // }
+
+            // tr.rotation = Quaternion.RotateTowards(tr.rotation, this.m_NetworkRotation, this.m_Angle * Time.deltaTime *  PhotonNetwork.SerializationRate);
+
+            // this.m_StoredAccel = this.m_Accel;
+
+            /////// MAADR   /////////
+
+            /////// Default ////////
             else
             {
-                if(this.isPositionUpdate)
+                if (m_UseLocal)
                 {
-                    if(this.m_Accel == Vector3.zero)
-                    {
-                        pos = delayedPosition + this.m_Vel * lag;
-                    }
-                    else if(this.m_Accel == this.m_StoredAccel)
-                    {
-                        pos = delayedPosition + this.m_Vel * lag + (this.m_Accel * Mathf.Pow(lag, 2) / 2);
-                    }
-                    else
-                    {
-                        normV = this.m_Vel.magnitude;
-                        crossV =  Vector3.Cross(this.m_Vel, this.m_Accel);
-                        normcrossV = crossV.magnitude; 
-                        k = normcrossV / Mathf.Pow(normV, 3);
-                        if(k == 0f)
-                        {
-                            pos = delayedPosition + this.m_Vel * lag + (this.m_Accel * Mathf.Pow(lag, 2)/ 2);
-                        }
-                        else
-                        {
-                            alpha = k * Mathf.Pow(normV, 2) * this.m_Vel / normV;
-
-                            pos = delayedPosition + this.m_Vel * lag + (alpha * Mathf.Pow(lag, 2) / 2);
-                        }
-                    }
-                    
-                    tr.position = Vector3.LerpUnclamped(delayedPosition, pos, 1); 
-                    this.isPositionUpdate = false;
-
+                    tr.localPosition = Vector3.MoveTowards(tr.localPosition, this.m_NetworkPosition, this.m_Distance  * Time.deltaTime * PhotonNetwork.SerializationRate);
+                    tr.localRotation = Quaternion.RotateTowards(tr.localRotation, this.m_NetworkRotation, this.m_Angle * Time.deltaTime * PhotonNetwork.SerializationRate);
                 }
                 else
                 {
-                    if(this.m_Accel == Vector3.zero)
-                    {
-                        pos = tr.position + this.m_Vel / PhotonNetwork.SerializationRate;
-                    }
-                    else if(this.m_Accel == this.m_StoredAccel)
-                    {
-                        pos = tr.position + this.m_Vel / PhotonNetwork.SerializationRate + (this.m_Accel * Mathf.Pow(1 / PhotonNetwork.SerializationRate, 2) / 2);
-                    }
-                    else
-                    {
-                        normV = this.m_Vel.magnitude;
-                        crossV =  Vector3.Cross(this.m_Vel, this.m_Accel);
-                        normcrossV = crossV.magnitude; 
-                        k = normcrossV / Mathf.Pow(normV, 3);
-                        if(k == 0f)
-                        {
-                            pos = tr.position + this.m_Vel / PhotonNetwork.SerializationRate + (this.m_Accel * Mathf.Pow(1 / PhotonNetwork.SerializationRate, 2) / 2);
-                        }
-                        else
-                        {
-                            alpha = k * Mathf.Pow(normV, 2) * this.m_Vel / normV;
-
-                            pos = tr.position + this.m_Vel / PhotonNetwork.SerializationRate + (alpha * Mathf.Pow(1 / PhotonNetwork.SerializationRate, 2) / 2);
-                        }
-                    }
-
-                    // Debug.Log(pos);
-                    tr.position = Vector3.LerpUnclamped(tr.position, pos, 1); 
-                    // Debug.Log(tr.position);
+                    tr.position = Vector3.MoveTowards(tr.position, this.m_NetworkPosition, this.m_Distance * Time.deltaTime * PhotonNetwork.SerializationRate);
+                    tr.rotation = Quaternion.RotateTowards(tr.rotation, this.m_NetworkRotation, this.m_Angle * Time.deltaTime *  PhotonNetwork.SerializationRate);
                 }
             }
+            /////// Default ////////
 
-            tr.rotation = Quaternion.RotateTowards(tr.rotation, this.m_NetworkRotation, this.m_Angle * Time.deltaTime *  PhotonNetwork.SerializationRate);
+            // dt = DateTime.Now;
 
-            this.m_StoredAccel = this.m_Accel;
+            // milSec = dt.Millisecond / 1000f;
+            // nowTime = (dt.Minute * 60) + dt.Second + milSec;
 
-            dt = DateTime.Now;
+            // position_x = tr.position.x.ToString("00.000000");
+            // position_y = tr.position.y.ToString("00.000000");
+            // position_z = tr.position.z.ToString("00.000000");
+            // time = nowTime.ToString("F4");
 
-            milSec = dt.Millisecond / 1000f;
-            nowTime = (dt.Minute * 60) + dt.Second + milSec;
+            // // data = "P" + "t" + time + "x" + position_x + "y" + position_y + "z" + position_z;
+            // data = "P" + "," + time + "," + position_x + "," + position_y + "," + position_z + "," + pos_x + "," + pos_y + "," + pos_z;
 
-            position_x = tr.position.x.ToString("00.000000");
-            position_y = tr.position.y.ToString("00.000000");
-            position_z = tr.position.z.ToString("00.000000");
-            time = nowTime.ToString("F4");
-
-            // data = "P" + "t" + time + "x" + position_x + "y" + position_y + "z" + position_z;
-            data = "P" + "," + time + "," + position_x + "," + position_y + "," + position_z + "," + pos_x + "," + pos_y + "," + pos_z;
-
-            commUDPnotMine.send(data);
+            // commUDPnotMine.send(data);
 
         }
         else

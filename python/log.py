@@ -21,6 +21,7 @@ if __name__ == '__main__' :
     parser.add_argument("-m", "--motion", type=str)
     parser.add_argument("-s", "--scheme", type=str)
     parser.add_argument("-l", "--latency", type=int)
+    parser.add_argument("-r", "--rate", type=int)
     args = parser.parse_args()    # 4. 引数を解析
 
     # motion = "ohuku"
@@ -35,7 +36,7 @@ if __name__ == '__main__' :
     os.makedirs(train_dir, exist_ok=True)
     
 
-    # log_date = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+    log_date = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
     # windowsでは:をファイル名につけてはいけない？？
     log_date = datetime.now().strftime("%m%d_%H%M")
 
@@ -91,8 +92,8 @@ if __name__ == '__main__' :
             cli_str_data = cli_data.decode("utf-8")
             rcv_data = cli_str_data.split(',')
 
-            # now_dt = datetime.now()
-            # nowTime = now_dt.minute * 60 + now_dt.second + now_dt.microsecond/1000000
+            now_dt = datetime.now()
+            nowTime = now_dt.minute * 60 + now_dt.second + now_dt.microsecond/1000000
             # print("Python now: ", nowTime)
             # print("unity now: ", send_time)
             # print("time to Send Python from Unity: ", nowTime - float(send_time))
@@ -110,6 +111,20 @@ if __name__ == '__main__' :
                     writer = csv.writer(f, lineterminator='\n')
                     # writer.writerow([float(rcv_data[i]) for i in range(1, len(rcv_data))])
                     writer.writerow(rcv_data)
+
+            elif args.scheme == "check":
+                send_data = []
+                send_data.append(nowTime)
+                for i in range(len(rcv_data)):
+                    send_data.append(rcv_data[i])
+
+                log_dir = f"check/{args.rate}/Lag{args.latency}/{args.motion}"
+                os.makedirs(log_dir, exist_ok=True)
+                with open(f'{log_dir}/{turminal}_log_{log_date}.csv', 'a') as f:
+                    writer = csv.writer(f, lineterminator='\n')
+                    # writer.writerow([float(rcv_data[i]) for i in range(1, len(rcv_data))])
+                    # writer.writerow(rcv_data)
+                    writer.writerow(send_data)
 
             # else:
             #     with open(f'{train_dir}/{turminal}_log.csv', 'a') as f:
