@@ -35,7 +35,13 @@ for delay in delays:
         np_lag = np.sort(np.array(key))
         np_cnt = np.array([cnt[key] for key in np_lag])
 
-        # p1 = plt.plot(np_lag, np_cnt)
+        # plt.plot(np_lag, np_cnt)
+
+        # plt.xlabel("Delay [s]")
+        # plt.ylabel("Count")
+
+        # plt.show()
+        # plt.savefig(f"evaluate/Figure/CFD/Count_delay{delay}_{motion}.png", bbox_inches='tight', pad_inches=0)
 
         np_cfd = np.array([np_cnt[0]])
         for i in range(1, len(np_cnt)):
@@ -44,11 +50,10 @@ for delay in delays:
 
         # print(np_cfd)
 
-        p1 = plt.plot(np_lag, np_cfd)
+        
+        plt.plot(np_lag, np_cfd)
 
-        plt.legend(p1[0])
-
-        plt.xlabel("Delay [ms]")
+        plt.xlabel("Delay [s]")
         plt.ylabel("CFD")
 
         plt.show()
@@ -56,4 +61,3 @@ for delay in delays:
 
         plt.clf()
         plt.close()
-        print("!!!===========================!!!")
