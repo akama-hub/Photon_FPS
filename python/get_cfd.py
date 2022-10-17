@@ -40,29 +40,30 @@ for delay in delays:
             np_lag = np.sort(np.array(key))
             np_cnt = np.array([cnt[key] for key in np_lag])
 
-            # plt.plot(np_lag, np_cnt)
+            plt.plot(np_lag, np_cnt)
 
-            # plt.xlabel("Delay [s]")
-            # plt.ylabel("Count")
+            plt.xlabel("Delay [s]")
+            plt.ylabel("Count")
 
             # plt.show()
-            # plt.savefig(f"evaluate/Figure/CFD/Count_delay{delay}_{motion}.png", bbox_inches='tight', pad_inches=0)
+            plt.savefig(f"evaluate/Figure/CFD_lag/Count_delay{delay}_{motion}.png", bbox_inches='tight', pad_inches=0)
+            plt.savefig(f"evaluate/Figure/CFD_lag/Count_delay{delay}_{motion}.eps", bbox_inches='tight', pad_inches=0)
 
-            np_cfd = np.array([np_cnt[0]])
-            for i in range(1, len(np_cnt)):
-                np_cnt[i] = np_cnt[i] + np_cnt[i-1]
-                np_cfd = np.append(np_cfd, np_cnt[i])
+            # np_cfd = np.array([np_cnt[0]])
+            # for i in range(1, len(np_cnt)):
+            #     np_cnt[i] = np_cnt[i] + np_cnt[i-1]
+            #     np_cfd = np.append(np_cfd, np_cnt[i])
 
             # print(np_cfd)
 
             
-            plt.plot(np_lag, np_cfd)
+            # plt.plot(np_lag, np_cfd)
 
-            plt.xlabel("Delay [s]")
-            plt.ylabel("CFD")
+            # plt.xlabel("Delay [s]")
+            # plt.ylabel("CFD")
 
-            plt.show()
-            plt.savefig(f"evaluate/Figure/CFD/delay{delay}_{motion}.png", bbox_inches='tight', pad_inches=0)
+            # plt.show()
+            # plt.savefig(f"evaluate/Figure/CFD/delay{delay}_{motion}.png", bbox_inches='tight', pad_inches=0)
 
             plt.clf()
             plt.close()
@@ -84,11 +85,12 @@ for delay in delays:
 
             plt.plot(np_fps, np_cnt)
 
-            plt.xlabel("Delay [s]")
+            plt.xlabel("FPS [s]")
             plt.ylabel("Count")
 
-            plt.show()
+            # plt.show()
             plt.savefig(f"evaluate/Figure/CFD_FPS/Count_delay{delay}_{motion}.png", bbox_inches='tight', pad_inches=0)
+            plt.savefig(f"evaluate/Figure/CFD_FPS/Count_delay{delay}_{motion}.eps", bbox_inches='tight', pad_inches=0)
 
             # np_cfd = np.array([np_cnt[0]])
             # for i in range(1, len(np_cnt)):
