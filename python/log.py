@@ -36,7 +36,7 @@ if __name__ == '__main__' :
     os.makedirs(train_dir, exist_ok=True)
     
 
-    log_date = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+    # log_date = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
     # windowsでは:をファイル名につけてはいけない？？
     log_date = datetime.now().strftime("%m%d_%H%M")
 
