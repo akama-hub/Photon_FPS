@@ -202,10 +202,12 @@ def main():
     plt.ylabel("Chamfer Distance [m]")
 
     # plt.legend((p1[0], p2[0], p3[0], p4[0]), ("NC", "DR [6]", "MAADR [7]", "Proposed"), loc = 2)
+    # plt.legend((p1[0], p2[0], p3[0], p4[0]), ("NC", "DR", "MAADR", "Proposed"), loc = 2)
     plt.legend((p2[0], p3[0], p4[0]), ("DR [6]", "MAADR [7]", "Proposed"), loc = 2)
     
     # plt.savefig(f"Figure/CCNC_{motion}.eps", bbox_inches='tight', pad_inches=0)
     plt.savefig(f"Figure/MMM_{motion}.png", bbox_inches='tight', pad_inches=0)
+    # plt.savefig(f"Figure/general_meeting_{motion}.png", bbox_inches='tight', pad_inches=0)
 
     plt.clf()
     plt.close()

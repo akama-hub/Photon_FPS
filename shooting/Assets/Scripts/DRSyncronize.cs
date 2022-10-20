@@ -152,7 +152,8 @@ public class DRSyncronize : MonoBehaviourPun, IPunObservable
             // string data = time + "," + position_x + "," + position_y + "," + position_z + "," + lag + "," + RTT + "," + check;
             // Debug.Log(tr.position);
             // Debug.Log(predictPosition);
-            string data = time + "," + position_x + "," + position_y + "," + position_z + "," + lag + "," + RTT + "," + delayedPosition.x.ToString("F6")  + "," + delayedPosition.y.ToString("F6") + "," + delayedPosition.z.ToString("F6");
+            // string data = time + "," + position_x + "," + position_y + "," + position_z + "," + lag + "," + RTT + "," + delayedPosition.x.ToString("F6")  + "," + delayedPosition.y.ToString("F6") + "," + delayedPosition.z.ToString("F6");
+            string data = time + "," + position_x + "," + position_y + "," + position_z + "," + lag + "," + delayedPosition.x.ToString("F6")  + "," + delayedPosition.y.ToString("F6") + "," + delayedPosition.z.ToString("F6");
             commUDPnotMine.send(data);
         }
         else

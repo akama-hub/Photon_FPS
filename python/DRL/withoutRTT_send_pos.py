@@ -26,7 +26,7 @@ import socket
 import signal
 
 import math
-
+from datetime import datetime
 import time
 
 linear_speed = 0.02
@@ -231,8 +231,9 @@ def main():
 
     model_dir =f'../../DRLModels/{args.motion}/{model}'
 
+    log_date = datetime.now().strftime("%Y%m%d")
     # evaluate_dir = f"../evaluate/EvaluateDiffLog/Lag{args.latency}/{args.motion}/Proposed2"
-    evaluate_dir = f"../evaluate/chamfer/Fixed30FPS_SendRate60_RTT/Lag{args.latency}/{args.motion}/DRL_distance"
+    evaluate_dir = f"../evaluate{log_date}/chamfer/Fixed30FPS_SendRate60_RTT/Lag{args.latency}/{args.motion}/DRL_distance"
     os.makedirs(evaluate_dir, exist_ok=True)
 
     # home pc

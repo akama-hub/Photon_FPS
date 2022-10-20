@@ -48,12 +48,22 @@ if __name__ == '__main__' :
     serv_port = 0
     unity_port = 0
 
+    turminal = ""
+
     if args.player == 0:
         serv_port = 50020
         unity_port = 50024
-    if args.player == 1:
+        turminal = "Real"
+
+    elif args.player == 1:
         serv_port = 50030
         unity_port = 50031
+        turminal = "Predict"
+
+    if args.scheme == "NC":
+        serv_port = 50020
+        unity_port = 50021
+        turminal = "Delayed"
 
     #### DR, MAADRのlogとるようのファイル作ろうとしたけど途中
     
@@ -62,14 +72,6 @@ if __name__ == '__main__' :
     cli_sock = socket.socket(socket.AF_INET, type=socket.SOCK_DGRAM)
     cli_sock.bind(serv)
     unity_sock = socket.socket(socket.AF_INET, type=socket.SOCK_DGRAM)
-
-    turminal = ""
-    if unity_port == 50001 or unity_port == 50024:
-        turminal = "Real"
-    elif unity_port == 50011 or unity_port == 50031:
-        turminal = "Predict"
-    elif unity_port == 50021:
-        turminal = "Delayed"
 
     pos_x = np.array([])
     pos_y = np.array([])
@@ -101,20 +103,18 @@ if __name__ == '__main__' :
             # print("time to Send Python from Unity: ", nowTime - float(send_time))
 
             if args.scheme == "DR" or args.scheme == "MAADR" :
-                # with open(f'{evaluate_dir}/{turminal}_log.csv', 'a') as f:
-                with open(f'{train_dir}/{turminal}_log.csv', 'a') as f:
+                with open(f'{evaluate_dir}/{turminal}_log.csv', 'a') as f:
                     writer = csv.writer(f, lineterminator='\n')
                     # writer.writerow([float(rcv_data[i]) for i in range(1, len(rcv_data))])
                     writer.writerow(rcv_data)
 
             elif args.scheme == "DRL_distance":
-                # with open(f'{evaluate_dir}/Real_log.csv', 'a') as f:
-                with open(f'{train_dir}/{turminal}_log.csv', 'a') as f:
+                with open(f'{evaluate_dir}/Real_log.csv', 'a') as f:
                     writer = csv.writer(f, lineterminator='\n')
                     # writer.writerow([float(rcv_data[i]) for i in range(1, len(rcv_data))])
                     writer.writerow(rcv_data)
 
-            elif args.scheme == "check":
+            elif args.scheme == "NC":
                 send_data = []
                 send_data.append(nowTime)
                 for i in range(len(rcv_data)):
