@@ -61,6 +61,21 @@ public class DRLSyncronize : MonoBehaviourPun, IPunObservable
     
     private float v_x, v_y, v_z;
 
+    private float secondPerFrame = 0.03333;
+    private int lagFrame;
+
+    private firstlinearspeed = 0.88228;
+    private maxLinearSpeed = 4.88228;
+    private CaluculateLinear(time, vel, direction){
+
+    }
+
+    private Vector3 calculateVelocity(int action, int lastAction, Vector3 vel, int frame, float leftDelay)
+    {
+        
+    }
+
+
     public void Awake()
     {
         m_StoredPosition = transform.localPosition;
@@ -94,120 +109,6 @@ public class DRLSyncronize : MonoBehaviourPun, IPunObservable
     void OnEnable()
     {
         m_firstTake = true;
-    }
-
-    private Vector3 calculateVelocity(int action, int lastAction, Vector3 vel, int frame)
-    {
-        Vector3 sumVel = Vector3.zero;
-        Vector3 predictVel;
-        if(frame > 0){
-            int count = frame;
-            while(count > 0)
-            {
-                if(action == 0){
-
-                }
-                else if(action == 1){
-                    if(lastAction == 1 || lastAction == 6 || lastAction == 8)
-                    {
-                        v_x = vel.x + 0.8828f;
-                        if(v_x > 4.88228f){
-                            v_x = 4.88228f;
-                        }
-                        else
-                        { }
-
-                        sumVel += new Vector3(v_x, 0, 0);
-                    }
-                    else
-                    {
-                        sumVel += new Vector3(0.8828f, 0, 0);
-                    }
-                    count -= 1;
-                }
-                else if(action == 2){
-                    if(lastAction == 2 || lastAction == 5 || lastAction == 7)
-                    {
-                        v_x = vel.x - 0.8828f;
-                        if(v_x < -4.88228f){
-                            v_x = -4.88228f;
-                        }
-                        else
-                        { }
-
-                        sumVel += new Vector3(v_x, 0, 0);
-                    }
-                    else
-                    {
-                        sumVel -= new Vector3(0.8828f, 0, 0);
-                    }
-                    count -= 1;
-                }
-                else if(action == 3){
-                    if(lastAction == 3 || lastAction == 5 || lastAction == 6)
-                    {
-                        v_z = vel.z + 0.8828f;
-                        if(v_z > 4.88228f){
-                            v_z = 4.88228f;
-                        }
-                        else
-                        { }
-
-                        sumVel += new Vector3(0, 0, v_z);
-                    }
-                    else
-                    {
-                        sumVel += new Vector3(0, 0, 0.8828f);
-                    }
-                    count -= 1;
-                }
-                else if(action == 4){
-                    if(lastAction == 4 || lastAction == 7 || lastAction == 8)
-                    {
-                        v_z = vel.z - 0.8828f;
-                        if(v_z < -4.88228f){
-                            v_z = -4.88228f;
-                        }
-                        else
-                        { }
-
-                        sumVel += new Vector3(0, 0, v_z);
-                    }
-                    else
-                    {
-                        sumVel -= new Vector3(0, 0, 0.8828f);
-                    }
-                    count -= 1;
-                }
-                // else if(action == 5){
-                //     if(lastAction == 5){
-
-                //     }
-                //     else if(lastAction == 2 || lastAction == 7)
-                //     {
-                //         v_z = vel.z + 0.8828f;
-                //         if(v_z > 4.88228){
-                //             v_z = 4.88228;
-                //         }
-                //         else
-                //         { }
-
-                //         sumVel += Vector3(0, 0, v_z);
-                //     }
-                //     else
-                //     {
-                //         sumVel += (0, 0, 0.8828f);
-                //     }
-                //     count -= 1;
-                // }
-            }
-            predictVel = new Vector3(sumVel.x/frame, sumVel.y/frame, sumVel.z/frame);
-        }
-        else
-        {
-            predictVel = vel;
-        }
-        return predictVel;
     }
 
     public void Update()
@@ -244,7 +145,7 @@ public class DRLSyncronize : MonoBehaviourPun, IPunObservable
                 Action = int.Parse(rcvData[0]);
                 ChangeFrame = int.Parse(rcvData[1]);
 
-                ChangeTime = ChangeFrame * Time.deltaTime;
+                ChangeTime = ChangeFrame * secondPerFrame;
 
                 if (m_UseLocal)
                 {
@@ -255,58 +156,123 @@ public class DRLSyncronize : MonoBehaviourPun, IPunObservable
                 {
                     if(ChangeTime >= lag)
                     {
-                        if(this.isPositionUpdate){
-                            tr.position = Vector3.LerpUnclamped(delayedPosition, delayedPosition + this.m_Vel * lag, 1);
+                        // MAADR
+                        if(this.isPositionUpdate)
+                        {
+                            if(this.m_Accel == Vector3.zero)
+                            {
+                                pos = delayedPosition + this.m_Vel * lag;
+                            }
+                            else if(this.m_Accel == this.m_StoredAccel)
+                            {
+                                pos = delayedPosition + this.m_Vel * lag + (this.m_Accel * Mathf.Pow(lag, 2) / 2);
+                            }
+                            else{
+                                normV = this.m_Vel.magnitude;
+                                crossV =  Vector3.Cross(this.m_Vel, this.m_Accel);
+                                normcrossV = crossV.magnitude; 
+                                k = normcrossV / Mathf.Pow(normV, 3);
+                                if(k == 0f)
+                                {
+                                    pos = delayedPosition + this.m_Vel * lag + (this.m_Accel * Mathf.Pow(lag, 2)/ 2);
+                                }
+                                else
+                                {
+                                    alpha = k * Mathf.Pow(normV, 2) * this.m_Vel / normV;
+
+                                    pos = delayedPosition + this.m_Vel * lag + (alpha * Mathf.Pow(lag, 2) / 2);
+                                }
+                            }
+
+                            tr.position = Vector3.LerpUnclamped(delayedPosition, pos, 1); 
                             this.isPositionUpdate = false;
-                            // tr.position = Vector3.LerpUnclamped(delayedPosition, delayedPosition + m_Vel * lag, 1);
                         }
                         else
                         {
-                            tr.position = Vector3.LerpUnclamped(tr.position, tr.position + this.m_Vel * 1 / PhotonNetwork.SerializationRate, 1);
-                            // SerializationRate -> OnPhotonSerializeView が一秒間に何回呼ばれるか
+                            // Debug.Log(this.m_Accel);
+                            // Debug.Log(this.m_StoredAccel);
+                            if(this.m_Accel == Vector3.zero)
+                            {
+                                pos = tr.position + this.m_Vel / PhotonNetwork.SerializationRate;
+                            }
+                            else if(this.m_Accel == this.m_StoredAccel)
+                            {
+                                pos = tr.position + this.m_Vel / PhotonNetwork.SerializationRate + (this.m_Accel * Mathf.Pow(1 / PhotonNetwork.SerializationRate, 2) / 2);
+                            }
+                            else{
+                                normV = this.m_Vel.magnitude;
+                                crossV =  Vector3.Cross(this.m_Vel, this.m_Accel);
+                                normcrossV = crossV.magnitude; 
+                                k = normcrossV / Mathf.Pow(normV, 3);
+                                if(k == 0f)
+                                {
+                                    pos = tr.position + this.m_Vel / PhotonNetwork.SerializationRate + (this.m_Accel * Mathf.Pow(1 / PhotonNetwork.SerializationRate, 2) / 2);
+                                }
+                                else
+                                {
+                                    alpha = k * Mathf.Pow(normV, 2) * this.m_Vel / normV;
+
+                                    pos = tr.position + this.m_Vel / PhotonNetwork.SerializationRate + (alpha * Mathf.Pow(1 / PhotonNetwork.SerializationRate, 2) / 2);
+                                }
+                            }
+                            // Debug.Log(pos);
+                            tr.position = Vector3.Lerp(tr.position, pos, 1); 
+                            // Debug.Log(tr.position);
                         }
+
+                        tr.rotation = Quaternion.RotateTowards(tr.rotation, this.m_NetworkRotation, this.m_Angle * Time.deltaTime *  PhotonNetwork.SerializationRate);
+
+                        this.m_StoredAccel = this.m_Accel;
                     }
                     else
                     {
-                        if(this.m_Vel.x == 0 && this.m_Vel.z == 0)
-                        {
-                            preAction = 0;
+                        // 現在のactionを保存
+                        if(this.m_Vel.x > 0){
+                            if(this.m_Vel.z == 0)
+                            {
+                                preAction = 0;
+                            }
+                            elif(this.m_Vel.z > 0)
+                            {
+                                preAction = 1;
+                            }
+                            else
+                            {
+                                preAction = 7;
+                            }
                         }
-                        else if(this.m_Vel.x > 0 && this.m_Vel.z == 0)
-                        {
-                            preAction = 1;
+                        elif(this.m_Vel.x < 0){
+                            if(this.m_Vel.z == 0)
+                            {
+                                preAction = 4;
+                            }
+                            elif(this.m_Vel.z > 0)
+                            {
+                                preAction = 3;
+                            }
+                            else
+                            {
+                                preAction = 5;
+                            }
                         }
-                        else if(this.m_Vel.x < 0 && this.m_Vel.z == 0)
-                        {
-                            preAction = 2;
-                        }
-                        else if(this.m_Vel.x == 0 && this.m_Vel.z > 0)
-                        {
-                            preAction = 3;
-                        }
-                        else if(this.m_Vel.x == 0 && this.m_Vel.z < 0)
-                        {
-                            preAction = 4;
-                        }
-                        else if(this.m_Vel.x < 0 && this.m_Vel.z > 0)
-                        {
-                            preAction = 5;
-                        }
-                        else if(this.m_Vel.x > 0 && this.m_Vel.z > 0)
-                        {
-                            preAction = 6;
-                        }
-                        else if(this.m_Vel.x < 0 && this.m_Vel.z < 0)
-                        {
-                            preAction = 7;
-                        }
-                        else if(this.m_Vel.x > 0 && this.m_Vel.z < 0)
-                        {
-                            preAction = 8;
+                        else{
+                           if(this.m_Vel.z == 0)
+                            {
+                                preAction = 8;
+                            }
+                            elif(this.m_Vel.z > 0)
+                            {
+                                preAction = 2;
+                            }
+                            else
+                            {
+                                preAction = 6;
+                            } 
                         }
 
                         if(this.isPositionUpdate){
-                            newVel = calculateVelocity(Action, preAction, this.m_Vel, Mathf.CeilToInt((lag-ChangeTime)/Time.deltaTime));
+                            lagFrame = Mathf.FloorToInt(lag / secondPerFrame);
+                            pos = calculateVelocity(Action, preAction, this.m_Vel, lagFrame - ChangeFrame, lag - lagFrame*secondPerFrame);
 
                             pos = delayedPosition + this.m_Vel * ChangeTime + newVel * (lag-ChangeTime);
 

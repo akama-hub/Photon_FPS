@@ -53,7 +53,7 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
 
     private Vector3 pos;
 
-    private float lag;
+    private float lag, secondPerFrame;
     private float processingDelay = 0.02f;
 
     [Tooltip("Indicates if localPosition and localRotation should be used. Scale ignores this setting, and always uses localScale to avoid issues with lossyScale.")]
@@ -78,9 +78,9 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
     private Ray ray;
     private RaycastHit hit;
 
-    private string position_x, position_y, position_z ,time, velocity_x, velocity_y ,velocity_z ,lagging ,targetDistance;
+    private string position_x, position_y, position_z ,time, velocity_x, velocity_y ,velocity_z ,lagging ,targetDistance, spf;
 
-    private float sendTime, recieveTime, Rtt;
+    private float sendTime, recieveTime, networkDelay;
 
     public void Awake()
     {
@@ -232,17 +232,17 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
             // }
             /////// Default ////////
 
-            lasTime = nowTime;
+            lastTime = nowTime;
             dt = DateTime.Now;
             milSec = dt.Millisecond / 1000f;
             nowTime = (dt.Minute * 60) + dt.Second + milSec;
-            secondPerFrame = nowTime - lasTime;
+            secondPerFrame = nowTime - lastTime;
 
             position_x = tr.position.x.ToString("00.000000");
             position_y = tr.position.y.ToString("00.000000");
             position_z = tr.position.z.ToString("00.000000");
             time = nowTime.ToString("F4");
-            string lagging = lag.ToString("F6");
+            lagging = lag.ToString("F6");
             spf = secondPerFrame.ToString("F6");
 
             // data = "P" + "t" + time + "x" + position_x + "y" + position_y + "z" + position_z;
@@ -381,7 +381,7 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
                     milSec = dt.Millisecond / 1000f;
                     delayedTime = (dt.Minute * 60) + dt.Second + milSec;
 
-                    this.Rtt = delayedTime - this.sendTime;
+                    this.networkDelay = delayedTime - this.sendTime;
                     
                     if(m_Vel.x > 0){
                         if(m_Vel.z == 0){
@@ -440,7 +440,7 @@ public class SelfSyncronize : MonoBehaviourPun, IPunObservable
                     lagging = this.lag.ToString("F6");
                     targetDistance = distance.ToString("F6");
 
-                    data = "D" + "," + time + "," + position_x + "," + position_y + "," + position_z + "," + velocity_x + "," + velocity_y + "," + velocity_z + "," + lagging + "," + targetDistance + "," + Rtt.ToString("F6") + "," + commUDPnotMine.rcvTime.ToString("F6") + "," + "true";
+                    data = "D" + "," + time + "," + position_x + "," + position_y + "," + position_z + "," + velocity_x + "," + velocity_y + "," + velocity_z + "," + lagging + "," + targetDistance + "," + networkDelay.ToString("F6") + "," + commUDPnotMine.rcvTime.ToString("F6") + "," + "true";
 
                     commUDPnotMine.send(data);
                 }
