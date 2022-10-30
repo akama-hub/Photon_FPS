@@ -61,20 +61,20 @@ public class DRLSyncronize : MonoBehaviourPun, IPunObservable
     
     private float v_x, v_y, v_z;
 
-    private float secondPerFrame = 0.03333;
+    private float secondPerFrame = 0.03333f;
     private int lagFrame;
 
-    private firstlinearspeed = 0.88228;
-    private maxLinearSpeed = 4.88228;
-    private CaluculateLinear(time, vel, direction){
+    private float firstlinearspeed = 0.88228f;
+    private float maxLinearSpeed = 4.88228f;
 
-    }
+    private Vector3 m_Accel;
+    private Vector3 m_StoredAccel;
 
-    private Vector3 calculateVelocity(int action, int lastAction, Vector3 vel, int frame, float leftDelay)
-    {
-        
-    }
-
+    private float normV;
+    private Vector3 crossV;
+    private float normcrossV; 
+    private float k;
+    private Vector3 alpha;
 
     public void Awake()
     {
@@ -232,7 +232,7 @@ public class DRLSyncronize : MonoBehaviourPun, IPunObservable
                             {
                                 preAction = 0;
                             }
-                            elif(this.m_Vel.z > 0)
+                            else if(this.m_Vel.z > 0)
                             {
                                 preAction = 1;
                             }
@@ -241,12 +241,12 @@ public class DRLSyncronize : MonoBehaviourPun, IPunObservable
                                 preAction = 7;
                             }
                         }
-                        elif(this.m_Vel.x < 0){
+                        else if(this.m_Vel.x < 0){
                             if(this.m_Vel.z == 0)
                             {
                                 preAction = 4;
                             }
-                            elif(this.m_Vel.z > 0)
+                            else if(this.m_Vel.z > 0)
                             {
                                 preAction = 3;
                             }
@@ -260,7 +260,7 @@ public class DRLSyncronize : MonoBehaviourPun, IPunObservable
                             {
                                 preAction = 8;
                             }
-                            elif(this.m_Vel.z > 0)
+                            else if(this.m_Vel.z > 0)
                             {
                                 preAction = 2;
                             }
@@ -272,7 +272,7 @@ public class DRLSyncronize : MonoBehaviourPun, IPunObservable
 
                         if(this.isPositionUpdate){
                             lagFrame = Mathf.FloorToInt(lag / secondPerFrame);
-                            pos = calculateVelocity(Action, preAction, this.m_Vel, lagFrame - ChangeFrame, lag - lagFrame*secondPerFrame);
+                            // pos = calculateVelocity(Action, preAction, this.m_Vel, lagFrame - ChangeFrame, lag - lagFrame*secondPerFrame);
 
                             pos = delayedPosition + this.m_Vel * ChangeTime + newVel * (lag-ChangeTime);
 
@@ -281,7 +281,7 @@ public class DRLSyncronize : MonoBehaviourPun, IPunObservable
                         }
                         else
                         {
-                            newVel = calculateVelocity(Action, preAction, this.m_Vel, Mathf.CeilToInt((lag-ChangeTime)/Time.deltaTime));
+                            // newVel = calculateVelocity(Action, preAction, this.m_Vel, Mathf.CeilToInt((lag-ChangeTime)/Time.deltaTime));
 
                             pos = tr.position + newVel / PhotonNetwork.SerializationRate;
                             
