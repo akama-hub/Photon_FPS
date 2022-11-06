@@ -22,11 +22,15 @@ public class ProposedGameManager : MonoBehaviour
 
             var players = PhotonNetwork.PlayerListOthers;
         
+            // default
             if(players.Length > 0){
+            // 調整用  
+            // if(players.Length == 0){
                 Debug.Log("You are CPU!!");
                 
                 // GameObject Cpu = PhotonNetwork.Instantiate("SelfSyncroObserver", CPURespawn, Quaternion.identity) as GameObject;
-                GameObject Cpu = PhotonNetwork.Instantiate("DRSyncroObserver", CPURespawn, Quaternion.identity) as GameObject;
+                GameObject Cpu = PhotonNetwork.Instantiate("AsyncPredictedObserver", CPURespawn, Quaternion.identity) as GameObject;
+                // GameObject Cpu = PhotonNetwork.Instantiate("DRSyncroObserver", CPURespawn, Quaternion.identity) as GameObject;
                 // GameObject Cpu = PhotonNetwork.Instantiate("MAADRSyncroObserver", CPURespawn, Quaternion.identity) as GameObject;
                 // GameObject Cpu = PhotonNetwork.Instantiate("SelfSyncroRandomObserver", CPURespawn, Quaternion.identity) as GameObject;
 

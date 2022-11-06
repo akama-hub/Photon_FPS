@@ -24,7 +24,7 @@ namespace forudpwithCB
         private UdpClient udpForReceive; //受信用クライアント
         public string rcvMsg = "ini";//受信メッセージ格納用
         private System.Threading.Thread rcvThread; //受信用スレッド
-        // private bool callback = false;
+        public bool callback = false;
         public float rcvTime;
         private DateTime dt;
         private float milSec;
@@ -49,7 +49,6 @@ namespace forudpwithCB
                 //受信用ポート
                 rcvThread = new System.Threading.Thread(new System.Threading.ThreadStart(receive)); 
                 //受信スレッド生成
-                // callback = cb;
                 return true;
             }
             catch
@@ -83,6 +82,7 @@ namespace forudpwithCB
                     dt = DateTime.Now;
                     milSec = dt.Millisecond / 1000f;
                     rcvTime = (dt.Minute * 60) + dt.Second + milSec;
+                    callback = true;
                 }
                 catch { }
             }
