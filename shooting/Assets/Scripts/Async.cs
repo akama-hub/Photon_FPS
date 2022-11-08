@@ -122,7 +122,8 @@ public class Async : MonoBehaviourPun, IPunObservable
         m_firstTake = true;
     }
 
-    private Vector3 MAADR(Vector3 accel, Vector3 storedAccel, Vector3 velocity, Vector3 position, float lag){
+    private Vector3 MAADR(Vector3 accel, Vector3 storedAccel, Vector3 velocity, Vector3 position, float lag)
+    {
         if(this.m_Accel == Vector3.zero)
         {
             pos = position + velocity * lag;
@@ -170,16 +171,17 @@ public class Async : MonoBehaviourPun, IPunObservable
                 change_frame = int.Parse(rcvData[0]);
                 change_act = int.Parse(rcvData[1]);
 
-                if(change_frame / 30 >= networkDelay){
+                if(change_frame / 30 >= this.networkDelay)
+                {
                     if(this.isPositionUpdate)
                     {
-                        pos = MAADR(this.m_Accel, this.m_StoredAccel, this.m_Vel, delayedPosition, lag);
+                        pos = MAADR(this.m_Accel, this.m_StoredAccel, this.m_Vel, delayedPosition, this.networkDelay);
                         tr.position = Vector3.LerpUnclamped(delayedPosition, pos, 1); 
                         this.isPositionUpdate = false;
                     }
                     else
                     {
-                        pos = MAADR(this.m_Accel, this.m_StoredAccel, this.m_Vel, tr.position, time.deltaTime);
+                        pos = MAADR(this.m_Accel, this.m_StoredAccel, this.m_Vel, tr.position, Time.deltaTime);
                         // Debug.Log(pos);
                         tr.position = Vector3.LerpUnclamped(tr.position, pos, 1); 
                         // Debug.Log(tr.position);
@@ -212,7 +214,7 @@ public class Async : MonoBehaviourPun, IPunObservable
                 }
                 else
                 {
-                    pos = MAADR(this.m_Accel, this.m_StoredAccel, this.m_Vel, tr.position, time.deltaTime);
+                    pos = MAADR(this.m_Accel, this.m_StoredAccel, this.m_Vel, tr.position, Time.deltaTime);
                     // Debug.Log(pos);
                     tr.position = Vector3.LerpUnclamped(tr.position, pos, 1); 
                     // Debug.Log(tr.position);
@@ -220,7 +222,6 @@ public class Async : MonoBehaviourPun, IPunObservable
             }
             
             tr.rotation = Quaternion.RotateTowards(tr.rotation, this.m_NetworkRotation, this.m_Angle * Time.deltaTime *  PhotonNetwork.SerializationRate);
-
             this.m_StoredAccel = this.m_Accel;
             
             if(m_Vel.x > 0){
@@ -272,7 +273,7 @@ public class Async : MonoBehaviourPun, IPunObservable
             position_x = delayedPosition.x.ToString("F6");
             position_y = delayedPosition.y.ToString("F6");
             position_z = delayedPosition.z.ToString("F6");
-            time = delayedTime.ToString("F4");
+            time = delayedTime.ToString("F6");
 
             velocity_x = this.m_Vel.x.ToString("F6");
             velocity_y = this.m_Vel.y.ToString("F6");
@@ -280,11 +281,31 @@ public class Async : MonoBehaviourPun, IPunObservable
             lagging = this.lag.ToString("F6");
             targetDistance = distance.ToString("F6");
 
-            data = "D" + "," + time + "," + position_x + "," + position_y + "," + position_z + "," + velocity_x + "," + velocity_y + "," + velocity_z + "," + lagging + "," + targetDistance + "," + networkDelay.ToString("F6") + "," + commUDPnotMine.rcvTime.ToString("F6") + "," + "true";
+            // data = "D" + "," + time + "," + position_x + "," + position_y + "," + position_z + "," + velocity_x + "," + velocity_y + "," + velocity_z + "," + lagging + "," + targetDistance + "," + networkDelay.ToString("F6") + "," + commUDPnotMine.rcvTime.ToString("F6") + "," + "true";
+
+            data = time + "," + this.sendTime.ToString("F6") + "," + commUDPnotMine.rcvTime.ToString("F6") + "," + position_x + "," + position_y + "," + position_z + "," + velocity_x + "," + velocity_y + "," + velocity_z + "," + lagging + "," + networkDelay.ToString("F6") + "," + targetDistance;            
 
             commUDPnotMine.send(data);
         }
-        else{
+
+        else
+        {
+            dt = DateTime.Now;
+            milSec = dt.Millisecond / 1000f;
+            nowTime = (dt.Minute * 60) + dt.Second + milSec;
+
+            position_x = tr.position.x.ToString("F6");
+            position_y = tr.position.y.ToString("F6");
+            position_z = tr.position.z.ToString("F6");
+            time = nowTime.ToString("F6");
+
+            velocity_x = this.m_Vel.x.ToString("F6");
+            velocity_y = this.m_Vel.y.ToString("F6");
+            velocity_z = this.m_Vel.z.ToString("F6");
+
+            data = time + "," + position_x + "," + position_y + "," + position_z + "," + velocity_x + "," + velocity_y + "," + velocity_z;
+            commUDPisMine.send(data);
+
             this.m_StoredPosition2 = this.m_StoredPosition1;
             this.m_StoredPosition1 = tr.position;
             elapsedTime += Time.deltaTime;
@@ -389,12 +410,6 @@ public class Async : MonoBehaviourPun, IPunObservable
                     {
                         this.m_Distance = Vector3.Distance(tr.position, this.m_NetworkPosition);
                     }
-
-                    dt = DateTime.Now;
-                    milSec = dt.Millisecond / 1000f;
-                    delayedTime = (dt.Minute * 60) + dt.Second + milSec;
-
-                    this.networkDelay = delayedTime - this.sendTime;
                 }
 
             }

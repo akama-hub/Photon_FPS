@@ -26,8 +26,8 @@ namespace forudpwithCB
         private System.Threading.Thread rcvThread; //受信用スレッド
         public bool callback = false;
         public float rcvTime;
-        private DateTime dt;
-        private float milSec;
+        public DateTime dt;
+        public float milSec;
 
         // public static UDP instance;
         public UdpWithCallback()
