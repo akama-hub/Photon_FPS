@@ -309,9 +309,6 @@ public class Async : MonoBehaviourPun, IPunObservable
     
             commUDPisMine.send(data);
 
-            this.m_StoredPosition2 = this.m_StoredPosition1;
-            this.m_StoredPosition1 = tr.position;
-            elapsedTime += Time.deltaTime;
         }
 
     }
@@ -327,6 +324,14 @@ public class Async : MonoBehaviourPun, IPunObservable
             {
                 if (m_UseLocal)
                 {
+                    dt = DateTime.Now;
+                    milSec = dt.Millisecond / 1000f;
+                    this.sendTime = (dt.Minute * 60) + dt.Second + milSec;
+                    
+                    this.m_StoredPosition2 = this.m_StoredPosition1;
+                    this.m_StoredPosition1 = tr.position;
+                    elapsedTime += this.sendTime - lastTime;
+
                     this.m_Direction = tr.localPosition - this.m_StoredPosition;
                     this.m_StoredPosition = tr.localPosition;
                     this.m_Vel = (this.m_StoredPosition1 - this.m_StoredPosition2) / elapsedTime;
@@ -337,18 +342,23 @@ public class Async : MonoBehaviourPun, IPunObservable
                     stream.SendNext(this.m_Vel);
                     stream.SendNext(this.m_Accel);
 
-                    elapsedTime = 0f;
+                    lastTime = this.sendTime;
+
                 }
                 else
                 {
+                    dt = DateTime.Now;
+                    milSec = dt.Millisecond / 1000f;
+                    this.sendTime = (dt.Minute * 60) + dt.Second + milSec;
+
+                    this.m_StoredPosition2 = this.m_StoredPosition1;
+                    this.m_StoredPosition1 = tr.position;
+                    elapsedTime += this.sendTime - lastTime;
+
                     this.m_StoredPosition = tr.position;
                     this.m_Direction = tr.position - this.m_StoredPosition;
                     this.m_Vel = (this.m_StoredPosition1 - this.m_StoredPosition2) / elapsedTime;
                     this.m_Accel = (this.m_Vel - this.m_StoredVel) / elapsedTime;
-
-                    dt = DateTime.Now;
-                    milSec = dt.Millisecond / 1000f;
-                    this.sendTime = (dt.Minute * 60) + dt.Second + milSec;
 
                     stream.SendNext(tr.position);
                     stream.SendNext(this.m_Direction);
@@ -356,7 +366,7 @@ public class Async : MonoBehaviourPun, IPunObservable
                     stream.SendNext(this.m_Accel);
                     stream.SendNext(this.sendTime);
 
-                    elapsedTime = 0f;
+                    lastTime = this.sendTime;
                 }
             }
 

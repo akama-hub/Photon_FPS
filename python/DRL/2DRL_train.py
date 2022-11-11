@@ -70,40 +70,45 @@ def get_action_num(x, y):
     return action
 
 def main():
-    motions = ["ohuku", "curb", "zigzag", "ohukuRandom"]
-    motion = motions[0]
+    log_date = datetime.now().strftime("%Y%m%d-%H:%M:%S")
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-m", "--motion", type=str)
+    parser.add_argument("-o", "--obs", type=int)
+    args = parser.parse_args()    # 4. 引数を解析
+
+    # motions = ["ohuku", "curb", "zigzag", "ohukuRandom"]
+    # motion = motions[0]
     # motion = motions[1]
     # motion = motions[2]
     # motion = motions[3]
-
-    delay = 0.2
-
-    log_date = datetime.now().strftime("%Y%m%d-%H:%M:%S")
-
-    logging.basicConfig(level=20)
-
-    # Set a random seed used in PFRL.
-    utils.set_random_seed(0)
+    motion = args.motion
 
     # n_dim_obs = 20
     # n_dim_obs = 21
-    n_dim_obs = 17
+    # n_dim_obs = 17
     # n_dim_obs = 16
+
+    n_dim_obs = args.obs
 
     log_dir = ""
     if n_dim_obs == 20:
-        log_dir = f'/mnt/HDD/Photon_FPS/DRLModels/Fixed30FPS_SendRate60_RTT/Lag20/{motion}/t_Pxz_Vxz'
+        log_dir = f'/mnt/HDD/Photon_FPS/DRLModels/Fixed30FPS_SendRate60_RTT/Lag20/{motion}/t_Pxz_Vxz/{log_date}'
     
     elif n_dim_obs == 21:
-        log_dir = f'/mnt/HDD/Photon_FPS/DRLModels/Fixed30FPS_SendRate60_RTT/Lag20/{motion}/t_Pxz_Vxz_distance'
+        log_dir = f'/mnt/HDD/Photon_FPS/DRLModels/Fixed30FPS_SendRate60_RTT/Lag20/{motion}/t_Pxz_Vxz_distance/{log_date}'
 
     elif n_dim_obs == 17:
-        log_dir = f'/mnt/HDD/Photon_FPS/DRLModels/Fixed30FPS_SendRate60_RTT/Lag20/{motion}/Pxz_Vxz_distance'
+        log_dir = f'/mnt/HDD/Photon_FPS/DRLModels/Fixed30FPS_SendRate60_RTT/Lag20/{motion}/Pxz_Vxz_distance/{log_date}'
 
     elif n_dim_obs == 16:
-        log_dir = f'/mnt/HDD/Photon_FPS/DRLModels/Fixed30FPS_SendRate60_RTT/Lag20/{motion}/Pxz_Vxz'
+        log_dir = f'/mnt/HDD/Photon_FPS/DRLModels/Fixed30FPS_SendRate60_RTT/Lag20/{motion}/Pxz_Vxz/{log_date}'
 
     os.makedirs(log_dir, exist_ok=True)
+
+    logging.basicConfig(level=20)
+    # Set a random seed used in PFRL.
+    utils.set_random_seed(0)
 
     n_actions = 9
     n_frames = 10
@@ -341,13 +346,14 @@ def main():
                     else:
                         change_reward = 0
                 else:
-                    max_R_change += 10
+                    r = (10 - actual_change_frame) * 3
+                    max_R_change += r
                     max_change2 += 1
                     if actual_change_frame == n_frames_change:
-                        change_reward = 10
+                        change_reward = r
                         change2 += 1
                     else:
-                        change_reward = 0
+                        change_reward = -1
                 
                 max_R_action += 1
                 if actual_action == action:
