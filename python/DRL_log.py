@@ -33,8 +33,7 @@ if __name__ == '__main__' :
     log_date = datetime.now().strftime("%Y%m%d")
     log_time = datetime.now().strftime("%H_%M_%S")
     # log_date = datetime.now().strftime("%m%d_%H%M")
-    # evaluate_dir = f"evaluate/chamfer/Fixed30FPS/Lag{args.latency}/{args.motion}/{args.scheme}"
-    evaluate_dir = f"{log_date}/Fixed30FPS_SendRate60_RTT/Lag{args.latency}/{args.motion}/DRL"
+    evaluate_dir = f"train_data/{log_date}/Fixed30FPS_SendRate60/Lag{args.latency}/{args.motion}/DRL_t_sendT_Pxz_Vxz_Ndelay_distance"
     os.makedirs(evaluate_dir, exist_ok=True)
 
     M_SIZE = 1024

@@ -78,10 +78,11 @@ namespace forudpwithCB
                 {
                     byte[] rcvBytes = udpForReceive.Receive(ref remoteEP);
                     Interlocked.Exchange(ref rcvMsg, Encoding.ASCII.GetString(rcvBytes));
-                    // callback = true;
+
                     dt = DateTime.Now;
                     milSec = dt.Millisecond / 1000f;
                     rcvTime = (dt.Minute * 60) + dt.Second + milSec;
+                    
                     callback = true;
                 }
                 catch { }

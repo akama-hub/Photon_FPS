@@ -19,7 +19,7 @@ public class Async : MonoBehaviourPun, IPunObservable
     private float m_Angle;
 
     private Vector3 m_Direction;
-    private Vector3 m_NetworkPosition;
+    // private Vector3 m_NetworkPosition;
     private Vector3 m_StoredPosition;
     private Vector3 m_StoredPosition1;
     private Vector3 m_StoredPosition2;
@@ -53,8 +53,7 @@ public class Async : MonoBehaviourPun, IPunObservable
 
     private Vector3 pos;
 
-    private float lag, secondPerFrame;
-    private float processingDelay = 0.02f;
+    private float lag;
 
     [Tooltip("Indicates if localPosition and localRotation should be used. Scale ignores this setting, and always uses localScale to avoid issues with lossyScale.")]
     public bool m_UseLocal;
@@ -78,7 +77,7 @@ public class Async : MonoBehaviourPun, IPunObservable
     private Ray ray;
     private RaycastHit hit;
 
-    private string position_x, position_y, position_z ,time, velocity_x, velocity_y ,velocity_z ,lagging ,targetDistance, spf;
+    private string position_x, position_y, position_z ,time, velocity_x, velocity_y ,velocity_z ,lagging ,targetDistance;
 
     private float sendTime, recieveTime, networkDelay;
 
@@ -91,7 +90,7 @@ public class Async : MonoBehaviourPun, IPunObservable
         PhotonNetwork.SerializationRate = 30; // OnPhotonSerializeView()を一秒間に何度呼ぶか
 
         m_StoredPosition = transform.localPosition;
-        m_NetworkPosition = Vector3.zero;
+        // m_NetworkPosition = Vector3.zero;
 
         m_NetworkRotation = Quaternion.identity;
     }
@@ -271,19 +270,21 @@ public class Async : MonoBehaviourPun, IPunObservable
             }
 
             position_x = delayedPosition.x.ToString("F6");
-            position_y = delayedPosition.y.ToString("F6");
+            // position_y = delayedPosition.y.ToString("F6");
             position_z = delayedPosition.z.ToString("F6");
             time = delayedTime.ToString("F6");
 
             velocity_x = this.m_Vel.x.ToString("F6");
-            velocity_y = this.m_Vel.y.ToString("F6");
+            // velocity_y = this.m_Vel.y.ToString("F6");
             velocity_z = this.m_Vel.z.ToString("F6");
-            lagging = this.lag.ToString("F6");
+            // lagging = this.lag.ToString("F6");
             targetDistance = distance.ToString("F6");
 
             // data = "D" + "," + time + "," + position_x + "," + position_y + "," + position_z + "," + velocity_x + "," + velocity_y + "," + velocity_z + "," + lagging + "," + targetDistance + "," + networkDelay.ToString("F6") + "," + commUDPnotMine.rcvTime.ToString("F6") + "," + "true";
 
-            data = time + "," + this.sendTime.ToString("F6") + "," + commUDPnotMine.rcvTime.ToString("F6") + "," + position_x + "," + position_y + "," + position_z + "," + velocity_x + "," + velocity_y + "," + velocity_z + "," + lagging + "," + networkDelay.ToString("F6") + "," + targetDistance;            
+            // data = time + "," + this.sendTime.ToString("F6") + "," + commUDPnotMine.rcvTime.ToString("F6") + "," + position_x + "," + position_y + "," + position_z + "," + velocity_x + "," + velocity_y + "," + velocity_z + "," + lagging + "," + networkDelay.ToString("F6") + "," + targetDistance;
+
+            data = time + "," + this.sendTime.ToString("F6") + "," + position_x + "," + position_z + "," + velocity_x + "," + velocity_z + "," + networkDelay.ToString("F6") + "," + targetDistance;                
 
             commUDPnotMine.send(data);
         }
@@ -295,15 +296,17 @@ public class Async : MonoBehaviourPun, IPunObservable
             nowTime = (dt.Minute * 60) + dt.Second + milSec;
 
             position_x = tr.position.x.ToString("F6");
-            position_y = tr.position.y.ToString("F6");
+            // position_y = tr.position.y.ToString("F6");
             position_z = tr.position.z.ToString("F6");
             time = nowTime.ToString("F6");
 
             velocity_x = this.m_Vel.x.ToString("F6");
-            velocity_y = this.m_Vel.y.ToString("F6");
+            // velocity_y = this.m_Vel.y.ToString("F6");
             velocity_z = this.m_Vel.z.ToString("F6");
 
-            data = time + "," + position_x + "," + position_y + "," + position_z + "," + velocity_x + "," + velocity_y + "," + velocity_z;
+            // data = time + "," + position_x + "," + position_y + "," + position_z + "," + velocity_x + "," + velocity_y + "," + velocity_z;
+            data = time + "," + position_x + "," + position_z + "," + velocity_x + "," + velocity_z;
+    
             commUDPisMine.send(data);
 
             this.m_StoredPosition2 = this.m_StoredPosition1;
@@ -387,30 +390,30 @@ public class Async : MonoBehaviourPun, IPunObservable
 
                 this.isPositionUpdate = true;
 
-                if (m_firstTake)
-                {
-                    if (m_UseLocal)
-                        tr.localPosition = this.m_NetworkPosition;
-                    else
-                        tr.position = this.m_NetworkPosition;
+                // if (m_firstTake)
+                // {
+                //     if (m_UseLocal)
+                //         tr.localPosition = this.m_NetworkPosition;
+                //     else
+                //         tr.position = this.m_NetworkPosition;
 
-                    this.m_Distance = 0f;
-                }
-                else
-                {
-                    this.lag = Mathf.Abs((float)(PhotonNetwork.Time - info.SentServerTime));
-                    // Debug.Log("lag: " + this.lag); //addition
+                //     this.m_Distance = 0f;
+                // }
+                // else
+                // {
+                //     this.lag = Mathf.Abs((float)(PhotonNetwork.Time - info.SentServerTime));
+                //     // Debug.Log("lag: " + this.lag); //addition
 
-                    this.m_NetworkPosition = this.delayedPosition + this.m_Direction * this.lag;
-                    if (m_UseLocal)
-                    {
-                        this.m_Distance = Vector3.Distance(tr.localPosition, this.m_NetworkPosition);
-                    }
-                    else
-                    {
-                        this.m_Distance = Vector3.Distance(tr.position, this.m_NetworkPosition);
-                    }
-                }
+                //     this.m_NetworkPosition = this.delayedPosition + this.m_Direction * this.lag;
+                //     if (m_UseLocal)
+                //     {
+                //         this.m_Distance = Vector3.Distance(tr.localPosition, this.m_NetworkPosition);
+                //     }
+                //     else
+                //     {
+                //         this.m_Distance = Vector3.Distance(tr.position, this.m_NetworkPosition);
+                //     }
+                // }
 
             }
 
