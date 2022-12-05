@@ -207,7 +207,7 @@ def main():
     cpu_velocity = {}
     cpu_keys = []
 
-    with open(f'../train_data/20221109/Fixed30FPS_SendRate60/Lag20/{motion}/DRL_t_sendT_Pxz_Vxz_Ndelay_distance/12_40_53_Real_log.csv') as f:
+    with open(f'../train_data/20221111/Fixed30FPS_SendRate60/Lag20/{motion}/DRL_t_sendT_Pxz_Vxz_Ndelay_distance/13_30_02_Real_log.csv') as f:
         reader = csv.reader(f)
         for row in reader:
             row[0] = float(row[0])
@@ -224,7 +224,7 @@ def main():
     distance = {}
     network_delay = {}
 
-    with open(f'../train_data/20221109/Fixed30FPS_SendRate60/Lag20/{motion}/DRL_t_sendT_Pxz_Vxz_Ndelay_distance/12_40_54_Delayed_log.csv') as f:
+    with open(f'../train_data/20221111/Fixed30FPS_SendRate60/Lag20/{motion}/DRL_t_sendT_Pxz_Vxz_Ndelay_distance/13_30_01_Delayed_log.csv') as f:
         reader = csv.reader(f)
         for row in reader:
             row[0] = float(row[0])
@@ -323,7 +323,7 @@ def main():
                 if player_index >= player_length - n_frames or cpu_index >= cpu_length - n_frames:
                     break
                 
-                for i in range(10):
+                for i in range(5):
                     pre_action = get_action_num(cpu_velocity[cpu_keys[last_cpu_index+i]][0], cpu_velocity[cpu_keys[last_cpu_index+i]][1])
 
                     next_action = get_action_num(cpu_velocity[cpu_keys[last_cpu_index+i+1]][0], cpu_velocity[cpu_keys[last_cpu_index+i+1]][1])

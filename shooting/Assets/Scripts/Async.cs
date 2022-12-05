@@ -18,7 +18,7 @@ public class Async : MonoBehaviourPun, IPunObservable
     private float m_Distance;
     private float m_Angle;
 
-    private Vector3 m_Direction;
+    // private Vector3 m_Direction;
     // private Vector3 m_NetworkPosition;
     private Vector3 m_StoredPosition;
     private Vector3 m_StoredPosition1;
@@ -82,6 +82,7 @@ public class Async : MonoBehaviourPun, IPunObservable
     private float sendTime, recieveTime, networkDelay;
 
     private int change_act, change_frame;
+    private int preAct;
 
     public void Awake()
     {
@@ -123,13 +124,14 @@ public class Async : MonoBehaviourPun, IPunObservable
 
     private Vector3 MAADR(Vector3 accel, Vector3 storedAccel, Vector3 velocity, Vector3 position, float lag)
     {
+        private Vector3 calcPos;
         if(this.m_Accel == Vector3.zero)
         {
-            pos = position + velocity * lag;
+            calcPos = position + velocity * lag;
         }
         else if(accel == storedAccel)
         {
-            pos = position + velocity * lag + (accel * Mathf.Pow(lag, 2) / 2);
+            calcPos = position + velocity * lag + (accel * Mathf.Pow(lag, 2) / 2);
         }
         else
         {
@@ -139,16 +141,99 @@ public class Async : MonoBehaviourPun, IPunObservable
             k = normcrossV / Mathf.Pow(normV, 3);
             if(k == 0f)
             {
-                pos = position + velocity * lag + (accel * Mathf.Pow(lag, 2)/ 2);
+                calcPos = position + velocity * lag + (accel * Mathf.Pow(lag, 2)/ 2);
             }
             else
             {
                 alpha = k * Mathf.Pow(normV, 2) * velocity / normV;
 
-                pos = position + velocity * lag + (alpha * Mathf.Pow(lag, 2) / 2);
+                calcPos = position + velocity * lag + (alpha * Mathf.Pow(lag, 2) / 2);
             }
         }
-        return pos;
+        return calcPos;
+    }
+
+    private int getActionNumber(Vector3 velocity)
+    {
+        private int act;
+        if(velocity.x > 0)
+        {
+            if(velocity.z == 0) act = 0;
+            else if(velocity.z > 0) act = 1;
+            else act = 7;
+        }
+        else if(velocity.x < 0)
+        {
+            if(velocity.z == 0) act = 4;
+            else if(velocity.z > 0) act = 3;
+            else act = 5;
+        }
+        else
+        {
+            if(velocity.z == 0) act = 8;
+            else if(velocity.z > 0) act = 2;
+            else act = 6;
+        }
+        return act;
+    }
+    
+
+    private Vector3 CalcPosition(Vector3 position, int changeAction, int frames, float lag)
+    {
+        private Vector3 calcPos;
+        private Vector3 calcVel;
+        private Vector3 firstVel;
+
+        if(changeAction== 0)
+        {
+            firstVel = new Vector3(0.8, 0, 0);
+        }
+        else if(changeAction== 4)
+        {
+            firstVel = new Vector3(-0.8, 0, 0);
+        }
+        else if(changeAction== 2)
+        {
+            firstVel = new Vector3(0, 0, 0.8);
+        }
+        else if(changeAction== 6)
+        {
+            firstVel = new Vector3(0, 0, -0.8);
+        }
+        else if(changeAction== 1)
+        {
+            firstVel = new Vector3(0.8, 0, 0.8);
+        }
+        else if(changeAction== 3)
+        {
+            firstVel = new Vector3(-0.8, 0, 0.8);
+        }
+        else if(changeAction== 5)
+        {
+            firstVel = new Vector3(-0.8, 0, -0.8);
+        }
+        
+        else if(changeAction== 7)
+        {
+            firstVel = new Vector3(0.8, 0, -0.8);
+        }
+        else if(changeAction== 8)
+        {
+            firstVel = new Vector3(0, 0, 0);
+        }
+
+        if(frames <= 6){
+            calcVel = new Vector3(((firstVel.x + firstVel.x * frames) * frames / 2) / frames, 0, ((firstVel.z + firstVel.z * frames) * frames / 2) / frames);
+        }
+        else
+        {
+            calcVel = new Vector3((firstVel.x + firstVel.x * frames) * frames / 2, 0, (firstVel.z + firstVel.z * frames) * frames / 2);
+            calcVel = (calcVel + firstVel*(frames - 6)) / frames;
+        }
+        
+        calcPos = position + calcVel * lag;
+        
+        return calcPos;
     }
 
     public void FixedUpdate()
@@ -170,7 +255,9 @@ public class Async : MonoBehaviourPun, IPunObservable
                 change_frame = int.Parse(rcvData[0]);
                 change_act = int.Parse(rcvData[1]);
 
-                if(change_frame / 30 >= this.networkDelay)
+                preAct = getActionNumber(this.m_Vel);
+
+                if(change_frame / 30 >= this.networkDelay || preAct == change_act)
                 {
                     if(this.isPositionUpdate)
                     {
@@ -190,12 +277,14 @@ public class Async : MonoBehaviourPun, IPunObservable
                     if(this.isPositionUpdate)
                     {
                         pos = MAADR(this.m_Accel, this.m_StoredAccel, this.m_Vel, delayedPosition, change_frame / 30);
+                        pos = calcPos(pos, change_act, change_frame, this.networkDelay - change_frame / 30);
                         tr.position = Vector3.LerpUnclamped(delayedPosition, pos, 1); 
                         this.isPositionUpdate = false;
                     }
                     else
                     {
                         pos = MAADR(this.m_Accel, this.m_StoredAccel, this.m_Vel, tr.position, change_frame / 30);
+                        pos = calcPos(pos, change_act, change_frame, this.networkDelay - change_frame / 30);
                         // Debug.Log(pos);
                         tr.position = Vector3.LerpUnclamped(tr.position, pos, 1); 
                         // Debug.Log(tr.position);
@@ -284,7 +373,9 @@ public class Async : MonoBehaviourPun, IPunObservable
 
             // data = time + "," + this.sendTime.ToString("F6") + "," + commUDPnotMine.rcvTime.ToString("F6") + "," + position_x + "," + position_y + "," + position_z + "," + velocity_x + "," + velocity_y + "," + velocity_z + "," + lagging + "," + networkDelay.ToString("F6") + "," + targetDistance;
 
-            data = time + "," + this.sendTime.ToString("F6") + "," + position_x + "," + position_z + "," + velocity_x + "," + velocity_z + "," + networkDelay.ToString("F6") + "," + targetDistance;                
+            // data = time + "," + this.sendTime.ToString("F6") + "," + position_x + "," + position_z + "," + velocity_x + "," + velocity_z + "," + networkDelay.ToString("F6") + "," + targetDistance;
+
+            data = time + "," + position_x + "," + position_z + "," + velocity_x + "," + velocity_z + "," + targetDistance;                  
 
             commUDPnotMine.send(data);
         }
@@ -330,15 +421,15 @@ public class Async : MonoBehaviourPun, IPunObservable
                     
                     this.m_StoredPosition2 = this.m_StoredPosition1;
                     this.m_StoredPosition1 = tr.position;
-                    elapsedTime += this.sendTime - lastTime;
+                    elapsedTime = this.sendTime - lastTime;
 
-                    this.m_Direction = tr.localPosition - this.m_StoredPosition;
+                    // this.m_Direction = tr.localPosition - this.m_StoredPosition;
                     this.m_StoredPosition = tr.localPosition;
                     this.m_Vel = (this.m_StoredPosition1 - this.m_StoredPosition2) / elapsedTime;
                     this.m_Accel = (this.m_Vel - this.m_StoredVel) / elapsedTime;
 
                     stream.SendNext(tr.localPosition);
-                    stream.SendNext(this.m_Direction);
+                    // stream.SendNext(this.m_Direction);
                     stream.SendNext(this.m_Vel);
                     stream.SendNext(this.m_Accel);
 
@@ -353,15 +444,15 @@ public class Async : MonoBehaviourPun, IPunObservable
 
                     this.m_StoredPosition2 = this.m_StoredPosition1;
                     this.m_StoredPosition1 = tr.position;
-                    elapsedTime += this.sendTime - lastTime;
+                    elapsedTime = this.sendTime - lastTime;
 
                     this.m_StoredPosition = tr.position;
-                    this.m_Direction = tr.position - this.m_StoredPosition;
+                    // this.m_Direction = tr.position - this.m_StoredPosition;
                     this.m_Vel = (this.m_StoredPosition1 - this.m_StoredPosition2) / elapsedTime;
                     this.m_Accel = (this.m_Vel - this.m_StoredVel) / elapsedTime;
 
                     stream.SendNext(tr.position);
-                    stream.SendNext(this.m_Direction);
+                    // stream.SendNext(this.m_Direction);
                     stream.SendNext(this.m_Vel);
                     stream.SendNext(this.m_Accel);
                     stream.SendNext(this.sendTime);
@@ -393,7 +484,7 @@ public class Async : MonoBehaviourPun, IPunObservable
             if (this.m_SynchronizePosition)
             {
                 this.delayedPosition = (Vector3)stream.ReceiveNext();
-                this.m_Direction = (Vector3)stream.ReceiveNext();
+                // this.m_Direction = (Vector3)stream.ReceiveNext();
                 this.m_Vel = (Vector3)stream.ReceiveNext();
                 this.m_Accel = (Vector3)stream.ReceiveNext();
                 this.sendTime = (float)stream.ReceiveNext();
