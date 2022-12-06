@@ -129,6 +129,7 @@ public class Async : MonoBehaviourPun, IPunObservable
             delayedTime = (dt.Minute * 60) + dt.Second + milSec;
 
             this.networkDelay = delayedTime - this.sendTime;
+            // this.networkDelay = 2 * (delayedTime - this.sendTime);
 
             if(commUDPnotMine.callback)
             {

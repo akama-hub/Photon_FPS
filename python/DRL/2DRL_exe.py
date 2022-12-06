@@ -1,6 +1,5 @@
 from __future__ import print_function
-import argparse
-from turtle import delay, distance
+# from turtle import delay, distance
 
 import numpy as np
 from numpy.lib.function_base import diff
@@ -60,8 +59,10 @@ def main():
     args = parser.parse_args()
 
     model_dir = ""
-    evaluate_dir = ""
+    # evaluate_dir = ""
     n_dim_obs = args.obs
+
+    # log_date = datetime.now().strftime("%Y%m%d")
 
     # ubuntu garellia
     if args.motion == "ohuku":
@@ -71,21 +72,27 @@ def main():
         model = "20220726-15:31:08_SendRate60"
         model_num = 9501
     elif args.motion == "ohukuRandom":
+        model_num = 9501
+
         if n_dim_obs == 20:
-            model_dir = f'/mnt/HDD/Photon_FPS/DRLModels/Fixed30FPS_SendRate60_RTT/Lag20/{args.motion}/t_Pxz_Vxz/20221111-13:38:26'
-            evaluate_dir = f"../evaluate{log_date}/chamfer/Fixed30FPS_SendRate60_RTT/Lag{args.latency}/{args.motion}/t_Pxz_Vxz"
+            # model_dir = f'/mnt/HDD/Photon_FPS/DRLModels/Fixed30FPS_SendRate60_RTT/Lag20/{args.motion}/t_Pxz_Vxz/20221111-13:38:26'
+            model_dir = f'/mnt/HDD/Photon_FPS/DRLModels/Fixed30FPS_SendRate60_RTT/Lag20/{args.motion}/t_Pxz_Vxz/20221114-12:17:09'
+            # evaluate_dir = f"../evaluate{log_date}/chamfer/Fixed30FPS_SendRate60_RTT/Lag{args.latency}/{args.motion}/t_Pxz_Vxz"
         
         elif n_dim_obs == 21:
-            model_dir = f'/mnt/HDD/Photon_FPS/DRLModels/Fixed30FPS_SendRate60_RTT/Lag20/{args.motion}/t_Pxz_Vxz_distance/20221111-13:38:27'
-            evaluate_dir = f"../evaluate{log_date}/chamfer/Fixed30FPS_SendRate60_RTT/Lag{args.latency}/{args.motion}/t_Pxz_Vxz_distance"
+            # model_dir = f'/mnt/HDD/Photon_FPS/DRLModels/Fixed30FPS_SendRate60_RTT/Lag20/{args.motion}/t_Pxz_Vxz_distance/20221111-13:38:27'
+            model_dir = f'/mnt/HDD/Photon_FPS/DRLModels/Fixed30FPS_SendRate60_RTT/Lag20/{args.motion}/t_Pxz_Vxz_distance/20221114-12:17:11'
+            # evaluate_dir = f"../evaluate{log_date}/chamfer/Fixed30FPS_SendRate60_RTT/Lag{args.latency}/{args.motion}/t_Pxz_Vxz_distance"
 
         elif n_dim_obs == 17:
-            model_dir = f'/mnt/HDD/Photon_FPS/DRLModels/Fixed30FPS_SendRate60_RTT/Lag20/{args.motion}/Pxz_Vxz_distance/20221111-13:38:38'
-            evaluate_dir = f"../evaluate{log_date}/chamfer/Fixed30FPS_SendRate60_RTT/Lag{args.latency}/{args.motion}/Pxz_Vxz_distance"
+            # model_dir = f'/mnt/HDD/Photon_FPS/DRLModels/Fixed30FPS_SendRate60_RTT/Lag20/{args.motion}/Pxz_Vxz_distance/20221111-13:38:38'
+            model_dir = f'/mnt/HDD/Photon_FPS/DRLModels/Fixed30FPS_SendRate60_RTT/Lag20/{args.motion}/Pxz_Vxz_distance/20221114-12:17:06'
+            # evaluate_dir = f"../evaluate{log_date}/chamfer/Fixed30FPS_SendRate60_RTT/Lag{args.latency}/{args.motion}/Pxz_Vxz_distance"
 
         elif n_dim_obs == 16:
-            model_dir = f'/mnt/HDD/Photon_FPS/DRLModels/Fixed30FPS_SendRate60_RTT/Lag20/{args.motion}/Pxz_Vxz/20221111-13:39:21'
-            evaluate_dir = f"../evaluate{log_date}/chamfer/Fixed30FPS_SendRate60_RTT/Lag{args.latency}/{args.motion}/Pxz_Vxz"
+            # model_dir = f'/mnt/HDD/Photon_FPS/DRLModels/Fixed30FPS_SendRate60_RTT/Lag20/{args.motion}/Pxz_Vxz/20221111-13:39:21'
+            model_dir = f'/mnt/HDD/Photon_FPS/DRLModels/Fixed30FPS_SendRate60_RTT/Lag20/{args.motion}/Pxz_Vxz/20221114-12:17:14'
+            # evaluate_dir = f"../evaluate{log_date}/chamfer/Fixed30FPS_SendRate60_RTT/Lag{args.latency}/{args.motion}/Pxz_Vxz"
 
     elif args.motion == "zigzag":
         model = "20220623-13:17:15"
@@ -93,11 +100,11 @@ def main():
 
     # model_dir =f'../../DRLModels/{args.motion}/{model}'
 
-    log_date = datetime.now().strftime("%Y%m%d")
+    
     # evaluate_dir = f"../evaluate/EvaluateDiffLog/Lag{args.latency}/{args.motion}/Proposed2"
     # evaluate_dir = f"../evaluate{log_date}/chamfer/Fixed30FPS_SendRate60_RTT/Lag{args.latency}/{args.motion}/DRL_distance"
 
-    os.makedirs(evaluate_dir, exist_ok=True)
+    # os.makedirs(evaluate_dir, exist_ok=True)
 
     # home pc
     # model_dir =f'../../DRLModels/{motion}/'
