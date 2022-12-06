@@ -128,7 +128,7 @@ public class Async : MonoBehaviourPun, IPunObservable
             milSec = dt.Millisecond / 1000f;
             delayedTime = (dt.Minute * 60) + dt.Second + milSec;
 
-            this.networkDelay = delayedTime - this.sendTime;
+            this.networkDelay = delayedTime - this.sendTime + this.lag;
             // this.networkDelay = 2 * (delayedTime - this.sendTime);
 
             if(commUDPnotMine.callback)
@@ -484,6 +484,8 @@ public class Async : MonoBehaviourPun, IPunObservable
         {
             if (this.m_SynchronizePosition)
             {
+                this.lag = Mathf.Abs((float) (PhotonNetwork.Time - info.timestamp));
+
                 this.delayedPosition = (Vector3)stream.ReceiveNext();
                 // this.m_Direction = (Vector3)stream.ReceiveNext();
                 this.m_Vel = (Vector3)stream.ReceiveNext();
