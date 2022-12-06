@@ -63,12 +63,6 @@ public class Async : MonoBehaviourPun, IPunObservable
     private float elapsedTime;
     private bool isPositionUpdate = false;
 
-    private float normV;
-    private Vector3 crossV;
-    private float normcrossV; 
-    private float k;
-    private Vector3 alpha;
-
     private int action;
     private float change_second;
     private string data;
@@ -83,6 +77,8 @@ public class Async : MonoBehaviourPun, IPunObservable
 
     private int change_act, change_frame;
     private int preAct;
+
+    private Vector3 firstVel, calcVel;
 
     public void Awake()
     {
@@ -122,120 +118,6 @@ public class Async : MonoBehaviourPun, IPunObservable
         m_firstTake = true;
     }
 
-    private Vector3 MAADR(Vector3 accel, Vector3 storedAccel, Vector3 velocity, Vector3 position, float lag)
-    {
-        private Vector3 calcPos;
-        if(this.m_Accel == Vector3.zero)
-        {
-            calcPos = position + velocity * lag;
-        }
-        else if(accel == storedAccel)
-        {
-            calcPos = position + velocity * lag + (accel * Mathf.Pow(lag, 2) / 2);
-        }
-        else
-        {
-            normV = velocity.magnitude;
-            crossV =  Vector3.Cross(velocity, accel);
-            normcrossV = crossV.magnitude; 
-            k = normcrossV / Mathf.Pow(normV, 3);
-            if(k == 0f)
-            {
-                calcPos = position + velocity * lag + (accel * Mathf.Pow(lag, 2)/ 2);
-            }
-            else
-            {
-                alpha = k * Mathf.Pow(normV, 2) * velocity / normV;
-
-                calcPos = position + velocity * lag + (alpha * Mathf.Pow(lag, 2) / 2);
-            }
-        }
-        return calcPos;
-    }
-
-    private int getActionNumber(Vector3 velocity)
-    {
-        private int act;
-        if(velocity.x > 0)
-        {
-            if(velocity.z == 0) act = 0;
-            else if(velocity.z > 0) act = 1;
-            else act = 7;
-        }
-        else if(velocity.x < 0)
-        {
-            if(velocity.z == 0) act = 4;
-            else if(velocity.z > 0) act = 3;
-            else act = 5;
-        }
-        else
-        {
-            if(velocity.z == 0) act = 8;
-            else if(velocity.z > 0) act = 2;
-            else act = 6;
-        }
-        return act;
-    }
-    
-
-    private Vector3 CalcPosition(Vector3 position, int changeAction, int frames, float lag)
-    {
-        private Vector3 calcPos;
-        private Vector3 calcVel;
-        private Vector3 firstVel;
-
-        if(changeAction== 0)
-        {
-            firstVel = new Vector3(0.8, 0, 0);
-        }
-        else if(changeAction== 4)
-        {
-            firstVel = new Vector3(-0.8, 0, 0);
-        }
-        else if(changeAction== 2)
-        {
-            firstVel = new Vector3(0, 0, 0.8);
-        }
-        else if(changeAction== 6)
-        {
-            firstVel = new Vector3(0, 0, -0.8);
-        }
-        else if(changeAction== 1)
-        {
-            firstVel = new Vector3(0.8, 0, 0.8);
-        }
-        else if(changeAction== 3)
-        {
-            firstVel = new Vector3(-0.8, 0, 0.8);
-        }
-        else if(changeAction== 5)
-        {
-            firstVel = new Vector3(-0.8, 0, -0.8);
-        }
-        
-        else if(changeAction== 7)
-        {
-            firstVel = new Vector3(0.8, 0, -0.8);
-        }
-        else if(changeAction== 8)
-        {
-            firstVel = new Vector3(0, 0, 0);
-        }
-
-        if(frames <= 6){
-            calcVel = new Vector3(((firstVel.x + firstVel.x * frames) * frames / 2) / frames, 0, ((firstVel.z + firstVel.z * frames) * frames / 2) / frames);
-        }
-        else
-        {
-            calcVel = new Vector3((firstVel.x + firstVel.x * frames) * frames / 2, 0, (firstVel.z + firstVel.z * frames) * frames / 2);
-            calcVel = (calcVel + firstVel*(frames - 6)) / frames;
-        }
-        
-        calcPos = position + calcVel * lag;
-        
-        return calcPos;
-    }
-
     public void FixedUpdate()
     {
         var tr = transform;
@@ -248,43 +130,158 @@ public class Async : MonoBehaviourPun, IPunObservable
 
             this.networkDelay = delayedTime - this.sendTime;
 
-            if(commUDPnotMine.callback){
+            if(commUDPnotMine.callback)
+            {
                 string[] rcvData = commUDPnotMine.rcvMsg.Split(',');
                 // Debug.Log(commUDP.rcvMsg);
 
                 change_frame = int.Parse(rcvData[0]);
                 change_act = int.Parse(rcvData[1]);
 
-                preAct = getActionNumber(this.m_Vel);
+                if(this.m_Vel.x > 0)
+                {
+                    if(this.m_Vel.z == 0) preAct = 0;
+                    else if(this.m_Vel.z > 0) preAct = 1;
+                    else preAct = 7;
+                }
+                else if(this.m_Vel.x < 0)
+                {
+                    if(this.m_Vel.z == 0) preAct = 4;
+                    else if(this.m_Vel.z > 0) preAct = 3;
+                    else preAct = 5;
+                }
+                else
+                {
+                    if(this.m_Vel.z == 0) preAct = 8;
+                    else if(this.m_Vel.z > 0) preAct = 2;
+                    else preAct = 6;
+                }
 
                 if(change_frame / 30 >= this.networkDelay || preAct == change_act)
                 {
                     if(this.isPositionUpdate)
                     {
-                        pos = MAADR(this.m_Accel, this.m_StoredAccel, this.m_Vel, delayedPosition, this.networkDelay);
+                        pos = delayedPosition + this.m_Vel * this.networkDelay;
                         tr.position = Vector3.LerpUnclamped(delayedPosition, pos, 1); 
                         this.isPositionUpdate = false;
                     }
                     else
                     {
-                        pos = MAADR(this.m_Accel, this.m_StoredAccel, this.m_Vel, tr.position, Time.deltaTime);
+                        pos = tr.position + this.m_Vel * Time.deltaTime;
                         // Debug.Log(pos);
                         tr.position = Vector3.LerpUnclamped(tr.position, pos, 1); 
                         // Debug.Log(tr.position);
                     }   
                 }
-                else{
+                else
+                {
                     if(this.isPositionUpdate)
                     {
-                        pos = MAADR(this.m_Accel, this.m_StoredAccel, this.m_Vel, delayedPosition, change_frame / 30);
-                        pos = calcPos(pos, change_act, change_frame, this.networkDelay - change_frame / 30);
+                        pos = delayedPosition + this.m_Vel * change_frame / 30;
+                        if(change_act == 0)
+                        {
+                            Vector3 firstVel = new Vector3(0.8f, 0f, 0f);
+                        }
+                        else if(change_act == 4)
+                        {
+                            Vector3 firstVel = new Vector3(-0.8f, 0f, 0f);
+                        }
+                        else if(change_act == 2)
+                        {
+                            Vector3 firstVel = new Vector3(0f, 0f, 0.8f);
+                        }
+                        else if(change_act == 6)
+                        {
+                            Vector3 firstVel = new Vector3(0f, 0f, -0.8f);
+                        }
+                        else if(change_act == 1)
+                        {
+                            Vector3 firstVel = new Vector3(0.8f, 0f, 0.8f);
+                        }
+                        else if(change_act == 3)
+                        {
+                            Vector3 firstVel = new Vector3(-0.8f, 0f, 0.8f);
+                        }
+                        else if(change_act == 5)
+                        {
+                            Vector3 firstVel = new Vector3(-0.8f, 0f, -0.8f);
+                        }
+                        
+                        else if(change_act == 7)
+                        {
+                            Vector3 firstVel = new Vector3(0.8f, 0f, -0.8f);
+                        }
+                        else if(change_act == 8)
+                        {
+                            Vector3 firstVel = new Vector3(0f, 0f, 0f);
+                        }
+
+                        if(change_frame <= 5){
+                            Vector3 calcVel = new Vector3(((firstVel.x + firstVel.x * change_frame) * change_frame / 2) / change_frame, 0, ((firstVel.z + firstVel.z * change_frame) * change_frame / 2) / change_frame);
+                        }
+                        else
+                        {
+                            Vector3 calcVel = new Vector3((firstVel.x + firstVel.x * change_frame) * change_frame / 2, 0, (firstVel.z + firstVel.z * change_frame) * change_frame / 2);
+                            calcVel = (calcVel + firstVel*(change_frame - 6)) / change_frame;
+                        }
+                        
+                        pos = pos + calcVel * (this.networkDelay - change_frame / 30);
+                        
                         tr.position = Vector3.LerpUnclamped(delayedPosition, pos, 1); 
                         this.isPositionUpdate = false;
                     }
                     else
                     {
-                        pos = MAADR(this.m_Accel, this.m_StoredAccel, this.m_Vel, tr.position, change_frame / 30);
-                        pos = calcPos(pos, change_act, change_frame, this.networkDelay - change_frame / 30);
+                        pos = tr.position + this.m_Vel * change_frame / 30;
+
+                        if(change_act == 0)
+                        {
+                            Vector3 firstVel = new Vector3(0.8f, 0f, 0f);
+                        }
+                        else if(change_act == 4)
+                        {
+                            Vector3 firstVel = new Vector3(-0.8f, 0f, 0f);
+                        }
+                        else if(change_act == 2)
+                        {
+                            Vector3 firstVel = new Vector3(0f, 0f, 0.8f);
+                        }
+                        else if(change_act == 6)
+                        {
+                            Vector3 firstVel = new Vector3(0f, 0f, -0.8f);
+                        }
+                        else if(change_act == 1)
+                        {
+                            Vector3 firstVel = new Vector3(0.8f, 0f, 0.8f);
+                        }
+                        else if(change_act == 3)
+                        {
+                            Vector3 firstVel = new Vector3(-0.8f, 0f, 0.8f);
+                        }
+                        else if(change_act == 5)
+                        {
+                            Vector3 firstVel = new Vector3(-0.8f, 0f, -0.8f);
+                        }
+                        
+                        else if(change_act == 7)
+                        {
+                            Vector3 firstVel = new Vector3(0.8f, 0f, -0.8f);
+                        }
+                        else if(change_act == 8)
+                        {
+                            Vector3 firstVel = new Vector3(0f, 0f, 0f);
+                        }
+
+                        if(change_frame <= 5){
+                            Vector3 calcVel = new Vector3(((firstVel.x + firstVel.x * change_frame) * change_frame / 2) / change_frame, 0, ((firstVel.z + firstVel.z * change_frame) * change_frame / 2) / change_frame);
+                        }
+                        else
+                        {
+                            Vector3 calcVel = new Vector3((firstVel.x + firstVel.x * change_frame) * change_frame / 2, 0, (firstVel.z + firstVel.z * change_frame) * change_frame / 2);
+                            calcVel = (calcVel + firstVel*(change_frame - 6)) / change_frame;
+                        }
+
+                        pos = pos + calcVel * (this.networkDelay - change_frame / 30);
                         // Debug.Log(pos);
                         tr.position = Vector3.LerpUnclamped(tr.position, pos, 1); 
                         // Debug.Log(tr.position);
@@ -293,16 +290,17 @@ public class Async : MonoBehaviourPun, IPunObservable
 
                 commUDPnotMine.callback = false;
             }
-            else{
+            else
+            {
                 if(this.isPositionUpdate)
                 {
-                    pos = MAADR(this.m_Accel, this.m_StoredAccel, this.m_Vel, delayedPosition, lag);
+                    pos = delayedPosition + this.m_Vel * this.networkDelay;
                     tr.position = Vector3.LerpUnclamped(delayedPosition, pos, 1); 
                     this.isPositionUpdate = false;
                 }
                 else
                 {
-                    pos = MAADR(this.m_Accel, this.m_StoredAccel, this.m_Vel, tr.position, Time.deltaTime);
+                    pos = tr.position + this.m_Vel * Time.deltaTime;
                     // Debug.Log(pos);
                     tr.position = Vector3.LerpUnclamped(tr.position, pos, 1); 
                     // Debug.Log(tr.position);
@@ -325,7 +323,8 @@ public class Async : MonoBehaviourPun, IPunObservable
                 }
                 
             }
-            else if(m_Vel.x == 0){
+            else if(m_Vel.x == 0)
+            {
                 if(m_Vel.z > 0){
                     ray = new Ray(transform.position, new Vector3 (0, 0, 1));
                 }
@@ -336,7 +335,8 @@ public class Async : MonoBehaviourPun, IPunObservable
                     ray = new Ray(transform.position, new Vector3 (1, 0, 0));
                 }
             }
-            else{
+            else
+            {
                 if(m_Vel.z == 0){
                     // Rayの作成
                     ray = new Ray(transform.position, Vector3.left);
@@ -559,5 +559,4 @@ public class Async : MonoBehaviourPun, IPunObservable
             }
         }
     }
-
 }

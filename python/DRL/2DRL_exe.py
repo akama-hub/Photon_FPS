@@ -260,7 +260,7 @@ def main():
                 action = act_agent.act(obs)
                 n_frames_change = change_agent.act(obs)
                 
-                data = str(action) + "," + rcv_data[3] + "," + str(n_frames_change) 
+                data = str(n_frames_change) + "," +  str(action)
                 # print("send message: ", data)
 
                 predict_data = data.encode("utf-8")
