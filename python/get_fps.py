@@ -8,7 +8,7 @@ flag = 0
 except_count = 0
 # second0 = 0
 
-with open("evaluate/chamfer/Fixed30FPS_SendRate60_RTT/Lag20/ohuku/DRL_distance/Delayed_log.csv")as f:
+with open("evaluate/chamfer/Fixed30FPS_SendRate60_RTT/Lag0/ohuku/DRL_distance/Delayed_log.csv")as f:
     reader = csv.reader(f)
     for row in reader:
         if flag == 0:
