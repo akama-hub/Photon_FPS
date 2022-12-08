@@ -66,8 +66,9 @@ def main():
 
     # ubuntu garellia
     if args.motion == "ohuku":
-        model = "20220726-15:31:46_SendRate60"
-        model_num = 9501
+        if n_dim_obs == 20:
+            model_dir = f'/mnt/HDD/Photon_FPS/DRLModels/Fixed30FPS_SendRate60_RTT/Lag20/{args.motion}/t_Pxz_Vxz'
+            model_num = 8501
     elif args.motion == "curb":
         model = "20220726-15:31:08_SendRate60"
         model_num = 9501

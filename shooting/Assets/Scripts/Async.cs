@@ -80,6 +80,13 @@ public class Async : MonoBehaviourPun, IPunObservable
 
     private Vector3 firstVel, calcVel;
 
+    private float RpcLag = 0f;
+    private float rcvRpcLag = 0f;
+
+    public static Async instance;
+    private bool canShot;
+    private float reachfiredtime = 0.001334f; //6.67(aite z 10 - zibun z 3.33) / 5000
+
     public void Awake()
     {
         Application.targetFrameRate = 30; // 30fpsに設定
@@ -90,16 +97,23 @@ public class Async : MonoBehaviourPun, IPunObservable
         // m_NetworkPosition = Vector3.zero;
 
         m_NetworkRotation = Quaternion.identity;
+        
+        if(instance == null)
+        {
+            instance = this;
+        }
     }
 
     void Start()
     {
         rb = this.GetComponent<Rigidbody>();
+
         if(photonView.IsMine){
             // commUDP.init(int型の送信用ポート番号, int型の送信先ポート番号, int型の受信用ポート番号);
             commUDPisMine.init(50023, 50020, 50024);
         }
         else{
+            canShot = true;
             // commUDP.init(int型の送信用ポート番号, int型の送信先ポート番号, int型の受信用ポート番号);
             commUDPnotMine.init(50025, 50026, 50021);
             //UDP受信開始
@@ -118,6 +132,19 @@ public class Async : MonoBehaviourPun, IPunObservable
         m_firstTake = true;
     }
 
+    public void GetRpcLag(int RpcExetime)
+    {
+        if(this.photonView.IsMine)
+        {
+            // 弾を発射した時刻から現在時刻までの経過時間を求める
+            this.RpcLag = Mathf.Max(0f, unchecked(PhotonNetwork.ServerTimestamp - RpcExetime) / 1000f);
+        }
+        // else
+        // {
+        //     this.RpcLag = Mathf.Max(0f, unchecked(PhotonNetwork.ServerTimestamp - timestamp) / 1000f);
+        // }
+    }
+
     public void FixedUpdate()
     {
         var tr = transform;
@@ -128,8 +155,11 @@ public class Async : MonoBehaviourPun, IPunObservable
             milSec = dt.Millisecond / 1000f;
             delayedTime = (dt.Minute * 60) + dt.Second + milSec;
 
-            this.networkDelay = delayedTime - this.sendTime + this.lag;
-            // this.networkDelay = 2 * (delayedTime - this.sendTime);
+            // this.networkDelay = delayedTime - this.sendTime;
+            this.networkDelay = delayedTime - this.sendTime + this.rcvRpcLag/4;
+            // this.networkDelay = delayedTime - this.sendTime + this.rcvRpcLag;
+            // Debug.Log(this.networkDelay);
+            // Debug.Log(this.rcvRpcLag);
 
             if(commUDPnotMine.callback)
             {
@@ -160,6 +190,7 @@ public class Async : MonoBehaviourPun, IPunObservable
 
                 if(change_frame / 30 >= this.networkDelay || preAct == change_act)
                 {
+                    // Debug.Log("DR");
                     if(this.isPositionUpdate)
                     {
                         pos = delayedPosition + this.m_Vel * this.networkDelay;
@@ -176,46 +207,51 @@ public class Async : MonoBehaviourPun, IPunObservable
                 }
                 else
                 {
+                    // Debug.Log("DRL");
+                    // Debug.Log(change_frame);
+                    // Debug.Log(preAct);
+                    // Debug.Log(change_act);
+                    if(change_act == 0)
+                    {
+                        Vector3 firstVel = new Vector3(0.8f, 0f, 0f);
+                    }
+                    else if(change_act == 4)
+                    {
+                        Vector3 firstVel = new Vector3(-0.8f, 0f, 0f);
+                    }
+                    else if(change_act == 2)
+                    {
+                        Vector3 firstVel = new Vector3(0f, 0f, 0.8f);
+                    }
+                    else if(change_act == 6)
+                    {
+                        Vector3 firstVel = new Vector3(0f, 0f, -0.8f);
+                    }
+                    else if(change_act == 1)
+                    {
+                        Vector3 firstVel = new Vector3(0.5657f, 0f, 0.5657f);
+                    }
+                    else if(change_act == 3)
+                    {
+                        Vector3 firstVel = new Vector3(-0.5657f, 0f, 0.5657f);
+                    }
+                    else if(change_act == 5)
+                    {
+                        Vector3 firstVel = new Vector3(-0.5657f, 0f, -0.5657f);
+                    }
+                    
+                    else if(change_act == 7)
+                    {
+                        Vector3 firstVel = new Vector3(0.5657f, 0f, -0.5657f);
+                    }
+                    else if(change_act == 8)
+                    {
+                        Vector3 firstVel = new Vector3(0f, 0f, 0f);
+                    }
+
                     if(this.isPositionUpdate)
                     {
                         pos = delayedPosition + this.m_Vel * change_frame / 30;
-                        if(change_act == 0)
-                        {
-                            Vector3 firstVel = new Vector3(0.8f, 0f, 0f);
-                        }
-                        else if(change_act == 4)
-                        {
-                            Vector3 firstVel = new Vector3(-0.8f, 0f, 0f);
-                        }
-                        else if(change_act == 2)
-                        {
-                            Vector3 firstVel = new Vector3(0f, 0f, 0.8f);
-                        }
-                        else if(change_act == 6)
-                        {
-                            Vector3 firstVel = new Vector3(0f, 0f, -0.8f);
-                        }
-                        else if(change_act == 1)
-                        {
-                            Vector3 firstVel = new Vector3(0.8f, 0f, 0.8f);
-                        }
-                        else if(change_act == 3)
-                        {
-                            Vector3 firstVel = new Vector3(-0.8f, 0f, 0.8f);
-                        }
-                        else if(change_act == 5)
-                        {
-                            Vector3 firstVel = new Vector3(-0.8f, 0f, -0.8f);
-                        }
-                        
-                        else if(change_act == 7)
-                        {
-                            Vector3 firstVel = new Vector3(0.8f, 0f, -0.8f);
-                        }
-                        else if(change_act == 8)
-                        {
-                            Vector3 firstVel = new Vector3(0f, 0f, 0f);
-                        }
 
                         if(change_frame <= 5){
                             Vector3 calcVel = new Vector3(((firstVel.x + firstVel.x * change_frame) * change_frame / 2) / change_frame, 0, ((firstVel.z + firstVel.z * change_frame) * change_frame / 2) / change_frame);
@@ -225,7 +261,12 @@ public class Async : MonoBehaviourPun, IPunObservable
                             Vector3 calcVel = new Vector3((firstVel.x + firstVel.x * change_frame) * change_frame / 2, 0, (firstVel.z + firstVel.z * change_frame) * change_frame / 2);
                             calcVel = (calcVel + firstVel*(change_frame - 6)) / change_frame;
                         }
-                        
+                        if(calcVel.x > 4.8) calcVel.x = 4.8f;
+                        else if(calcVel.x < -4.8) calcVel.x = -4.8f;
+
+                        if(calcVel.z > 4.8) calcVel.z = 4.8f;
+                        else if(calcVel.z < -4.8) calcVel.z = -4.8f;
+
                         pos = pos + calcVel * (this.networkDelay - change_frame / 30);
                         
                         tr.position = Vector3.LerpUnclamped(delayedPosition, pos, 1); 
@@ -235,44 +276,6 @@ public class Async : MonoBehaviourPun, IPunObservable
                     {
                         pos = tr.position + this.m_Vel * change_frame / 30;
 
-                        if(change_act == 0)
-                        {
-                            Vector3 firstVel = new Vector3(0.8f, 0f, 0f);
-                        }
-                        else if(change_act == 4)
-                        {
-                            Vector3 firstVel = new Vector3(-0.8f, 0f, 0f);
-                        }
-                        else if(change_act == 2)
-                        {
-                            Vector3 firstVel = new Vector3(0f, 0f, 0.8f);
-                        }
-                        else if(change_act == 6)
-                        {
-                            Vector3 firstVel = new Vector3(0f, 0f, -0.8f);
-                        }
-                        else if(change_act == 1)
-                        {
-                            Vector3 firstVel = new Vector3(0.8f, 0f, 0.8f);
-                        }
-                        else if(change_act == 3)
-                        {
-                            Vector3 firstVel = new Vector3(-0.8f, 0f, 0.8f);
-                        }
-                        else if(change_act == 5)
-                        {
-                            Vector3 firstVel = new Vector3(-0.8f, 0f, -0.8f);
-                        }
-                        
-                        else if(change_act == 7)
-                        {
-                            Vector3 firstVel = new Vector3(0.8f, 0f, -0.8f);
-                        }
-                        else if(change_act == 8)
-                        {
-                            Vector3 firstVel = new Vector3(0f, 0f, 0f);
-                        }
-
                         if(change_frame <= 5){
                             Vector3 calcVel = new Vector3(((firstVel.x + firstVel.x * change_frame) * change_frame / 2) / change_frame, 0, ((firstVel.z + firstVel.z * change_frame) * change_frame / 2) / change_frame);
                         }
@@ -281,6 +284,12 @@ public class Async : MonoBehaviourPun, IPunObservable
                             Vector3 calcVel = new Vector3((firstVel.x + firstVel.x * change_frame) * change_frame / 2, 0, (firstVel.z + firstVel.z * change_frame) * change_frame / 2);
                             calcVel = (calcVel + firstVel*(change_frame - 6)) / change_frame;
                         }
+
+                        if(calcVel.x > 4.8) calcVel.x = 4.8f;
+                        else if(calcVel.x < -4.8) calcVel.x = -4.8f;
+
+                        if(calcVel.z > 4.8) calcVel.z = 4.8f;
+                        else if(calcVel.z < -4.8) calcVel.z = -4.8f;
 
                         pos = pos + calcVel * (this.networkDelay - change_frame / 30);
                         // Debug.Log(pos);
@@ -305,6 +314,32 @@ public class Async : MonoBehaviourPun, IPunObservable
                     // Debug.Log(pos);
                     tr.position = Vector3.LerpUnclamped(tr.position, pos, 1); 
                     // Debug.Log(tr.position);
+                }
+            }
+
+            // syncroplayercontroller
+            if(canShot){
+                // my bullet position x 2.265  player length 0.6
+                if(this.m_Vel.x > 0){
+                    if(1.965 - this.m_Vel.x * reachfiredtime < tr.position.x && tr.position.x < 2.565 - this.m_Vel.x * reachfiredtime && canShot){
+                    // if(1.865 < positionX && positionX < 1.965 && GameState.canShoot){
+                        Shoot.instance.Shot();
+                        BulletControllerCopy.instance.shoot();
+                        canShot = false;
+                    }
+                }
+                else if(this.m_Vel.x < 0){
+                    if(1.965 - this.m_Vel.x * reachfiredtime < tr.position.x && tr.position.x < 2.565 - this.m_Vel.x * reachfiredtime && canShot){
+                    // if(2.565 < positionX && positionX < 2.665 && GameState.canShoot){
+                        Shoot.instance.Shot();
+                        BulletControllerCopy.instance.shoot();
+                        canShot = false;
+                    }
+                }
+            }
+            else{
+                if(tr.position.x < -3 || 8 < tr.position.x){
+                    canShot = true;
                 }
             }
             
@@ -383,23 +418,25 @@ public class Async : MonoBehaviourPun, IPunObservable
 
         else
         {
-            dt = DateTime.Now;
-            milSec = dt.Millisecond / 1000f;
-            nowTime = (dt.Minute * 60) + dt.Second + milSec;
+            // Debug.Log(this.rcvRpcLag);
 
-            position_x = tr.position.x.ToString("F6");
-            // position_y = tr.position.y.ToString("F6");
-            position_z = tr.position.z.ToString("F6");
-            time = nowTime.ToString("F6");
+            // dt = DateTime.Now;
+            // milSec = dt.Millisecond / 1000f;
+            // nowTime = (dt.Minute * 60) + dt.Second + milSec;
 
-            velocity_x = this.m_Vel.x.ToString("F6");
-            // velocity_y = this.m_Vel.y.ToString("F6");
-            velocity_z = this.m_Vel.z.ToString("F6");
+            // position_x = tr.position.x.ToString("F6");
+            // // position_y = tr.position.y.ToString("F6");
+            // position_z = tr.position.z.ToString("F6");
+            // time = nowTime.ToString("F6");
 
-            // data = time + "," + position_x + "," + position_y + "," + position_z + "," + velocity_x + "," + velocity_y + "," + velocity_z;
-            data = time + "," + position_x + "," + position_z + "," + velocity_x + "," + velocity_z;
+            // velocity_x = this.m_Vel.x.ToString("F6");
+            // // velocity_y = this.m_Vel.y.ToString("F6");
+            // velocity_z = this.m_Vel.z.ToString("F6");
+
+            // // data = time + "," + position_x + "," + position_y + "," + position_z + "," + velocity_x + "," + velocity_y + "," + velocity_z;
+            // data = time + "," + position_x + "," + position_z + "," + velocity_x + "," + velocity_z;
     
-            commUDPisMine.send(data);
+            // commUDPisMine.send(data);
 
         }
 
@@ -433,6 +470,7 @@ public class Async : MonoBehaviourPun, IPunObservable
                     // stream.SendNext(this.m_Direction);
                     stream.SendNext(this.m_Vel);
                     stream.SendNext(this.m_Accel);
+                    stream.SendNext(this.RpcLag);
 
                     lastTime = this.sendTime;
 
@@ -457,7 +495,8 @@ public class Async : MonoBehaviourPun, IPunObservable
                     stream.SendNext(this.m_Vel);
                     stream.SendNext(this.m_Accel);
                     stream.SendNext(this.sendTime);
-
+                    stream.SendNext(this.RpcLag);
+                    
                     lastTime = this.sendTime;
                 }
             }
@@ -484,13 +523,15 @@ public class Async : MonoBehaviourPun, IPunObservable
         {
             if (this.m_SynchronizePosition)
             {
-                this.lag = Mathf.Abs((float) (PhotonNetwork.Time - info.timestamp));
+                // this.lag = Mathf.Abs((float) (PhotonNetwork.Time - info.timestamp));
 
                 this.delayedPosition = (Vector3)stream.ReceiveNext();
                 // this.m_Direction = (Vector3)stream.ReceiveNext();
                 this.m_Vel = (Vector3)stream.ReceiveNext();
                 this.m_Accel = (Vector3)stream.ReceiveNext();
                 this.sendTime = (float)stream.ReceiveNext();
+
+                this.rcvRpcLag = (float)stream.ReceiveNext();
 
                 this.isPositionUpdate = true;
 

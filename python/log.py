@@ -31,9 +31,10 @@ if __name__ == '__main__' :
     
     # evaluate_dir = f"evaluate/chamfer/Fixed30FPS/Lag{args.latency}/{args.motion}/{args.scheme}"
     # evaluate_dir = f"evaluate/chamfer/Fixed30FPS_SendRate60_RTT/Lag{args.latency}/{args.motion}/{args.scheme}"
-    # os.makedirs(evaluate_dir, exist_ok=True)
-    train_dir = f'train_data/Fixed30FPS_SendRate60/Lag{args.latency}/{args.motion}'
-    os.makedirs(train_dir, exist_ok=True)
+    evaluate_dir = f"evaluate/shoot_time_pos/Fixed30FPS_SendRate60_RTT/Lag{args.latency}/{args.motion}/{args.scheme}"
+    os.makedirs(evaluate_dir, exist_ok=True)
+    # train_dir = f'train_data/Fixed30FPS_SendRate60/Lag{args.latency}/{args.motion}'
+    # os.makedirs(train_dir, exist_ok=True)
     
 
     # log_date = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
@@ -62,9 +63,9 @@ if __name__ == '__main__' :
     unity_sock = socket.socket(socket.AF_INET, type=socket.SOCK_DGRAM)
 
     turminal = ""
-    if unity_port == 50001 or unity_port == 50024:
+    if unity_port == 50001 or unity_port == 50024 or unity_port == 50041:
         turminal = "Real"
-    elif unity_port == 50011 or unity_port == 50031:
+    elif unity_port == 50011 or unity_port == 50031 or unity_port == 50051:
         turminal = "Predict"
     elif unity_port == 50021:
         turminal = "Delayed"
@@ -98,16 +99,16 @@ if __name__ == '__main__' :
             # print("unity now: ", send_time)
             # print("time to Send Python from Unity: ", nowTime - float(send_time))
 
-            if args.scheme == "DR" or args.scheme == "MAADR" :
-                # with open(f'{evaluate_dir}/{turminal}_log.csv', 'a') as f:
-                with open(f'{train_dir}/{turminal}_log.csv', 'a') as f:
+            if args.scheme == "DR" or args.scheme == "MAADR" or args.scheme == "Propose" :
+                with open(f'{evaluate_dir}/{turminal}_log.csv', 'a') as f:
+                # with open(f'{train_dir}/{turminal}_log.csv', 'a') as f:
                     writer = csv.writer(f, lineterminator='\n')
                     # writer.writerow([float(rcv_data[i]) for i in range(1, len(rcv_data))])
                     writer.writerow(rcv_data)
 
             elif args.scheme == "DRL_distance":
-                # with open(f'{evaluate_dir}/Real_log.csv', 'a') as f:
-                with open(f'{train_dir}/{turminal}_log.csv', 'a') as f:
+                with open(f'{evaluate_dir}/Real_log.csv', 'a') as f:
+                # with open(f'{train_dir}/{turminal}_log.csv', 'a') as f:
                     writer = csv.writer(f, lineterminator='\n')
                     # writer.writerow([float(rcv_data[i]) for i in range(1, len(rcv_data))])
                     writer.writerow(rcv_data)

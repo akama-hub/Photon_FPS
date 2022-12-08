@@ -37,55 +37,57 @@ public class SyncroPlayerController : MonoBehaviourPunCallbacks
             return;
         }
 
-        if(firstTime == 0){
-            var players = PhotonNetwork.PlayerListOthers;
+        // if(firstTime == 0){
+        //     var players = PhotonNetwork.PlayerListOthers;
 
-            if(players.Length > 0){
-                // Debug.Log("Finding");
-                CPUPrefab = GameObject.FindGameObjectWithTag("Observer");
-                if(CPUPrefab){
-                    firstTime = 1;
-                }
-                else{
-                    // Debug.Log("Retrying to find");
-                }
-            }
-        }
+        //     if(players.Length > 0){
+        //         // Debug.Log("Finding");
+        //         CPUPrefab = GameObject.FindGameObjectWithTag("Observer");
+        //         if(CPUPrefab){
+        //             firstTime = 1;
+        //         }
+        //         else{
+        //             // Debug.Log("Retrying to find");
+        //         }
+        //     }
+        // }
         
 
         UpdateCursorLock();
 
-        if(CPUPrefab){
-            gap = CPUPrefab.transform.position.x - pastPosition;
-            positionX = CPUPrefab.transform.position.x;
-            // Debug.Log(gap);
+        // if(CPUPrefab){
+        //     gap = CPUPrefab.transform.position.x - pastPosition;
+        //     positionX = CPUPrefab.transform.position.x;
+        //     // Debug.Log(gap);
 
-            if(canShot){
-                // my bullet position x 2.265 
-                if(gap > 0){
-                    if(1.865 < positionX && positionX < 1.965 && GameState.canShoot){
-                        Shoot.instance.Shot();
-                        BulletControllerCopy.instance.shoot();
-                        canShot = false;
-                    }
-                }
-                else if(gap < 0){
-                    if(2.565 < positionX && positionX < 2.665 && GameState.canShoot){
-                        Shoot.instance.Shot();
-                        BulletControllerCopy.instance.shoot();
-                        canShot = false;
-                    }
-                }
-            }
-            else{
-                if(positionX < -3 || 8 < positionX){
-                    canShot = true;
-                }
-            }
+        //     if(canShot){
+        //         // my bullet position x 2.265 
+        //         if(gap > 0){
+        //             if(1.815 < positionX && positionX < 1.915 && GameState.canShoot){
+        //             // if(1.865 < positionX && positionX < 1.965 && GameState.canShoot){
+        //                 Shoot.instance.Shot();
+        //                 BulletControllerCopy.instance.shoot();
+        //                 canShot = false;
+        //             }
+        //         }
+        //         else if(gap < 0){
+        //             if(2.615 < positionX && positionX < 2.715 && GameState.canShoot){
+        //             // if(2.565 < positionX && positionX < 2.665 && GameState.canShoot){
+        //                 Shoot.instance.Shot();
+        //                 BulletControllerCopy.instance.shoot();
+        //                 canShot = false;
+        //             }
+        //         }
+        //     }
+        //     else{
+        //         if(positionX < -3 || 8 < positionX){
+        //             canShot = true;
+        //         }
+        //     }
             
-            pastPosition = positionX;
-        }
-        else{        }
+        //     pastPosition = positionX;
+        // }
+        // else{        }
     }
  
 

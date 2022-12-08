@@ -60,6 +60,9 @@ public class DRSyncronize : MonoBehaviourPun, IPunObservable
     private float rcvTime;
     private float RTT;
 
+    private bool canShot;
+    private float reachfiredtime = 0.001334f; //6.67(aite z 10 - zibun z 3.33) / 5000
+
     // private Vector3 predictPosition;
 
     public void Awake()
@@ -85,6 +88,7 @@ public class DRSyncronize : MonoBehaviourPun, IPunObservable
             commUDPisMine.init(50023, 50020, 50024);
         }
         else{
+            canShot = true;
             // commUDP.init(int型の送信用ポート番号, int型の送信先ポート番号, int型の受信用ポート番号);
             commUDPnotMine.init(50025, 50026, 50021);
             //UDP受信開始
@@ -140,6 +144,31 @@ public class DRSyncronize : MonoBehaviourPun, IPunObservable
                 }
                 tr.rotation = Quaternion.RotateTowards(tr.rotation, this.m_NetworkRotation, this.m_Angle * Time.deltaTime *  PhotonNetwork.SerializationRate);
                 
+            }
+
+            if(canShot){
+                // my bullet position x 2.265  player length 0.6
+                if(this.m_Vel.x > 0){
+                    if(1.965 - this.m_Vel.x * reachfiredtime < tr.position.x && tr.position.x < 2.565 - this.m_Vel.x * reachfiredtime && canShot){
+                    // if(1.865 < positionX && positionX < 1.965 && GameState.canShoot){
+                        Shoot.instance.Shot();
+                        BulletControllerCopy.instance.shoot();
+                        canShot = false;
+                    }
+                }
+                else if(this.m_Vel.x < 0){
+                    if(1.965 - this.m_Vel.x * reachfiredtime < tr.position.x && tr.position.x < 2.565 - this.m_Vel.x * reachfiredtime && canShot){
+                    // if(2.565 < positionX && positionX < 2.665 && GameState.canShoot){
+                        Shoot.instance.Shot();
+                        BulletControllerCopy.instance.shoot();
+                        canShot = false;
+                    }
+                }
+            }
+            else{
+                if(tr.position.x < -3 || 8 < tr.position.x){
+                    canShot = true;
+                }
             }
 
             string position_x = tr.position.x.ToString("F6");
