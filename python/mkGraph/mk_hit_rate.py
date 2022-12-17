@@ -21,7 +21,8 @@ for motion in motions:
     os.makedirs(pic_dir, exist_ok=True)
 
     # Lag = [0, 10, 25] # Photon lag simulation gui paramater(ms)
-    Lag = [0, 10, 20, 30, 40]
+    # Lag = [0, 10, 20, 30, 40]
+    Lag = [41.7, 50.7, 61.1, 71.3, 81.4]
 
     if motion == "ohuku":
         # hit_count = np.array([2, 0, 0])
@@ -53,13 +54,14 @@ for motion in motions:
     p2 = plt.plot(Lag, MAADR_hit_rate, linestyle = "--", dashes = (5, 5), marker=markers[2], color = "grey", markerfacecolor = "None", ms = marker_size)
     p3 = plt.plot(Lag, proposed_hit_rate, linestyle = "--", dashes = (7, 7), marker='*', color = colors[0], markerfacecolor = "None", ms = marker_size)
 
-    plt.xlabel("Lag Parameter [ms]")
-    plt.ylabel("Hit Rate ")
+    plt.xlabel("Latency avg. [ms]")
+    # plt.ylabel("Hit Rate ")
+    plt.ylabel("Match Rate of Hit Result Decision")
 
     plt.legend((p1[0], p2[0], p3[0]), ("DR", "MAADR", "Proposed"))
 
-    plt.savefig(f"figure/{motion}_HitRate.png", bbox_inches='tight', pad_inches=0)
-    plt.savefig(f"figure/{motion}_HitRate.eps", bbox_inches='tight', pad_inches=0)
+    plt.savefig(f"figure/{motion}_HitRate_avg.png", bbox_inches='tight', pad_inches=0)
+    plt.savefig(f"figure/{motion}_HitRate_avg.eps", bbox_inches='tight', pad_inches=0)
 
     plt.clf()
     plt.close()
