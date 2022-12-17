@@ -207,7 +207,8 @@ def main():
     cpu_velocity = {}
     cpu_keys = []
 
-    with open(f'../train_data/20221111/Fixed30FPS_SendRate60/Lag20/{motion}/DRL_t_sendT_Pxz_Vxz_Ndelay_distance/13_30_02_Real_log.csv') as f:
+    # with open(f'../train_data/20221111/Fixed30FPS_SendRate60/Lag20/{motion}/DRL_t_sendT_Pxz_Vxz_Ndelay_distance/13_30_02_Real_log.csv') as f:
+    with open(f'../train_data/20221212/Fixed30FPS_SendRate60/Lag20/{motion}/DRL_t_sendT_Pxz_Vxz_Ndelay_distance/11_44_44_Real_log.csv') as f:
         reader = csv.reader(f)
         for row in reader:
             row[0] = float(row[0])
@@ -224,7 +225,7 @@ def main():
     distance = {}
     network_delay = {}
 
-    with open(f'../train_data/20221111/Fixed30FPS_SendRate60/Lag20/{motion}/DRL_t_sendT_Pxz_Vxz_Ndelay_distance/13_30_01_Delayed_log.csv') as f:
+    with open(f'../train_data/20221212/Fixed30FPS_SendRate60/Lag20/{motion}/DRL_t_sendT_Pxz_Vxz_Ndelay_distance/11_44_45_Delayed_log.csv') as f:
         reader = csv.reader(f)
         for row in reader:
             row[0] = float(row[0])

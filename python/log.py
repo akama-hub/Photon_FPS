@@ -31,7 +31,8 @@ if __name__ == '__main__' :
     
     # evaluate_dir = f"evaluate/chamfer/Fixed30FPS/Lag{args.latency}/{args.motion}/{args.scheme}"
     # evaluate_dir = f"evaluate/chamfer/Fixed30FPS_SendRate60_RTT/Lag{args.latency}/{args.motion}/{args.scheme}"
-    evaluate_dir = f"evaluate/shoot_time_pos/Fixed30FPS_SendRate60_RTT/Lag{args.latency}/{args.motion}/{args.scheme}"
+    # evaluate_dir = f"evaluate/shoot_time_pos/Fixed30FPS_SendRate60_RTT/Lag{args.latency}/{args.motion}/{args.scheme}"
+    evaluate_dir = f"evaluate/lagAVG/Fixed30FPS_SendRate60_RTT/Lag{args.latency}"
     os.makedirs(evaluate_dir, exist_ok=True)
     # train_dir = f'train_data/Fixed30FPS_SendRate60/Lag{args.latency}/{args.motion}'
     # os.makedirs(train_dir, exist_ok=True)
@@ -119,9 +120,8 @@ if __name__ == '__main__' :
                 for i in range(len(rcv_data)):
                     send_data.append(rcv_data[i])
 
-                log_dir = f"check/{args.rate}/Lag{args.latency}/{args.motion}"
-                os.makedirs(log_dir, exist_ok=True)
-                with open(f'{log_dir}/{turminal}_log_{log_date}.csv', 'a') as f:
+            
+                with open(f'{evaluate_dir}/check_log_{log_date}.csv', 'a') as f:
                     writer = csv.writer(f, lineterminator='\n')
                     # writer.writerow([float(rcv_data[i]) for i in range(1, len(rcv_data))])
                     # writer.writerow(rcv_data)

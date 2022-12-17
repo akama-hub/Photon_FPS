@@ -13,8 +13,8 @@ public class SyncroPlayerController : MonoBehaviourPunCallbacks
     private float positionX;
     private bool canShot = true;
 
-    private GameObject CPUPrefab;
-    private int firstTime = 0;
+    // private GameObject CPUPrefab;
+    // private int firstTime = 0;
 
     // Start is called before the first frame update
     private void Start()

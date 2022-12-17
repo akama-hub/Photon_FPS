@@ -411,8 +411,8 @@ public class Async : MonoBehaviourPun, IPunObservable
 
             // data = time + "," + this.sendTime.ToString("F6") + "," + position_x + "," + position_z + "," + velocity_x + "," + velocity_z + "," + networkDelay.ToString("F6") + "," + targetDistance;
 
-            data = time + "," + position_x + "," + position_z + "," + velocity_x + "," + velocity_z + "," + targetDistance;                  
-
+            // data = time + "," + position_x + "," + position_z + "," + velocity_x + "," + velocity_z + "," + targetDistance;                
+            data = (delayedTime - this.sendTime).ToString("F6");    
             commUDPnotMine.send(data);
         }
 
