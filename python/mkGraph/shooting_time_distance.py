@@ -81,12 +81,15 @@ for motion in motions:
 
     print("===========================")
     print(f"making hit rate png & eps graph")
+    
+    lag_avg = [41.7, 50.7, 61.1, 71.3, 81.4]
+    
+    p1 = plt.plot(lag_avg, DR_distance_avg, linestyle = "--", dashes = (4, 4), marker='x', color = colors[2], markerfacecolor = "None", ms = marker_size)
+    p2 = plt.plot(lag_avg, MAADR_distance_avg, linestyle = "--", dashes = (5, 5), marker=markers[2], color = "grey", markerfacecolor = "None", ms = marker_size)
+    p3 = plt.plot(lag_avg, Propose_distance_avg, linestyle = "--", dashes = (7, 7), marker='*', color = colors[0], markerfacecolor = "None", ms = marker_size)
 
-    p1 = plt.plot(Lag, DR_distance_avg, linestyle = "--", dashes = (4, 4), marker='x', color = colors[2], markerfacecolor = "None", ms = marker_size)
-    p2 = plt.plot(Lag, MAADR_distance_avg, linestyle = "--", dashes = (5, 5), marker=markers[2], color = "grey", markerfacecolor = "None", ms = marker_size)
-    p3 = plt.plot(Lag, Propose_distance_avg, linestyle = "--", dashes = (7, 7), marker='*', color = colors[0], markerfacecolor = "None", ms = marker_size)
-
-    plt.xlabel("Lag Parameter [ms]")
+    # plt.xlabel("Lag Parameter [ms]")
+    plt.xlabel("Ltency avg. [ms]")
     plt.ylabel("Mean Euclidean Distance [m]")
 
     plt.legend((p1[0], p2[0], p3[0]), ("DR", "MAADR", "Proposed"))
