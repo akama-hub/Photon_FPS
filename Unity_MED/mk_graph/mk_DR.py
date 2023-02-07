@@ -83,8 +83,8 @@ for motion in motions:
     delay = np.arange(1, 11)
 
     p1 = plt.plot(delay, delay_diff, linestyle = "--", dashes = (1, 1), marker=markers[0], color = colors[6], markerfacecolor = "None", ms = marker_size)
-    # p2 = plt.plot(delay, lr_diff, linestyle = "--", dashes = (2, 2), marker=markers[4], color = "orange", markerfacecolor = "None", ms = marker_size)
-    # p3 = plt.plot(delay, nlr_diff, linestyle = "--", dashes = (3, 3), marker='+', color = colors[3], markerfacecolor = "None", ms = marker_size)
+    p2 = plt.plot(delay, lr_diff, linestyle = "--", dashes = (2, 2), marker=markers[4], color = "orange", markerfacecolor = "None", ms = marker_size)
+    p3 = plt.plot(delay, nlr_diff, linestyle = "--", dashes = (3, 3), marker='+', color = colors[3], markerfacecolor = "None", ms = marker_size)
     p4 = plt.plot(delay, dr_diff, linestyle = "--", dashes = (4, 4), marker='x', color = colors[2], markerfacecolor = "None", ms = marker_size)
     p5 = plt.plot(delay, maadr_diff, linestyle = "--", dashes = (5, 5), marker=markers[2], color = "grey", markerfacecolor = "None", ms = marker_size)
     p6 = plt.plot(delay, mlp_diff, linestyle = "--", dashes = (6, 6), marker=markers[3], color = colors[1], markerfacecolor = "None", ms = marker_size)
@@ -96,16 +96,19 @@ for motion in motions:
     plt.ylabel("Mean Euclidean Distance [m]")
 
     # plt.legend((p1[0], p4[0], p5[0], p6[0], p7[0]), ("NC", "DR [8]", "MAADR [9]", "MLP", "Proposed"), loc = 2)
-    plt.legend((p1[0], p4[0], p5[0], p6[0], p7[0]), ("NC", "DR [6]", "MAADR [7]", "MLP", "Proposed"), loc = 2)
+    # plt.legend((p1[0], p4[0], p5[0], p6[0], p7[0]), ("NC", "DR [6]", "MAADR [7]", "MLP", "Proposed"), loc = 2)
     # plt.legend((p1[0], p4[0], p5[0], p6[0], p7[0]), ("NC", "DR [8]", "MAADR [9]", "MLP", "Proposed"), loc = 2, bbox_to_anchor=(-0.025, 0.535, 0.5, 0.5))
-    # plt.legend((p1[0], p2[0], p3[0], p4[0], p5[0], p6[0], p7[0]), ("NC", "LR", "NLR", "DR", "MAADR", "MLP", "Proposed"), loc = 2)
+    plt.legend((p1[0], p2[0], p3[0], p4[0], p5[0], p6[0], p7[0]), ("NC", "LR", "NLR", "DR", "MAADR", "MLP", "Proposed"), loc = 2)
 
     # plt.show()
     # plt.savefig(f"./figure/{motion}/accel_{motion}_DR.eps", bbox_inches='tight', pad_inches=0)
     # plt.savefig(f"./figure/{motion}/accel_{motion}_DR.png", bbox_inches='tight', pad_inches=0)
 
-    plt.savefig(f"./figure/{motion}/COG_accel_{motion}_DR.eps", bbox_inches='tight', pad_inches=0)
-    plt.savefig(f"./figure/{motion}/COG_accel_{motion}_DR.png", bbox_inches='tight', pad_inches=0)
+    # plt.savefig(f"./figure/{motion}/COG_accel_{motion}_DR.eps", bbox_inches='tight', pad_inches=0)
+    # plt.savefig(f"./figure/{motion}/COG_accel_{motion}_DR.png", bbox_inches='tight', pad_inches=0)
+    
+    # plt.savefig(f"./figure/{motion}/COG_accel_{motion}_DR.eps", bbox_inches='tight', pad_inches=0)
+    plt.savefig(f"./figure/{motion}/thesis23_accel_{motion}_DR.png", bbox_inches='tight', pad_inches=0)
 
     # plt.savefig(f"./figure/{motion}/syukatu_{motion}.eps", bbox_inches='tight', pad_inches=0)
     # plt.savefig(f"./figure/{motion}/syukatu_{motion}.png", bbox_inches='tight', pad_inches=0)
